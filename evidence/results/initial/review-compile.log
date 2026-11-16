@@ -1,0 +1,58 @@
+Picked up JAVA_TOOL_OPTIONS: -Dmaven.repo.local=/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices/.work/m2 -Djava.io.tmpdir=/Users/josh-desktop/.pi/agent/pstack-v2/jobs/agent-acceptance-959689/tmp
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.4.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+
+> Configure project :fixture
+Unable to initialize metrics, ensure /Users/josh-desktop/.android is writable, details: /Users/josh-desktop/.android/analytics.settings (Operation not permitted)
+
+> Task :fixture:preBuild UP-TO-DATE
+> Task :fixture:preDebugBuild UP-TO-DATE
+> Task :fixture:generateDebugResources
+> Task :fixture:packageDebugResources
+> Task :fixture:processDebugNavigationResources
+> Task :fixture:javaPreCompileDebug
+> Task :fixture:preDebugUnitTestBuild UP-TO-DATE
+> Task :fixture:writeDebugAarMetadata
+> Task :fixture:parseDebugLocalResources
+> Task :fixture:checkDebugUnitTestAarMetadata
+> Task :fixture:mapDebugSourceSetPaths
+> Task :fixture:generateDebugRFile
+> Task :fixture:compileDebugLibraryResources
+> Task :fixture:compileDebugKotlin NO-SOURCE
+> Task :fixture:compileDebugJavaWithJavac NO-SOURCE
+> Task :fixture:bundleLibRuntimeToJarDebug
+> Task :fixture:bundleLibCompileToJarDebug
+> Task :fixture:mapDebugUnitTestSourceSetPaths
+> Task :fixture:generateDebugUnitTestResources
+> Task :fixture:extractDeepLinksDebug
+> Task :fixture:processDebugManifest
+> Task :fixture:mergeDebugUnitTestResources
+> Task :fixture:processDebugUnitTestManifest
+> Task :fixture:javaPreCompileDebugUnitTest
+> Task :fixture:generateDebugUnitTestAssets UP-TO-DATE
+> Task :fixture:generateDebugAssets UP-TO-DATE
+> Task :fixture:mergeDebugAssets
+> Task :fixture:mergeDebugUnitTestAssets
+> Task :fixture:processDebugJavaRes NO-SOURCE
+> Task :fixture:processDebugUnitTestResources
+> Task :fixture:packageDebugUnitTestForUnitTest
+> Task :fixture:generateDebugUnitTestConfig
+
+> Task :fixture:compileDebugUnitTestKotlin FAILED
+e: file:///Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices/.work/agent-response-_7gjm615/compose-ui-testing-robolectric-best-practices/examples/ReviewTaskTest.kt:15:33 Unresolved reference 'onNode'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':fixture:compileDebugUnitTestKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 9s
+25 actionable tasks: 25 executed

@@ -1,0 +1,142 @@
+first-hosted.log
+23:
+24: * What went wrong:
+25: class com.android.build.gradle.internal.api.DefaultAndroidLibrarySourceSet_Decorated cannot be cast to class com.android.build.gradle.api.AndroidLibrarySourceSet (com.android.build.gradle.internal.api.DefaultAndroidLibrarySourceSet_Decorated and com.android.build.gradle.api.AndroidLibrarySourceSet are in unnamed module of loader org.gradle.internal.classloader.VisitableURLClassLoader$InstrumentingVisitableURLClassLoader @42c7a054)
+26:
+27: * Try:
+28: > Run with --stacktrace option to get the stack trace.
+
+first-hosted-source-fix.log
+36:    > 11 issues were found when checking AAR metadata:
+37:
+38:        1.  Dependency 'androidx.compose.ui:ui-test-junit4-android:1.12.1' requires libraries and applications that
+39:            depend on it to compile against version 37 or later of the
+40:            Android APIs.
+41:
+42:            :fixture is currently compiled against android-35.
+43:
+44:            Recommended action: Update this project to use a newer compileSdk
+45:            of 37.
+51:            on).
+52:
+53:        2.  Dependency 'androidx.compose.material:material-ripple-android:1.12.1' requires libraries and applications that
+54:            depend on it to compile against version 37 or later of the
+55:            Android APIs.
+56:
+57:            :fixture is currently compiled against android-35.
+58:
+59:            Recommended action: Update this project to use a newer compileSdk
+60:            of 37.
+66:            on).
+67:
+68:        3.  Dependency 'androidx.compose.foundation:foundation-android:1.12.1' requires libraries and applications that
+69:            depend on it to compile against version 37 or later of the
+70:            Android APIs.
+71:
+72:            :fixture is currently compiled against android-35.
+73:
+74:            Recommended action: Update this project to use a newer compileSdk
+75:            of 37.
+81:            on).
+82:
+83:        4.  Dependency 'androidx.compose.animation:animation-android:1.12.1' requires libraries and applications that
+84:            depend on it to compile against version 37 or later of the
+85:            Android APIs.
+86:
+87:            :fixture is currently compiled against android-35.
+88:
+89:            Recommended action: Update this project to use a newer compileSdk
+90:            of 37.
+96:            on).
+97:
+98:        5.  Dependency 'androidx.compose.foundation:foundation-layout-android:1.12.1' requires libraries and applications that
+99:            depend on it to compile against version 37 or later of the
+100:            Android APIs.
+101:
+102:            :fixture is currently compiled against android-35.
+103:
+104:            Recommended action: Update this project to use a newer compileSdk
+105:            of 37.
+111:            on).
+112:
+113:        6.  Dependency 'androidx.compose.animation:animation-core-android:1.12.1' requires libraries and applications that
+114:            depend on it to compile against version 37 or later of the
+115:            Android APIs.
+116:
+117:            :fixture is currently compiled against android-35.
+118:
+119:            Recommended action: Update this project to use a newer compileSdk
+120:            of 37.
+126:            on).
+127:
+128:        7.  Dependency 'androidx.compose.ui:ui-graphics-android:1.12.1' requires libraries and applications that
+129:            depend on it to compile against version 37 or later of the
+130:            Android APIs.
+131:
+132:            :fixture is currently compiled against android-35.
+133:
+134:            Recommended action: Update this project to use a newer compileSdk
+135:            of 37.
+141:            on).
+142:
+143:        8.  Dependency 'androidx.compose.ui:ui-text-android:1.12.1' requires libraries and applications that
+144:            depend on it to compile against version 37 or later of the
+145:            Android APIs.
+146:
+147:            :fixture is currently compiled against android-35.
+148:
+149:            Recommended action: Update this project to use a newer compileSdk
+150:            of 37.
+156:            on).
+157:
+158:        9.  Dependency 'androidx.compose.ui:ui-test-android:1.12.1' requires libraries and applications that
+159:            depend on it to compile against version 37 or later of the
+160:            Android APIs.
+161:
+162:            :fixture is currently compiled against android-35.
+163:
+164:            Recommended action: Update this project to use a newer compileSdk
+165:            of 37.
+171:            on).
+172:
+173:       10.  Dependency 'androidx.compose.ui:ui-android:1.12.1' requires libraries and applications that
+174:            depend on it to compile against version 37 or later of the
+175:            Android APIs.
+176:
+177:            :fixture is currently compiled against android-35.
+178:
+179:            Recommended action: Update this project to use a newer compileSdk
+180:            of 37.
+186:            on).
+187:
+188:       11.  Dependency 'androidx.compose.runtime:runtime-saveable-android:1.12.1' requires libraries and applications that
+189:            depend on it to compile against version 37 or later of the
+190:            Android APIs.
+191:
+192:            :fixture is currently compiled against android-35.
+193:
+194:            Recommended action: Update this project to use a newer compileSdk
+195:            of 37.
+
+first-hosted-sdk37.log
+17: > Task :fixture:mapDebugSourceSetPaths
+18: > Task :fixture:generateDebugRFile
+19: > Task :fixture:compileDebugKotlin NO-SOURCE
+20: > Task :fixture:compileDebugLibraryResources
+21: > Task :fixture:compileDebugJavaWithJavac NO-SOURCE
+22: > Task :fixture:bundleLibRuntimeToJarDebug
+23: > Task :fixture:mapDebugUnitTestSourceSetPaths
+24: > Task :fixture:bundleLibCompileToJarDebug
+33: > Task :fixture:mergeDebugAssets
+34: > Task :fixture:mergeDebugUnitTestAssets
+35: > Task :fixture:processDebugJavaRes NO-SOURCE
+36: > Task :fixture:processDebugUnitTestResources
+37: > Task :fixture:compileDebugUnitTestKotlin NO-SOURCE
+38: > Task :fixture:compileDebugUnitTestJavaWithJavac NO-SOURCE
+39: > Task :fixture:packageDebugUnitTestForUnitTest
+40: > Task :fixture:processDebugUnitTestJavaRes NO-SOURCE
+41: > Task :fixture:generateDebugUnitTestConfig
+42: > Task :fixture:testDebugUnitTest NO-SOURCE
+43:
+44: BUILD SUCCESSFUL in 8s
+45: 24 actionable tasks: 20 executed, 4 up-to-date
