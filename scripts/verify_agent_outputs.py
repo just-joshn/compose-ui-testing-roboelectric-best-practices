@@ -43,8 +43,8 @@ def verify(case, responses):
             try:
                 result = run(project, f"agent-{label}-{name}")
                 assert result["exit"] != 0 and result["cases"], result
-                assert all(not case["skipped"] for case in result["cases"]), result
-                failures = [case for case in result["cases"] if case["failure"]]
+                assert all(case["error"] is None and not case["skipped"] for case in result["cases"]), result
+                failures = [case for case in result["cases"] if case["failure"] is not None]
                 assert failures and all(
                     "AssertionError" in case["failure"].get("type", "") for case in failures
                 ), result

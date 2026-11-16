@@ -27,7 +27,11 @@ def main():
         finally:
             target.write_text(baseline)
         require_pass(run(project, "resources-restored", METHOD), (METHOD,))
-    outcome = "passed" if disabled["exit"] == 0 else "failed"
+    try:
+        require_pass(disabled, (METHOD,))
+        outcome = "passed"
+    except AssertionError:
+        outcome = "failed"
     (RESULTS / "setup-comparison.md").write_text(
         "# Android resource inclusion comparison\n\n"
         "Hypothesis. Disabling Android resources prevents the default activity host from starting because the debug manifest is not loaded.\n\n"

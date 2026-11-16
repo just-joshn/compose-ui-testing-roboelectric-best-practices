@@ -27,8 +27,10 @@ STATUSES = ("pass", "failure-empty", "failure-typed", "error-empty", "error-type
 EXITS = (0, 1, -9)
 MUTATIONS = (
     ("ignored-exit", 'result["exit"] == 0 and result["cases"]', 'result["cases"]', "process-exit"),
-    ("ignored-skips", 'not case["failure"] and not case["skipped"]', 'not case["failure"]', "skipped"),
-    ("ignored-failures", 'not case["failure"] and not case["skipped"]', 'not case["skipped"]', "failure-typed"),
+    ("ignored-skips", 'case["failure"] is None and case["error"] is None and not case["skipped"]', 'case["failure"] is None and case["error"] is None', "skipped"),
+    ("ignored-failures", 'case["failure"] is None and case["error"] is None', 'case["error"] is None', "failure-typed"),
+    ("falsey-failures", 'case["failure"] is None', 'not case["failure"]', "failure-empty"),
+    ("ignored-errors", 'case["failure"] is None and case["error"] is None', 'case["failure"] is None', "error-empty"),
     ("ignored-methods", 'sorted(case["name"] for case in result["cases"]) == sorted(methods)', 'True', "method-multiset"),
 )
 
@@ -185,12 +187,12 @@ def self_test(original, baseline, workspace, output):
         raise RuntimeError("Covered source was not restored or the checkout changed during verification")
     (output / "self-test.json").write_text(json.dumps({"status": "PASS", "mutations": checks,
         "restored_sha256": restored["source_sha256"], "baseline_status": baseline["status"]}, indent=2) + "\n")
-    print("PASS self-test: four real-source scratch mutations caught; baseline restored")
+    print(f"PASS self-test: {len(MUTATIONS)} real-source scratch mutations caught; baseline restored")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--self-test", action="store_true", help="also break four guards in disposable source copies")
+    parser.add_argument("--self-test", action="store_true", help=f"also apply {len(MUTATIONS)} mutations in disposable source copies")
     args = parser.parse_args()
     if platform.python_implementation() != "CPython" or sys.version_info[:3] != (3, 12, 14) or sys.flags.optimize:
         parser.error("Use unoptimized CPython 3.12.14 via the uv command in SKILL.md")
