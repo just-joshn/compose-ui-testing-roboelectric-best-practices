@@ -1,86 +1,79 @@
-# Executed evidence: JUnit evidence acceptance
+# JUnit evidence acceptance results
 
-Executed 2026-11-16 against commit `52f0a0cec60527544bd3b4bfb86128e6a873b9c0`, with no modifications to covered code. [Machine-readable results](evidence/results.json) preserve the complete finite domain, counterexample counts, shortest reports and parsed cases, mutation results, and source/checker hashes. Temporary command paths have been omitted from that portable summary; the raw artifacts retain them.
+The current baseline **passes**. The original failures remain in [before-fix.json](evidence/before-fix.json) as historical evidence. [Current results](evidence/results.json) record the repaired gate and six independently detected scratch mutations.
 
-## Question and tool
+## Property and scope
 
-Can the shared `scripts/verify_fixture.py::run` -> `require_pass` gate accept bad evidence or reject good evidence?
+The real `scripts/verify_fixture.py::run` followed by `require_pass` accepts evidence only when the producer succeeds, tests run, no test has a failure, error, or skip element, and any requested method list matches exactly. It also accepts every clean result in the finite domain.
 
-The stated contract requires exit 0, a nonempty result, no failure/error/skip terminal elements, and an exact method-name multiset when one is requested. This is the gate used for fixture, saved agent-response, and setup/restoration baselines. False green evidence could substantiate incorrect guidance throughout the installable skill.
+The checker uses CPython 3.12.14 and the standard library. It executes the actual parser and gate with a controlled subprocess producer. This is bounded exhaustive concrete verification, not an unbounded proof, an SMT proof, or a TLA+ model.
 
-The tool is a deterministic CPython 3.12.14 standard-library checker executing the actual Python parser and gate with generated producer outputs. This is bounded exhaustive concrete verification, **not an SMT proof, a TLA+ model, or an unbounded guarantee**. Its finite input space is cheap enough to enumerate completely without translating implementation logic into a model. The only substituted behavior is the subprocess producer; JDK/SDK discovery and result locations are redirected for isolation.
+The input domain is unchanged by the repair. It covers every ordered case list up to length two over three names and six statuses, three process exits, eight expected-method lists, and single or split report files. That produces 2,001 producer executions and 16,008 acceptance decisions per check. The count comes from enumerating the stated inputs, not sampling or repeating cached results.
 
-## Baseline
+## Original defects and repair
 
-Command:
+The original check found two implementation defects. With producer exit 0, `<failure/>` became an empty dictionary that the gate treated as false. The parser ignored `<error>` elements entirely. The original run reported 465 false acceptances in the finite domain, grouped into three input categories. Those are combinations, not separate bugs or a production failure rate.
 
-```bash
-uv run --python 3.12.14 --no-project .pi/skills/verify-junit-evidence/check.py
-```
+The exit and report inputs vary independently. This never established that actual Gradle emitted exit 0 for failed tests or that earlier JVM passes were false positives. A nonzero producer exit already caused rejection.
 
-The initial baseline checked 2,001 report/exit/layout inputs and 16,008 acceptance decisions. It exited **1**, reporting `failure-empty`, `error-empty`, and `error-typed`. The baseline repeated in the final self-test took about **1.4 seconds** excluding interpreter startup and checked the same full domain.
+The defects originated in fixture harness commit `f54ac58947729f0178bc7e53b9936b6ae0687974`, which became main commit `bab961920d7c1f96d9f107658ae044774d31f036` through PR #1. The commit record describes baseline and mutation validation, not an intentional exception for empty failures or errors.
 
-The bounds are all ordered case lists up to length two over three names and six statuses, process exits 0/1/-9, eight requested-method lists, and both single-file and split-file layouts for two cases. See the skill and JSON for the exact domain; this is not an equivalence proof for arbitrary strings, attributes, XML formats, or exit values.
+The repair is commit **`6fefcb5decac7f24fe81fa415b0194082043c10d`**. It preserves the existing result dictionaries and function signatures. Each fresh case now has separate `failure` and `error` metadata. `None` means absent; a dictionary, including `{}`, means present. The pass gate checks explicit absence. Both mutation consumers reject errors and skips, and require AssertionError metadata for reported failures. Setup comparison reuses the pass gate before labeling an outcome passed.
 
-There were **465 false acceptances**, 155 in each of three input categories. These expose **two defects**, not three independent bugs:
+Regression commit `422ff1e65ab3927498982b99d3c8d8e5b29f16a3` precedes the repair. Its five tests produced eleven intended failures before the fix and passed after it. They exercise real parsing and caller orchestration with a controlled producer, without executing Gradle.
 
-| Producer report, with exit 0 | Real `run()` output for that case | Real `require_pass()` result |
-| --- | --- | --- |
-| `<failure/>` | `failure: {}`, `skipped: false` | Accepts the falsey dictionary |
-| `<error/>` | `failure: null`, `skipped: false` | Accepts because the error was dropped |
-| `<error type="java.lang.AssertionError"/>` | `failure: null`, `skipped: false` | Same dropped-error defect |
+## Current baseline and mutation proof
 
-Each shortest counterexample has one `mergedLabelAndUnmergedChild` test. For example:
-
-```xml
-<testsuite><testcase name="mergedLabelAndUnmergedChild" classname="fixture.FixtureUiTest"><failure /></testcase></testsuite>
-```
-
-Sequence in code terms: the controlled producer writes this XML and returns 0; `run()` parses the failure element's empty attributes; `require_pass()` tests dictionary truthiness and returns normally. No method list is needed for the counterexample; matching requested names also do not repair the outcome check.
-
-**Reachability qualification:** exits and reports are varied independently. The check does not demonstrate the pinned Gradle runner producing exit 0 for a failed/errored test. With nonzero exit, current `require_pass()` rejects these reports. These are boundary robustness findings and do not establish that previous real JVM runs were false positives. Fixes were not applied to the existing harness or product.
-
-## Real-source mutation and restoration proof
-
-Followed the generated skill using:
+Executed 2026-11-16 against the committed repair and refreshed sync record.
 
 ```bash
 uv run --python 3.12.14 --no-project .pi/skills/verify-junit-evidence/check.py --self-test
+uv run --python 3.12.14 --no-project python scripts/test_junit_acceptance.py
 ```
 
-This executed six complete checks: current baseline, four separately broken copies of the real source, and restored source. Each check made 16,008 decisions: **96,048 total**. The modifications were made in disposable copies of `scripts/verify_fixture.py`, not in a hand-written model or the canonical checkout.
+The checker exited **0**. Both baseline and restored source passed all 16,008 decisions with no mismatches. Each scratch variant modifies a disposable copy of the real source and must introduce a category absent from baseline.
 
-| Real-code scratch change | New shortest counterexample | Detected independently of known findings |
-| --- | --- | --- |
-| Remove `result["exit"] == 0` guard | Producer exit 1; one passing test is accepted | `process-exit` |
-| Remove `not case["skipped"]` guard | Producer exit 0; one `<skipped/>` test is accepted | `skipped` |
-| Remove `not case["failure"]` guard | Producer exit 0; one typed `<failure>` is accepted | `failure-typed` |
-| Replace expected-method comparison with `True` | Producer exit 0; one passing test is accepted despite an empty requested method list | `method-multiset` |
+| Scratch change | Required observed category |
+| --- | --- |
+| Remove exit guard | `process-exit` |
+| Remove skip guard | `skipped` |
+| Remove failure guard | `failure-typed` |
+| Restore falsey failure handling | `failure-empty` |
+| Remove error guard | `error-empty` |
+| Remove method comparison | `method-multiset` |
 
-All four new categories were absent from baseline and present in their assigned mutation. Existing failures therefore could not masquerade as successful mutation detection. The complete mutated sources and result summaries are archived in the raw run directory.
-
-After dropping the scratch changes, the restored source had SHA-256 `7019e9dceb5926a4d2f2be9d8cccd693a1ac5b2aae39636e984d4fd2cc5df629`, matching baseline and the unchanged canonical source. The restored check reproduced exactly the baseline categories, counts, inputs, and decisions: 155 mismatches in each of the same three categories. It printed:
+All six variants failed as required. The two new regression controls cover the repaired presence and error defects without changing the generator or oracle. The restored source SHA-256, `8ade644edc2e389544970525b2cadab46a483e89beb6ca912f284ee6a19d87ea`, matches the original current-source snapshot and canonical source. The final summary was:
 
 ```text
-PASS self-test: four real-source scratch mutations caught; baseline restored
+PASS baseline: 16008 decisions; mismatch categories=none
+PASS restored: 16008 decisions; mismatch categories=none
+PASS self-test: 6 real-source scratch mutations caught; baseline restored
 ```
 
-The command correctly still exited **1** because the baseline property remains violated. Self-test status in `self-test.json` is `PASS`; property status in baseline and restored JSON is `FAIL`.
+Raw handoff artifacts are at `.work/verify-junit-evidence.ypc5hry8/` on the verification host. They include source snapshots, every mutant source, baseline and restored JSON, mutant results, and `self-test.json`. The transient producer workspaces were removed. The portable current JSON omits transient command paths but retains the inputs, XML, parsed outcomes, decisions, counts, and hashes.
 
-## Artifact locations
+The local decision trail is `.work/junit-fix/decisions.tsv`. Reproduction and caller-regression logs are beside it. These ignored host paths are historical artifacts, not rerun prerequisites.
 
-Portable evidence is [evidence/results.json](evidence/results.json). Raw final handoff artifacts on the verification host are at:
+## Real JVM compatibility check
 
-```text
-/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices/.work/verify-junit-evidence.ewr7yfz4/
-```
+A separate fresh disposable workspace ran the existing `verify-compose-robolectric` launch, doctor, and drive workflow with the repaired scripts. These runs used real Gradle and Robolectric, not the controlled producer. Doctor passed before every drive and after the final drive.
 
-That directory contains baseline and restored results, all four mutation results, each mutated source, original/restored source snapshots, and `self-test.json`. The shorter initial baseline is in `.work/verify-junit-evidence.74rbn18a/`. These `.work` paths are ignored historical artifacts, not prerequisites for rerunning. The transient producer workspaces were removed; shortest XML and parsed outputs are retained in JSON. No existing fixture evidence was overwritten.
+| Journey | Observed result |
+| --- | --- |
+| `mutations` | Eight-test initial and final baselines passed. All three named UI regressions failed with AssertionError. Restorations and other isolated methods passed. |
+| `writing` | Saved scoped Draft Open test passed, rejected wrong item, and passed restoration. |
+| `review` | Both saved tests passed, rejected wrong item and no-op Send, and passed restorations. |
+| `debugging` | Saved unmerged-child label assertion passed, rejected changed text, and passed restoration. |
+| `setup` | Enabled and restored resource runs passed. Disabled resources reached JUnit and failed with the expected activity-resolution RuntimeException. The comparison recorded failed. |
 
-## Limits and review
+All five outer journeys exited 0. Fresh results contained the new `error` field. Passing and restored runs had no failures, errors, or skips. Behavioral negative controls had the intended named AssertionError, rather than compile or setup failures.
 
-The checker verifies the real parsing/acceptance path within its finite input space, not Gradle itself. It uses `run(method=None)`; the controlled producer does not interpret command arguments. It does not verify Gradle command construction, optional `--tests` filtering, reachability of the independently generated exit/report pairs, or actual Kotlin/Compose behavior. Cleanup executes but is not independently certified. There is no claim about missing or malformed XML, nested suites, arbitrary metadata, multiple terminal elements, class identity, more than two cases, concurrent writers, or optimized Python.
+The complete host artifacts and source snapshots remain at `.work/verify-compose-robolectric.lnwiLr/evidence/`, including `proof.md`. A structured inspection summary is `.work/junit-fix/jvm-summary.json`. Cleanup removed only the owned disposable project after the jobs exited. These are host artifact paths, not prerequisites for running the skill.
 
-A separate read-only review confirmed the finite-domain count, real-function execution, independent oracle, and new-category mutation detection. It requested explicit producer-reachability and command/filtering/cleanup exclusions; those are recorded here and in the skill. That reviewer reran the checker with only its output root redirected to sandbox scratch because its read-only sandbox could not create `.work`. The handoff run above used the documented command without redirection.
+The installed skill's Kotlin examples and saved responses were unchanged. These JVM runs are compatibility evidence for the exercised methods, not proof that every report shape or device behavior is correct. Saved-output replay does not certify fresh agent activation or automatic discovery. Archive Open and blank-message disabled-state paths remain known fixture coverage gaps.
 
-No Android/JVM tests were run for this change; no shipped guidance, Kotlin source, build file, or existing harness was modified. Use `/skill:verify-compose-robolectric` when evidence from actual Compose tests is needed.
+## Limits
+
+The bounded check does not verify actual Gradle report consistency, command construction, the optional `--tests` branch, Kotlin or Compose behavior, or device behavior. Cleanup executes but is not independently certified. The generator does not cover arbitrary XML, missing reports, nested suites, malformed input, multiple terminal elements per case, arbitrary names or metadata, more than two cases, concurrent writers, class identity, or optimized Python.
+
+The separate caller regression tests cover mixed outcomes outside that formal domain. Their passes do not expand the bounded check's claims. The acceptance promise and bounds did not change; the original failures were bugs in the code, not drift in the oracle. Only real-source mutation anchors needed maintenance after the new guards changed shape.

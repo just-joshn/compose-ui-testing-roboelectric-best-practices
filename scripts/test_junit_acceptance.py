@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Regressions for JUnit acceptance and mutation evidence without Gradle."""
 
 from contextlib import ExitStack
 from pathlib import Path

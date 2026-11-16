@@ -20,7 +20,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT / "scripts/verify_fixture.py"
-SYNC_COMMIT = "52f0a0cec60527544bd3b4bfb86128e6a873b9c0"
+SYNC_COMMIT = "6fefcb5decac7f24fe81fa415b0194082043c10d"
 METHODS = ("mergedLabelAndUnmergedChild", "scopedOpenSelectsDraft")
 NAMES = METHODS + ("unexpectedTest",)
 STATUSES = ("pass", "failure-empty", "failure-typed", "error-empty", "error-typed", "skipped")
