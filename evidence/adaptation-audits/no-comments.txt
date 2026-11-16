@@ -1,0 +1,8 @@
+No findings.
+
+Checked new comments in `scripts/check_skill.py` and `scripts/test_check_skill.py`, fenced examples in all 58 category guides, and both specified adaptation-probe files.
+
+- Files touched: none.
+- Comment deletions: 0.
+- `MUST KILL` flags: none.
+- Excluded as requested: unchanged canonical examples, the Docker syntax directive, and external notices.

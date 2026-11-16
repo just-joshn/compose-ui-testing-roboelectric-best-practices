@@ -2,7 +2,11 @@
 
 An installable agent skill for writing, reviewing, and debugging Kotlin Jetpack Compose UI tests that run locally on the JVM with Robolectric.
 
-The skill routes each activity to focused guidance on setup, semantics, observable behavior, synchronization, isolation, and diagnosis. Its Kotlin examples compile and run in a small Android library fixture. It does not include screenshot tooling, CI-provider catalogs, or an application framework.
+A complete topic-by-topic adaptation of [Currents' Playwright best-practices skill](https://github.com/currents-dev/playwright-best-practices-skill), specifically for Android Compose UI testing with Robolectric. It preserves grouped activity tables, a quick decision tree, focused topic guides, worked examples, troubleshooting, and a run/debug validation loop.
+
+The library maps all 58 upstream topic guides at a pinned revision to Android-native guidance. It covers core testing, architecture, advanced scenarios, Android services, Compose integrations, testing patterns, debugging, and CI. Browser-specific mechanisms become useful Android workflows with explicit integration or device handoffs, not renamed browser APIs.
+
+The canonical Kotlin example files compile and run in a small Android library fixture. Other guide snippets are illustrative unless an execution result says otherwise. The package does not install screenshot tooling, CI integrations, Android dependencies, or an application framework.
 
 ## Install the skill
 
@@ -46,7 +50,17 @@ Ask your agent to write a Compose UI test, review an unreliable Robolectric test
 /skill:compose-ui-testing-robolectric-best-practices
 ```
 
-Start at [SKILL.md](compose-ui-testing-robolectric-best-practices/SKILL.md). It links to references by activity. The [evidence reference](compose-ui-testing-robolectric-best-practices/references/evidence.md) states documentation boundaries and device limitations.
+Start at [SKILL.md](compose-ui-testing-robolectric-best-practices/SKILL.md). Choose an activity row and read its linked guides. Use the quick decision tree when you already know the symptom. The seven foundation references remain stable entry points for existing writing, review, and debugging workflows.
+
+Example requests:
+
+- Write a local Compose test that selects the correct Open button when several rows share that label.
+- Review a Robolectric test that sleeps after a click and checks only that a node exists.
+- Diagnose a child that appears in the unmerged semantics tree but not the merged tree.
+- Test a login challenge, a partial GraphQL response, or an incoming StateFlow update using a controlled boundary.
+- Configure an Android JVM CI job that retains named JUnit results and fails when no tests run.
+
+The [adaptation map](compose-ui-testing-robolectric-best-practices/adaptation-map.json) records every source topic, target guide, treatment, rationale, source hash, and source section inventory. [The comparison report](https://github.com/just-joshn/compose-ui-testing-robolectric-best-practices-skill/blob/main/evidence/reference-inspection.md) explains domain replacements and fidelity checks. The [evidence reference](compose-ui-testing-robolectric-best-practices/references/evidence.md) states documentation boundaries and device limitations.
 
 ## Run the validation fixture
 
@@ -72,9 +86,14 @@ python3 scripts/test_check_skill.py
 python3 scripts/verify_fixture.py
 python3 scripts/compare_setup.py
 python3 scripts/verify_agent_outputs.py
+python3 scripts/verify_agent_outputs.py --responses evidence/adaptation-agent-responses
 ```
 
+`check_skill.py` validates the complete pinned topic inventory, direct entry routes, local links, legal files, and portable copied package. These checks establish structure, not topic depth or snippet correctness. `test_check_skill.py` checks rejection of deliberately damaged packages.
+
 `verify_fixture.py` builds a disposable project copy, runs the suite, and checks three UI mutations against named test assertions. It restores each mutation and reruns the baseline. `compare_setup.py` changes only Android-resource inclusion in another copy. Neither script edits the canonical example sources. `verify_agent_outputs.py` compiles the saved writing, review, and debugging responses against the UI and checks their assigned mutations. It can also accept new responses through `--responses path/to/responses`.
+
+The final command replays fresh writing, review, and debugging responses from the complete adaptation. It is separate from the earlier saved-response corpus. Read [the adaptation verification report](https://github.com/just-joshn/compose-ui-testing-roboelectric-best-practices-skill/blob/main/evidence/adaptation-report.md) for source audits, focused example tests, mutation controls, explicit skill invocation, and remaining limits.
 
 Run one method when diagnosing a failure:
 
@@ -89,6 +108,8 @@ The canonical sources are [FixtureUi.kt](compose-ui-testing-robolectric-best-pra
 Gradle's normal reports are under `fixture/build/reports/tests/testDebugUnitTest/`. Verification scripts retain logs, result summaries, and JUnit XML under `.work/fixture-results/`. That directory is ignored by Git.
 
 ## Evidence and limitations
+
+[The complete adaptation report](https://github.com/just-joshn/compose-ui-testing-roboelectric-best-practices-skill/blob/main/evidence/adaptation-report.md) records this refactor's verification. The original report below covers the canonical fixture and initial skill version.
 
 Read [the evidence report](https://github.com/just-joshn/compose-ui-testing-roboelectric-best-practices-skill/blob/main/evidence/report.md) for the tested versions, actual results, reproduction commands, and remaining limits. [Reference inspection](https://github.com/just-joshn/compose-ui-testing-roboelectric-best-practices-skill/blob/main/evidence/reference-inspection.md) explains what was preserved from the Playwright skill. [The design decision](https://github.com/just-joshn/compose-ui-testing-roboelectric-best-practices-skill/blob/main/evidence/design.md) explains the fixture's small shape. [The agent-task contract](https://github.com/just-joshn/compose-ui-testing-roboelectric-best-practices-skill/blob/main/evidence/agent-task-contract.md) defines writing, review, and debugging acceptance.
 
@@ -115,6 +136,6 @@ For a release, complete this checklist:
 
 ## License and attribution
 
-Original content is [MIT licensed](LICENSE). The skill's packaging and routing design is informed by [Currents' Playwright skill](https://github.com/currents-dev/playwright-best-practices-skill). Its [attribution and MIT notice](compose-ui-testing-robolectric-best-practices/ATTRIBUTION.md) ship inside the installable directory. Browser examples are not copied.
+Original content is [MIT licensed](LICENSE). The skill's packaging and routing design is informed by [Currents' Playwright skill](https://github.com/currents-dev/playwright-best-practices-skill). Its [attribution and MIT notice](compose-ui-testing-robolectric-best-practices/ATTRIBUTION.md) ship inside the installable directory. The topic plan and testing concerns are adapted. Browser example code is not copied.
 
 The Gradle wrapper includes its own license. Gradle distribution [license](https://github.com/just-joshn/compose-ui-testing-roboelectric-best-practices-skill/blob/main/licenses/gradle-LICENSE.txt) and [notice](https://github.com/just-joshn/compose-ui-testing-roboelectric-best-practices-skill/blob/main/licenses/gradle-NOTICE.txt) are retained separately from the original-content MIT license.

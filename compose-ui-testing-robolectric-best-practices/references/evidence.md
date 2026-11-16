@@ -1,5 +1,11 @@
 # Evidence and limits
 
+## Expanded library and proof boundaries
+
+The topic library now maps all 58 source guides through the installed [adaptation map](../adaptation-map.json). Each record preserves the source hash and section inventory for comparison. Structural validation checks inventory, routes, links, and packaging. It does not establish comparable topic depth or execute illustrative snippets.
+
+Read [test architecture](../architecture/test-architecture.md) to choose the test layer. Read [reporting](../infrastructure-ci-cd/reporting.md) for result acceptance, [visual regression](../testing-patterns/visual-regression.md) for renderer-specific screenshot evidence, and [performance testing](../testing-patterns/performance-testing.md) for device measurement boundaries. The historical executable observations below apply only to the canonical fixture, not to every new example.
+
 Sources were consulted on 2026-11-16. Documentation describes contracts. Executable observations establish only the pinned fixture and commands recorded in the repository's evidence report. Neither establishes device fidelity or a general compatibility range.
 
 ## Primary sources
@@ -40,6 +46,8 @@ Current online examples can include 1.13-only configuration and main-thread sync
 Executed on macOS arm64 with JDK 17.0.21.0.3, Gradle 9.4.1, AGP 9.2.0, AGP built-in Kotlin and Compose compiler plugin 2.2.10, stable Compose BOM 2026.09.00, UI testing 1.12.1, Material3 1.4.0, Robolectric 4.18, and JUnit 4.13.2. Compile SDK is 37. Runtime SDK is 35 with PAUSED looper. This is one tested combination, not a compatibility range.
 
 Eight fixture tests passed without skips. Three compiled UI mutations failed the intended assertions, then passed after restoration. Excluding Android resources broke default activity resolution. Restoring resources restored the pass. The v1/v2 probe observed different callback ordering. It did not measure performance.
+
+A separate clearing-semantics probe also ran on Compose UI 1.12.1 and Robolectric 4.18. Its one named test passed without skips. The merged tree exposed the replacement description and hid the child. The unmerged tree exposed that same child's original text. This corrects the earlier guidance that unmerged queries could never inspect descendants under `clearAndSetSemantics`. The probe is retained with its JUnit XML in the repository's adaptation evidence, outside the canonical eight-test fixture inventory. It does not establish accessibility-service exposure.
 
 The repository evidence report records commands, named tests, source provenance, and agent-task outcomes. The canonical Kotlin examples are compiled as the Android library fixture's test source set. Do not infer that an unrun code fragment has been validated merely because it resembles those examples.
 

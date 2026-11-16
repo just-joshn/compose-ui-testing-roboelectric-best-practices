@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="CsvExportOperationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-16T21:01:38.763Z" hostname="mac-mini.local" time="0.009">
+  <properties/>
+  <testcase name="emptyExportStillProducesHeader" classname="CsvExportOperationTest" time="0.005"/>
+  <testcase name="unsupportedFieldsAreRejectedBeforeDestinationOpens" classname="CsvExportOperationTest" time="0.003"/>
+  <testcase name="exportProducesOrderedUtf8Records" classname="CsvExportOperationTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

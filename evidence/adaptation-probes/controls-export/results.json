@@ -1,0 +1,186 @@
+[
+  {
+    "name": "baseline",
+    "command": [
+      "./gradlew",
+      ":fixture:testDebugUnitTest",
+      "--console=plain",
+      "--no-daemon",
+      "--offline",
+      "--rerun-tasks"
+    ],
+    "exit": 0,
+    "cases": [
+      {
+        "name": "selectionsSurviveBackAndReachBookingCallback",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "emptyExportStillProducesHeader",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "unsupportedFieldsAreRejectedBeforeDestinationOpens",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "exportProducesOrderedUtf8Records",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "pinchOutChangesDisplayedZoom",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "cancellationRetainsLiveZoomAndAllowsAnotherGesture",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      }
+    ]
+  },
+  {
+    "name": "mutation-BookingControlsTest",
+    "command": [
+      "./gradlew",
+      ":fixture:testDebugUnitTest",
+      "--console=plain",
+      "--no-daemon",
+      "--offline",
+      "--rerun-tasks",
+      "--tests",
+      "BookingControlsTest"
+    ],
+    "exit": 1,
+    "cases": [
+      {
+        "name": "selectionsSurviveBackAndReachBookingCallback",
+        "failed": true,
+        "error": false,
+        "skipped": false
+      }
+    ]
+  },
+  {
+    "name": "mutation-PinchZoomTest",
+    "command": [
+      "./gradlew",
+      ":fixture:testDebugUnitTest",
+      "--console=plain",
+      "--no-daemon",
+      "--offline",
+      "--rerun-tasks",
+      "--tests",
+      "PinchZoomTest"
+    ],
+    "exit": 1,
+    "cases": [
+      {
+        "name": "pinchOutChangesDisplayedZoom",
+        "failed": true,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "cancellationRetainsLiveZoomAndAllowsAnotherGesture",
+        "failed": true,
+        "error": false,
+        "skipped": false
+      }
+    ]
+  },
+  {
+    "name": "mutation-CsvExportOperationTest",
+    "command": [
+      "./gradlew",
+      ":fixture:testDebugUnitTest",
+      "--console=plain",
+      "--no-daemon",
+      "--offline",
+      "--rerun-tasks",
+      "--tests",
+      "CsvExportOperationTest"
+    ],
+    "exit": 1,
+    "cases": [
+      {
+        "name": "emptyExportStillProducesHeader",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "unsupportedFieldsAreRejectedBeforeDestinationOpens",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "exportProducesOrderedUtf8Records",
+        "failed": true,
+        "error": false,
+        "skipped": false
+      }
+    ]
+  },
+  {
+    "name": "restored",
+    "command": [
+      "./gradlew",
+      ":fixture:testDebugUnitTest",
+      "--console=plain",
+      "--no-daemon",
+      "--offline",
+      "--rerun-tasks"
+    ],
+    "exit": 0,
+    "cases": [
+      {
+        "name": "selectionsSurviveBackAndReachBookingCallback",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "emptyExportStillProducesHeader",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "unsupportedFieldsAreRejectedBeforeDestinationOpens",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "exportProducesOrderedUtf8Records",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "pinchOutChangesDisplayedZoom",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      },
+      {
+        "name": "cancellationRetainsLiveZoomAndAllowsAnotherGesture",
+        "failed": false,
+        "error": false,
+        "skipped": false
+      }
+    ]
+  }
+]

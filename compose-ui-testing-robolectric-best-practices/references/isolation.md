@@ -1,5 +1,9 @@
 # Isolate mutable state and external work
 
+## Continue with the topic guides
+
+Read [fixtures and hooks](../core/fixtures-hooks.md), [test data](../core/test-data.md), and [when to fake](../architecture/when-to-fake.md) for dependency lifetime and ownership. Use [global setup](../core/global-setup.md) for shared prerequisites and [parallel execution](../infrastructure-ci-cd/parallel-sharding.md) for fork and shard isolation.
+
 ## Use a fresh boundary fake
 
 Fake the boundary that makes a test nondeterministic, such as a sender or repository. Keep Compose runtime, semantics, and interaction APIs real. Do not mock the Compose rule or an Android `Context` that framework code will call.

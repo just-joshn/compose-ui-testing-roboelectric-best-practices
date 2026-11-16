@@ -1,5 +1,9 @@
 # Diagnose the first failing boundary
 
+## Continue with the topic guides
+
+Read [debugging](../debugging/debugging.md) for the full failure-classification workflow and artifact contract. Use [flaky tests](../debugging/flaky-tests.md), [logs and exceptions](../debugging/logs-exceptions.md), and [error testing](../debugging/error-testing.md) for their specific failure classes.
+
 ## Preserve the failure
 
 Run the narrow test with its current dependencies. Save its full exception, the command, and the JUnit report. Distinguish a Gradle configuration failure, Kotlin compilation failure, Robolectric host failure, synchronization timeout, and behavior assertion failure before editing the test.
