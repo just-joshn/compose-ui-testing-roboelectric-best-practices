@@ -1,5 +1,9 @@
 # Test the user's result
 
+## Continue with the topic guides
+
+For a complete writing workflow, read [suite structure](../core/test-suite-structure.md), [assertions and waiting](../core/assertions-waiting.md), and [component testing](../testing-patterns/component-testing.md). Use [forms and validation](../testing-patterns/forms-validation.md) for editable state and [screen robots](../core/screen-robots.md) for repeated interactions. This foundation remains the stable writing and review entry point.
+
 ## Choose the claim first
 
 Name the behavior before writing the finder. "Submitting a message displays the returned receipt" is stronger than "Send exists". "Opening the draft leaves the archive unchanged" specifies which repeated action matters.

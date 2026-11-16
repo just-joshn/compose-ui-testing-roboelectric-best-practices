@@ -4,8 +4,8 @@ A user installs the named skill with its references/examples/licenses intact, th
 
 ## Sub-features
 
-- `package-copy`: frontmatter, all seven routed references, local links, Kotlin examples, and license/attribution files survive copying.
-- `package-reject`: deliberately broken packages fail validation.
+- `package-copy`: frontmatter, all seven foundation references, all 58 mapped topic guides, direct routes, local links and fragments, Kotlin examples, and license/attribution files survive copying.
+- `package-reject`: deliberately broken packages fail validation, including missing map records, unknown sources, unsafe or unrouted targets, orphan guides, and broken fragments.
 - `setup-host`: resource-enabled tests can start the hosted Compose UI.
 - `setup-compare`: observe what changes when only Android resource inclusion is disabled.
 

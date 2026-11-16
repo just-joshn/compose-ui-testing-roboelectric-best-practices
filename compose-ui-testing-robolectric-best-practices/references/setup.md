@@ -1,5 +1,9 @@
 # Set up an Android local Compose test
 
+## Continue with the topic guides
+
+Read [configuration](../core/configuration.md) for complete Gradle and hosted-test setup. Use [modules and variants](../core/modules-variants.md) for source sets and test dependencies. Use [CI/CD](../infrastructure-ci-cd/ci-cd.md) when reproducing the same task on a build worker. Preserve the version-sensitive facts below when adapting those examples.
+
 ## Inspect before changing dependencies
 
 Use the project's Android Gradle module, not a Kotlin/JVM-only module or Compose Desktop. Put Robolectric UI tests in `src/test`, use `testImplementation`, and run the local-unit-test task. `src/androidTest` and `connected...AndroidTest` target a device or emulator instead.

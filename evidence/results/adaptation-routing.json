@@ -1,0 +1,31 @@
+[
+  {
+    "case": "writing",
+    "references_read": [
+      "SKILL.md",
+      "references/behavior.md",
+      "references/semantics.md"
+    ],
+    "missing": []
+  },
+  {
+    "case": "review",
+    "references_read": [
+      "SKILL.md",
+      "references/behavior.md",
+      "references/isolation.md",
+      "references/semantics.md",
+      "references/synchronization.md"
+    ],
+    "missing": []
+  },
+  {
+    "case": "debugging",
+    "references_read": [
+      "SKILL.md",
+      "references/diagnostics.md",
+      "references/semantics.md"
+    ],
+    "missing": []
+  }
+]

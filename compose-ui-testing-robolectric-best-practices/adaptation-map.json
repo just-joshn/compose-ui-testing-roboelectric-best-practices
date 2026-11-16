@@ -1,0 +1,1090 @@
+{
+  "upstream": "https://github.com/currents-dev/playwright-best-practices-skill",
+  "commit": "0b75b5835a87de1fdd202ba965f3bc5a27738fdf",
+  "topics": [
+    {
+      "source": "advanced/authentication-flows.md",
+      "source_sha256": "b6549421bf78de9304638480ee3e9eb8f65031ea2fba54aa7c69be7afb7001a0",
+      "target": "advanced/authentication-flows.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Drive login, challenge, reset, expiry, cancellation, and external auth results through explicit boundaries.",
+      "source_sections": [
+        "Table of Contents",
+        "Email Verification Flows",
+        "Password Reset",
+        "Session Timeout",
+        "Remember Me Persistence",
+        "Logout Patterns",
+        "Tips",
+        "Related"
+      ]
+    },
+    {
+      "source": "advanced/authentication.md",
+      "source_sha256": "6465187396485114240ea8c7a90fe72d88fbcc9cbd57924dd9bf2ec45019ceba",
+      "target": "advanced/authentication.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Control session-dependent client UI with isolated auth fakes and separate backend authorization evidence.",
+      "source_sections": [
+        "Table of Contents",
+        "Quick Reference",
+        "Patterns",
+        "Decision Guide",
+        "Anti-Patterns",
+        "Troubleshooting",
+        "Related"
+      ]
+    },
+    {
+      "source": "advanced/clock-mocking.md",
+      "source_sha256": "de7e78df2f8576e4e1ffe0a4993b8d5832cbbd63477daf511837872cd89afd9c",
+      "target": "advanced/clock-control.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Separate Compose frame time, coroutine time, Android loopers, and injected business time.",
+      "source_sections": [
+        "Table of Contents",
+        "Clock API Basics",
+        "Fixed Time Testing",
+        "Time Advancement",
+        "Timezone Testing",
+        "Timer Mocking",
+        "Best Practices",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "advanced/mobile-testing.md",
+      "source_sha256": "90c5d38470751db11359237ac4aabe063ed7737f60a6431bc90bd5f5103d5618",
+      "target": "advanced/adaptive-layouts.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Test configuration and adaptive UI inputs locally without claiming device or hardware emulation.",
+      "source_sections": [
+        "Table of Contents",
+        "Device Emulation",
+        "Touch Gestures",
+        "Viewport Testing",
+        "Mobile-Specific UI",
+        "Responsive Breakpoints",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "advanced/multi-context.md",
+      "source_sha256": "abe87f8f8d49fbf4b7a240105a51db7cbcd5622c86a8df31f481450903da4be2",
+      "target": "advanced/multiple-roots.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Test dialogs, popups, multiple semantics roots, and host lifetimes rather than browser contexts.",
+      "source_sections": [
+        "Table of Contents",
+        "Popup Handling",
+        "New Tab Navigation",
+        "OAuth Flows",
+        "Multiple Windows",
+        "Tab Coordination",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "advanced/multi-user.md",
+      "source_sha256": "fe102fd66a7c3f866dd6fe3fba638c71f9690971676ee2244f1cb43b53d07417",
+      "target": "advanced/multi-user.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Model isolated users, role-dependent UI, deterministic remote events, and conflict outcomes.",
+      "source_sections": [
+        "Table of Contents",
+        "Multiple Browser Contexts",
+        "Real-Time Collaboration",
+        "Role-Based Testing",
+        "Concurrent Actions",
+        "Chat & Messaging",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "advanced/network-advanced.md",
+      "source_sha256": "7412b98d475ab60e8416963580062bd8c668d4afe40843008ff217004748ca56",
+      "target": "advanced/network-fakes.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Control repository outcomes and transport adapters without mistaking fake responses for network evidence.",
+      "source_sections": [
+        "Table of Contents",
+        "Request Modification",
+        "GraphQL Mocking",
+        "HAR Recording & Playback",
+        "Conditional Mocking",
+        "Network Throttling",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "advanced/third-party.md",
+      "source_sha256": "d9d07130ecb13e5e2548a59f9ed1fd76dfc58426fd5ab3de3d4589c8567313ee",
+      "target": "advanced/third-party.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Test client behavior at payment, messaging, and identity SDK boundaries, then hand off provider proof.",
+      "source_sections": [
+        "Table of Contents",
+        "OAuth/SSO Mocking",
+        "Payment Gateway Mocking",
+        "Email Verification",
+        "SMS Verification",
+        "Analytics & Tracking",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "architecture/pom-vs-fixtures.md",
+      "source_sha256": "6619745a7ddad8c3734433325b9a09825a539a695f532aeea62e112fd8d74699",
+      "target": "architecture/robots-vs-fixtures.md",
+      "disposition": "reframed",
+      "treatment": "adapt",
+      "rationale": "Choose direct interactions, robots, data fixtures, and lifecycle rules according to distinct ownership.",
+      "source_sections": [
+        "Table of Contents",
+        "Pattern Comparison",
+        "Selection Flowchart",
+        "Page Objects",
+        "Custom Fixtures",
+        "Helper Functions",
+        "Combined Project Structure",
+        "Anti-Patterns"
+      ]
+    },
+    {
+      "source": "architecture/test-architecture.md",
+      "source_sha256": "9f3b7e45ecbc3cadf21aaaaf3e0ce8feb0bd0a8b110f46fff1285b614f770ba2",
+      "target": "architecture/test-architecture.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Choose pure logic, hosted JVM UI, transport integration, and device tests by the claim being proved.",
+      "source_sections": [
+        "Table of Contents",
+        "Decision Matrix",
+        "API Tests",
+        "Component Tests",
+        "E2E Tests",
+        "Layering Test Types",
+        "Common Mistakes",
+        "Related"
+      ]
+    },
+    {
+      "source": "architecture/when-to-mock.md",
+      "source_sha256": "919f5b8c07a477b446988734809f109a404d008e9a4bfd7744bd0d521693f84f",
+      "target": "architecture/when-to-fake.md",
+      "disposition": "reframed",
+      "treatment": "adapt",
+      "rationale": "Keep the real Compose runtime and fake the smallest nondeterministic dependency with a checked contract.",
+      "source_sections": [
+        "Table of Contents",
+        "Core Principle",
+        "Decision Matrix",
+        "Decision Flowchart",
+        "Mocking Techniques",
+        "Real Service Strategies",
+        "Hybrid Approach: Fixture-Based Mock Control",
+        "Validating Mock Accuracy",
+        "Anti-Patterns"
+      ]
+    },
+    {
+      "source": "browser-apis/browser-apis.md",
+      "source_sha256": "1e671ef5a56c715af6899ca699da60b139a3f7831df53c9e72ededdff3165c48",
+      "target": "android-apis/system-services.md",
+      "disposition": "reframed",
+      "treatment": "boundary",
+      "rationale": "Replace browser capability mocks with Android service adapters and explicit permission or hardware handoffs.",
+      "source_sections": [
+        "Table of Contents",
+        "Geolocation",
+        "Permissions",
+        "Clipboard",
+        "Notifications",
+        "Camera & Microphone",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "browser-apis/iframes.md",
+      "source_sha256": "1cf746991a1431a5f1b42ce6dc89530d534a1d04d302c8bf2211130a4e3bb817",
+      "target": "android-apis/view-interop.md",
+      "disposition": "reframed",
+      "treatment": "boundary",
+      "rationale": "Test Android View and embedded web boundaries without claiming Compose semantics traverses a WebView DOM.",
+      "source_sections": [
+        "Table of Contents",
+        "Basic iFrame Access",
+        "Cross-Origin iFrames",
+        "Nested iFrames",
+        "Dynamic iFrames",
+        "iFrame Navigation",
+        "Common Patterns",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "browser-apis/service-workers.md",
+      "source_sha256": "b6f84ae190977adfcc2752134bd74db98a176a001295a2bf8737e71d68bc79fa",
+      "target": "android-apis/background-work.md",
+      "disposition": "reframed",
+      "treatment": "boundary",
+      "rationale": "Test offline cache and background-state UI; Android worker and real scheduling integration are separate.",
+      "source_sections": [
+        "Table of Contents",
+        "Service Worker Basics",
+        "Registration & Lifecycle",
+        "Cache Testing",
+        "Offline Testing",
+        "Push Notifications",
+        "Background Sync",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "browser-apis/websockets.md",
+      "source_sha256": "9da70c7bc570038ec488f9e07dfb565e0ab249eec32c1ea2944b0550cc35cd7e",
+      "target": "android-apis/reactive-streams.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Deliver controlled reactive events into Compose and separately verify the actual connection protocol.",
+      "source_sections": [
+        "Table of Contents",
+        "WebSocket Basics",
+        "Mocking WebSocket Messages",
+        "Testing Real-Time Features",
+        "Server-Sent Events",
+        "Reconnection Testing",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/annotations.md",
+      "source_sha256": "f1aac6ca31db4b485a55b80fb69073ba5bb3a994c14868f25d87056e6bebbab6",
+      "target": "core/annotations.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Replace Playwright annotations and steps with explicit JUnit4 execution, assumptions, rules, and actionable quarantine policy.",
+      "source_sections": [
+        "Table of Contents",
+        "Skip Annotations",
+        "Fixme & Fail Annotations",
+        "Slow Tests",
+        "Test Steps",
+        "Custom Annotations",
+        "Conditional Annotations",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/assertions-waiting.md",
+      "source_sha256": "b7f88ef134d119df5afa6f95995e735277e9b65ce6a142b0fcffdbd5c78e05dc",
+      "target": "core/assertions-waiting.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Assert observable Compose state and distinguish synchronization from polling external business conditions.",
+      "source_sections": [
+        "Table of Contents",
+        "Web-First Assertions",
+        "Generic Assertions",
+        "Soft Assertions",
+        "Waiting Strategies",
+        "Polling & Retrying",
+        "Custom Matchers",
+        "Timeouts",
+        "Best Practices",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/configuration.md",
+      "source_sha256": "5a0c7f17ab89f4ad0f4c8a88a88ba71f377685683534bcc51989219eaef4965d",
+      "target": "core/configuration.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Configure Android local source sets, hosted Compose rules, resources, runtime SDK, JDK, and aligned dependencies.",
+      "source_sections": [
+        "Table of Contents",
+        "CLI Quick Reference",
+        "Decision Guide",
+        "Production-Ready Config",
+        "Patterns",
+        "Anti-Patterns",
+        "Troubleshooting",
+        "Related"
+      ]
+    },
+    {
+      "source": "core/fixtures-hooks.md",
+      "source_sha256": "47505216ec96779093666b36e1ce27715a97c5b4433637e342467423929c80f3",
+      "target": "core/fixtures-hooks.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Use per-test rules, lifecycle ownership, fresh dependencies, and failure-safe cleanup instead of browser fixtures.",
+      "source_sections": [
+        "Table of Contents",
+        "Built-in Fixtures",
+        "Custom Fixtures",
+        "Fixture Scopes",
+        "Hooks",
+        "Authentication Patterns",
+        "Database Fixtures",
+        "Fixture Tips",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/global-setup.md",
+      "source_sha256": "f876da5dbbff16e0a2c59d67201e5b176975b994d5170ebc2b6c8d40d47f1a2c",
+      "target": "core/global-setup.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Separate immutable build prerequisites from per-test application and dependency setup without ordered tests.",
+      "source_sections": [
+        "Table of Contents",
+        "Global Setup",
+        "Global Teardown",
+        "Database Patterns",
+        "Environment Provisioning",
+        "Setup Projects vs Global Setup",
+        "Parallel Execution Caveats",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/locators.md",
+      "source_sha256": "9f0c0c7238e870e642f6f1d6c1fb15b209added3f1bff3d026a614e057e37922",
+      "target": "core/semantics-selectors.md",
+      "disposition": "reframed",
+      "treatment": "adapt",
+      "rationale": "Use semantics identity, cardinality, tree merging, and lazy composition instead of DOM locator assumptions.",
+      "source_sections": [
+        "Table of Contents",
+        "Priority Order",
+        "User-Facing Locators",
+        "Filtering & Chaining",
+        "Dynamic Content",
+        "Shadow DOM",
+        "Iframes",
+        "Debugging Locators",
+        "Common Issues & Solutions",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/page-object-model.md",
+      "source_sha256": "b1ceaba7a8ce019f4ec4bfe41b9c94b452ae93f87312a78c0ae71b4e1787357e",
+      "target": "core/screen-robots.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Use small semantics-driven screen robots with explicit assertions and lifecycle supplied by the test.",
+      "source_sections": [
+        "Table of Contents",
+        "Overview",
+        "Basic Structure",
+        "Component Objects",
+        "Composition Patterns",
+        "Factory Functions",
+        "Best Practices",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/projects-dependencies.md",
+      "source_sha256": "d04ec97f78e1d4767c1ae20fdeab8f4407f574d182c3a313fb43a26146b05f19",
+      "target": "core/modules-variants.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Represent prerequisites through Gradle modules, variants, source sets, and task dependencies.",
+      "source_sections": [
+        "Table of Contents",
+        "Project Configuration",
+        "Project Dependencies",
+        "Setup Projects",
+        "Filtering & Running Projects",
+        "Sharing Configuration",
+        "Advanced Patterns",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/test-data.md",
+      "source_sha256": "ee68b72eda12c8b9ed7cb9fcf824c18068466f6978e95dec888703609e7892c9",
+      "target": "core/test-data.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Build deterministic isolated UI state and repository data with meaningful identities and explicit edge cases.",
+      "source_sections": [
+        "Table of Contents",
+        "Factory Pattern",
+        "Faker Integration",
+        "Data-Driven Testing",
+        "Test Data Fixtures",
+        "Database Seeding",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "core/test-suite-structure.md",
+      "source_sha256": "638a72c8d01826a842096ca2a90bd6108d27a31a0d28d209833d14379abac9ee",
+      "target": "core/test-suite-structure.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Organize hosted UI tests around user behaviors, named states, actions, and results.",
+      "source_sections": [
+        "Table of Contents",
+        "Configuration",
+        "E2E Tests",
+        "Component Tests",
+        "API Tests",
+        "Visual Regression Tests",
+        "Directory Structure",
+        "Anti-Patterns to Avoid",
+        "Related References",
+        "Tagging & Filtering"
+      ]
+    },
+    {
+      "source": "core/test-tags.md",
+      "source_sha256": "affc1e8550bfad113557670c97e050864ca5837df4fcebc322dd0b8ac6af5853",
+      "target": "core/test-filtering.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Use JUnit4 and Gradle filtering; distinguish execution categories from Compose semantics test tags.",
+      "source_sections": [
+        "Table of Contents",
+        "Basic Tagging",
+        "Tagging Describe Blocks",
+        "Running Tagged Tests",
+        "Filtering by Tags",
+        "Configuration-Based Filtering",
+        "Tag Organization Patterns",
+        "Common Tag Categories",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "debugging/console-errors.md",
+      "source_sha256": "7332c92af9af3217516d012360621709750c1c191ecd588eaa77ecf1fd3c1450",
+      "target": "debugging/logs-exceptions.md",
+      "disposition": "reframed",
+      "treatment": "adapt",
+      "rationale": "Diagnose Android logs and uncaught background exceptions without swallowing or globally rejecting expected errors.",
+      "source_sections": [
+        "Table of Contents",
+        "Capturing Console Messages",
+        "Failing on Console Errors",
+        "JavaScript Error Detection",
+        "Monitoring Warnings",
+        "Console Fixtures",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "debugging/debugging.md",
+      "source_sha256": "0f59bf5a5c85e286a8001fe3d9f4b00060ff3dbfcce7ac4c2ab985a63e23acdd",
+      "target": "debugging/debugging.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Classify host, compiler, tree, synchronization, and state failures using real logs and named JUnit results.",
+      "source_sections": [
+        "Table of Contents",
+        "Debug Tools",
+        "Trace Viewer",
+        "Identifying Flaky Tests",
+        "Debugging Network Issues",
+        "Debugging in CI",
+        "Debugging Authentication",
+        "Debugging Screenshots",
+        "Common Issues",
+        "Logging",
+        "Troubleshooting Checklist",
+        "Related References"
+      ]
+    },
+    {
+      "source": "debugging/error-testing.md",
+      "source_sha256": "0947dc7975a4236ee44c70197cd1d5b792c4b77b422a44eb7b3b559e8838b6eb",
+      "target": "debugging/error-testing.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Exercise loading, empty, partial, failure, retry, and recovery states through user interactions.",
+      "source_sections": [
+        "Table of Contents",
+        "Error Boundaries",
+        "Network Failures",
+        "Offline Testing",
+        "Loading States",
+        "Form Validation",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "debugging/flaky-tests.md",
+      "source_sha256": "f672744150078f94ca7b15af2fdb2d01dcb0638ba409db28e80d3c37c0c0aea3",
+      "target": "debugging/flaky-tests.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Reproduce races and state leaks, identify the work owner, and verify isolation rather than adding sleeps or retries.",
+      "source_sections": [
+        "Table of Contents",
+        "Understanding Flakiness Types",
+        "Detection and Reproduction",
+        "Root Cause Analysis",
+        "Fixing Strategies by Type",
+        "CI-Specific Flakiness",
+        "Quarantine and Management",
+        "Prevention Strategies",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "frameworks/angular.md",
+      "source_sha256": "4d8800a6ddb8b006801ddd04e7cdc7a6e688fd7a3507ea7c067e995f6dcc09d3",
+      "target": "frameworks/dependency-injection.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Replace framework-specific setup concerns with Android dependency installation, rule ordering, and cleanup.",
+      "source_sections": [
+        "Table of Contents",
+        "Configuration",
+        "Locator Strategies",
+        "Reactive Forms",
+        "Angular Material Components",
+        "Router Navigation",
+        "Lazy-Loaded Modules",
+        "Signals and Observables",
+        "Zone.js and Change Detection",
+        "SSR Testing",
+        "Protractor Migration Reference",
+        "Build Configurations",
+        "CDK Overlay Container",
+        "Anti-Patterns",
+        "Related"
+      ]
+    },
+    {
+      "source": "frameworks/nextjs.md",
+      "source_sha256": "1a6370ebb6f9b871e59027673e641fc968d24943d37ec73caad6e6b8463d7a4b",
+      "target": "frameworks/navigation.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Replace route and loading integration concerns with Navigation Compose, route inputs, and restoration boundaries.",
+      "source_sections": [
+        "Table of Contents",
+        "Setup",
+        "App Router Patterns",
+        "Pages Router Patterns",
+        "Dynamic Routes",
+        "API Routes",
+        "Middleware Testing",
+        "Hydration Testing",
+        "next/image Testing",
+        "NextAuth.js Authentication",
+        "Tips",
+        "Anti-Patterns",
+        "Related"
+      ]
+    },
+    {
+      "source": "frameworks/react.md",
+      "source_sha256": "67f248dfafd356c37354a9bc65c6306e9e48343f983c0352b78ffbc67a7d8391",
+      "target": "frameworks/state-viewmodels.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Replace reactive framework concerns with state hoisting, effects, ViewModels, and StateFlow contracts.",
+      "source_sections": [
+        "Table of Contents",
+        "Patterns",
+        "Setup",
+        "Framework Tips",
+        "Anti-Patterns",
+        "Related"
+      ]
+    },
+    {
+      "source": "frameworks/vue.md",
+      "source_sha256": "b35f8d561dd9b5ebe8b86be7408ff4dbf03e189649714d790943ce763abb6718",
+      "target": "frameworks/design-systems.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Replace component framework concerns with Compose themes, composition locals, and design-system behavior.",
+      "source_sections": [
+        "Table of Contents",
+        "Commands",
+        "Configuration",
+        "Patterns",
+        "Vue vs Nuxt Differences",
+        "Component Testing Dependencies",
+        "Testing v-model",
+        "Capturing Vue Warnings",
+        "Anti-Patterns"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/ci-cd.md",
+      "source_sha256": "a6951b34dbfc4eabaad53cc5ff63edea3ca7eb35c455a1b34a73992e9572757a",
+      "target": "infrastructure-ci-cd/ci-cd.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Run reproducible Android JVM tests in CI with explicit JDK, SDK, dependency, and report contracts.",
+      "source_sections": [
+        "Table of Contents",
+        "GitHub Actions",
+        "Docker",
+        "Reporting",
+        "Sharding",
+        "Environment Management",
+        "Caching",
+        "Tag-Based Test Filtering",
+        "Best Practices",
+        "CI Configuration Reference",
+        "Related References"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/docker.md",
+      "source_sha256": "ba0318c1060fe7d2235899e03ab998e588581becc0da49c3562a78fdd71b6526",
+      "target": "infrastructure-ci-cd/docker.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Run headless Android JVM tests in a JDK and SDK container with writable isolated caches.",
+      "source_sections": [
+        "Table of Contents",
+        "Patterns",
+        "Decision Guide",
+        "Anti-Patterns",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/github-actions.md",
+      "source_sha256": "1f243a1b43c3a25fd29484a3789f65e38a1725588149b88e9996b37e0e7c608f",
+      "target": "infrastructure-ci-cd/github-actions.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Provide an Android local-unit-test workflow with required SDK setup and failure artifacts.",
+      "source_sections": [
+        "Table of Contents",
+        "CLI Commands",
+        "Workflow Patterns",
+        "Scenario Guide",
+        "Common Mistakes",
+        "Troubleshooting",
+        "Related"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/gitlab.md",
+      "source_sha256": "91d73a21bfa8f238a719a04700390f01866f1de9dc70a064e09705ebc60f8b72",
+      "target": "infrastructure-ci-cd/gitlab.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Provide GitLab-native job, cache, artifact, and JUnit handling for Android JVM tests.",
+      "source_sections": [
+        "Table of Contents",
+        "Key Commands",
+        "Patterns",
+        "Decision Guide",
+        "Anti-Patterns",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/other-providers.md",
+      "source_sha256": "1aa071f12da798617f3fd47cd7cb4a961430015f578cc37a0140ee61d17dc604",
+      "target": "infrastructure-ci-cd/other-providers.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Transfer the JDK, SDK, task, exit-status, and artifact contract to other CI providers.",
+      "source_sections": [
+        "Table of Contents",
+        "Common Commands",
+        "Jenkins",
+        "CircleCI",
+        "Azure DevOps",
+        "JUnit Reporter Config",
+        "Platform Comparison",
+        "Troubleshooting",
+        "Anti-Patterns"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/parallel-sharding.md",
+      "source_sha256": "4cd837d732300fbf316e4a7ab8392308c649407dc1726b7b314dea41a5a8c0c9",
+      "target": "infrastructure-ci-cd/parallel-sharding.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Partition Android JVM tests deterministically and verify complete named results without shared mutable state.",
+      "source_sections": [
+        "Table of Contents",
+        "CLI Commands",
+        "Patterns",
+        "Decision Guide",
+        "Anti-Patterns",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/performance.md",
+      "source_sha256": "7db95039e698675ad76594a8c32686b0839146e9df016ff565a3d1bbe3490d31",
+      "target": "infrastructure-ci-cd/performance.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Diagnose build and suite execution costs without confusing them with app runtime performance.",
+      "source_sections": [
+        "Table of Contents",
+        "Parallel Execution",
+        "Sharding",
+        "Test Optimization",
+        "Network Optimization",
+        "Isolation and Parallel Execution",
+        "Resource Management",
+        "Benchmarking",
+        "Performance Checklist",
+        "Related References"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/reporting.md",
+      "source_sha256": "0d0382c048cede55f30526678b35e8d150b36a58a57bf8b8dbcbecb1bf4732e9",
+      "target": "infrastructure-ci-cd/reporting.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Retain named JUnit outcomes, Gradle reports, logs, and semantics diagnostics and reject empty or skipped evidence.",
+      "source_sections": [
+        "Table of Contents",
+        "CLI Commands",
+        "Reporter Configuration",
+        "Custom Reporter",
+        "Trace Configuration",
+        "Screenshot & Video Settings",
+        "Artifact Directory Structure",
+        "CI Artifact Upload",
+        "Decision Guide",
+        "Anti-Patterns",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "source": "infrastructure-ci-cd/test-coverage.md",
+      "source_sha256": "4747ff75c03d83beb3d2bb037c2e6e09d33ce1d99fc680bd307101d149eaa88e",
+      "target": "infrastructure-ci-cd/test-coverage.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Use executable coverage, behavioral case maps, and mutations as distinct evidence instead of trusting a percentage.",
+      "source_sections": [
+        "Table of Contents",
+        "Coverage Setup",
+        "Collecting Coverage",
+        "Coverage Reports",
+        "Coverage Thresholds",
+        "Advanced Patterns",
+        "CI Integration",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/accessibility.md",
+      "source_sha256": "383fd7a58148bb9f6abd69339100115d7e4536efd72683d1fd17c6f3510b0cd7",
+      "target": "testing-patterns/accessibility.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Test meaningful semantics roles, labels, state, and actions while reserving service navigation for a device.",
+      "source_sections": [
+        "Table of Contents",
+        "Axe-Core Integration",
+        "Keyboard Navigation",
+        "ARIA Validation",
+        "Focus Management",
+        "Color & Contrast",
+        "CI Integration",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/api-testing.md",
+      "source_sha256": "b7b94a9015655e4d8f1826b440d5270fc8a7d969466d80aad4e7196faf60079f",
+      "target": "testing-patterns/repository-contracts.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Separate UI behavior against a fake repository from actual request, response, and backend contract verification.",
+      "source_sections": [
+        "Table of Contents",
+        "Patterns",
+        "Decision Guide",
+        "Anti-Patterns",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "source": "testing-patterns/browser-extensions.md",
+      "source_sha256": "94422699a2100d02723ef9f77b81c7704788e41e305a8b5e4eb1a5ffddd64c6d",
+      "target": "testing-patterns/system-surfaces.md",
+      "disposition": "boundary",
+      "treatment": "boundary",
+      "rationale": "Test in-app contracts for external capabilities and hand off widgets, notifications, and browser extensions to their actual hosts.",
+      "source_sections": [
+        "Table of Contents",
+        "Setup & Configuration",
+        "Loading Extensions",
+        "Popup Testing",
+        "Background Script Testing",
+        "Content Script Testing",
+        "Extension APIs",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/canvas-webgl.md",
+      "source_sha256": "39d62688c1e74a2e5af44efa03204be268fb2f4f62661d58aeffedfd3385998f",
+      "target": "testing-patterns/custom-drawing.md",
+      "disposition": "boundary",
+      "treatment": "boundary",
+      "rationale": "Test meaningful semantic data and interactions around custom drawing, then verify pixels or GPU behavior separately.",
+      "source_sections": [
+        "Table of Contents",
+        "Canvas Basics",
+        "Visual Comparison",
+        "Interaction Testing",
+        "WebGL Testing",
+        "Chart Libraries",
+        "Game & Animation Testing",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/component-testing.md",
+      "source_sha256": "f431b5fb2bc381c9bc0fa95c37081950d80ad6ebc415af0d74ba3870f5740e25",
+      "target": "testing-patterns/component-testing.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Mount the real smallest composable with its required theme and controlled state, callbacks, and dependencies.",
+      "source_sections": [
+        "Table of Contents",
+        "Setup & Configuration",
+        "Mounting Components",
+        "Props & State Testing",
+        "Events & Interactions",
+        "Slots & Children",
+        "Mocking Dependencies",
+        "Framework-Specific Patterns",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/drag-drop.md",
+      "source_sha256": "beff965d1de344878f6f10eed0453d82f76e877d470f71232d56da666caf3309",
+      "target": "testing-patterns/gestures.md",
+      "disposition": "reframed",
+      "treatment": "adapt",
+      "rationale": "Drive local touch, scrolling, and drag results while separating cross-app payload and system drag integration.",
+      "source_sections": [
+        "Table of Contents",
+        "Kanban Board (Cross-Column Movement)",
+        "Sortable Lists (Reordering)",
+        "Native HTML5 Drag and Drop",
+        "File Drop Zone",
+        "Canvas Coordinate-Based Dragging",
+        "Custom Drag Preview",
+        "Variations",
+        "Tips"
+      ]
+    },
+    {
+      "source": "testing-patterns/electron.md",
+      "source_sha256": "093d00d665b96befa45d63385f32de34065785ef87f992526a333be91f83478c",
+      "target": "testing-patterns/host-integration.md",
+      "disposition": "boundary",
+      "treatment": "boundary",
+      "rationale": "Separate Android host integration from Electron and Compose Desktop execution, with concrete local and external checks.",
+      "source_sections": [
+        "Table of Contents",
+        "Setup & Configuration",
+        "Launching Electron Apps",
+        "Main Process Testing",
+        "Renderer Process Testing",
+        "IPC Communication",
+        "Native Features",
+        "Packaging & Distribution",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/file-operations.md",
+      "source_sha256": "50f3818af9a2c5a9d1e83c832c7324c7bc94c0c93899c9cedb40d534e4335f60",
+      "target": "testing-patterns/file-operations.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Use owned temporary storage and explicit repository contracts for content, failures, and cleanup.",
+      "source_sections": [
+        "Table of Contents",
+        "File Downloads",
+        "File Uploads",
+        "Drag and Drop",
+        "File Content Verification",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/file-upload-download.md",
+      "source_sha256": "8edc5cdbe6f9706e8f40db070d1d885808b3e95bde4e4a33b614becf74f4b4ca",
+      "target": "testing-patterns/file-transfers.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Test picker and transfer boundaries, progress, cancel, retry, and result UI without claiming real URI grants or transport.",
+      "source_sections": [
+        "Table of Contents",
+        "Downloading Files",
+        "Single File Upload",
+        "Multiple File Upload",
+        "Drag-and-Drop Zones",
+        "File Chooser Dialog",
+        "Upload Progress and Cancellation",
+        "Retry After Failure",
+        "File Type and Size Restrictions",
+        "Image Preview",
+        "Authenticated Downloads",
+        "Tips"
+      ]
+    },
+    {
+      "source": "testing-patterns/forms-validation.md",
+      "source_sha256": "c4bb17882385d0e7f6b4e882675e3fd3596c8af697bab11cbae9001f4a86d168",
+      "target": "testing-patterns/forms-validation.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Drive editable semantics and submission to visible validation and success outcomes.",
+      "source_sections": [
+        "Table of Contents",
+        "Quick Reference",
+        "Patterns",
+        "Decision Guide",
+        "Anti-Patterns",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "source": "testing-patterns/graphql-testing.md",
+      "source_sha256": "9d99910b7c66bf06a178124d8cc8729118ff5dd757ba98f8df9d7161a2a78e5c",
+      "target": "testing-patterns/graphql.md",
+      "disposition": "reframed",
+      "treatment": "reframe",
+      "rationale": "Model operation-aware data, partial errors, pagination, retry, and cancellation, with schema and wire proof outside the UI fake.",
+      "source_sections": [
+        "Table of Contents",
+        "Patterns",
+        "Anti-Patterns",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "source": "testing-patterns/i18n.md",
+      "source_sha256": "348fd0817e83ce9ac1318ad2ff87f9ac5b52de6c21aecdbd99690538214c87f1",
+      "target": "testing-patterns/i18n.md",
+      "disposition": "direct",
+      "treatment": "adapt",
+      "rationale": "Exercise locale resources, plurals, formatting, RTL, and font inputs without relying on unstable translated identity.",
+      "source_sections": [
+        "Table of Contents",
+        "Locale Configuration",
+        "Testing Multiple Locales",
+        "RTL Layout Testing",
+        "Date, Time & Number Formats",
+        "Translation Verification",
+        "Visual Regression for i18n",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/performance-testing.md",
+      "source_sha256": "0faccd5ec785b4c66466f194ce9c8d1b9e257674e5be5c1ef5dd8864538bde5b",
+      "target": "testing-patterns/performance-testing.md",
+      "disposition": "boundary",
+      "treatment": "boundary",
+      "rationale": "Use local tests for deterministic behavior and device benchmarks for startup, frame time, and runtime budgets.",
+      "source_sections": [
+        "Table of Contents",
+        "Core Web Vitals",
+        "Performance Metrics",
+        "Performance Budgets",
+        "Lighthouse Integration",
+        "CI Performance Monitoring",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/security-testing.md",
+      "source_sha256": "c03fe6ead5ec78bfe20af45e05ab587d054f77f8e1a6d26dd7791f06be7cabd7",
+      "target": "testing-patterns/security-testing.md",
+      "disposition": "direct",
+      "treatment": "boundary",
+      "rationale": "Test redaction and client access behavior while preserving server, transport, and embedded-web security boundaries.",
+      "source_sections": [
+        "Table of Contents",
+        "XSS Prevention",
+        "CSRF Protection",
+        "Authentication Security",
+        "Authorization Testing",
+        "Input Validation",
+        "Security Headers",
+        "Anti-Patterns to Avoid",
+        "Related References"
+      ]
+    },
+    {
+      "source": "testing-patterns/visual-regression.md",
+      "source_sha256": "d6e0c22087df688546e3762d5b94dcea21f7c3470fa9be1e77aa4fa64bc08297",
+      "target": "testing-patterns/visual-regression.md",
+      "disposition": "boundary",
+      "treatment": "boundary",
+      "rationale": "Separate semantic state tests from renderer-specific screenshot baselines and real-device visual evidence.",
+      "source_sections": [
+        "Table of Contents",
+        "Quick Reference",
+        "Patterns",
+        "Decision Guide",
+        "Anti-Patterns",
+        "Troubleshooting"
+      ]
+    }
+  ],
+  "schema_version": 1
+}

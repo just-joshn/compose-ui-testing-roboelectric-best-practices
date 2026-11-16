@@ -1,0 +1,1096 @@
+{
+  "evidence_directory": ".work/verify-compose-robolectric.RspOEv/evidence",
+  "checks": [
+    {
+      "journey": "suite",
+      "variant": "baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/suite/fixture-results/baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-jaxaso89/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "effectStartOrder",
+          "class": "fixture.V1EffectOrderTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "effectStartOrder",
+          "class": "fixture.V2EffectOrderTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "mergedLabelAndUnmergedChild",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "selectorFailureIncludesTreeDiagnostics",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "disposalCancelsPendingSendAndFreshPanelIsIsolated",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "composeClockDoesNotCompleteSender",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "effectStartOrder",
+          "class": "fixture.V1EffectOrderTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "effectStartOrder",
+          "class": "fixture.V2EffectOrderTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "mergedLabelAndUnmergedChild",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "selectorFailureIncludesTreeDiagnostics",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "disposalCancelsPendingSendAndFreshPanelIsIsolated",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "composeClockDoesNotCompleteSender",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "final-baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/final-baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "effectStartOrder",
+          "class": "fixture.V1EffectOrderTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "effectStartOrder",
+          "class": "fixture.V2EffectOrderTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "mergedLabelAndUnmergedChild",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "selectorFailureIncludesTreeDiagnostics",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "disposalCancelsPendingSendAndFreshPanelIsIsolated",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "composeClockDoesNotCompleteSender",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "isolated-composeClockDoesNotCompleteSender",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/isolated-composeClockDoesNotCompleteSender/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.composeClockDoesNotCompleteSender"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "composeClockDoesNotCompleteSender",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "isolated-disposalCancelsPendingSendAndFreshPanelIsIsolated",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/isolated-disposalCancelsPendingSendAndFreshPanelIsIsolated/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.disposalCancelsPendingSendAndFreshPanelIsIsolated"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "disposalCancelsPendingSendAndFreshPanelIsIsolated",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "isolated-selectorFailureIncludesTreeDiagnostics",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/isolated-selectorFailureIncludesTreeDiagnostics/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.selectorFailureIncludesTreeDiagnostics"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "selectorFailureIncludesTreeDiagnostics",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "noop-send",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/noop-send/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.sendShowsReceiptAfterCompletion"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.FixtureUiTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'Sending' (ignoreCase: false) is not displayed!",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "noop-send-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/noop-send-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.sendShowsReceiptAfterCompletion"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "removed-merge",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/removed-merge/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.mergedLabelAndUnmergedChild"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "mergedLabelAndUnmergedChild",
+          "class": "fixture.FixtureUiTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Failed to assert the following: (Text + InputText + EditableText contains 'Draft' (ignoreCase: false))\nSemantics of the node:\nNode #2 at (l=0.0, t=0.0, r=5.0, b=70.0)px, Tag: 'summary'\nHas 2 children\nSelector used: (TestTag = 'summary')\n",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "removed-merge-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/removed-merge-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.mergedLabelAndUnmergedChild"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "mergedLabelAndUnmergedChild",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "wrong-item",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/wrong-item/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.scopedOpenSelectsDraft"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.FixtureUiTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'Draft opened' (ignoreCase: false) is not displayed!",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "mutations",
+      "variant": "wrong-item-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/mutations/fixture-results/wrong-item-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-verify-1ggsix6i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.scopedOpenSelectsDraft"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "setup",
+      "variant": "resources-disabled",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/setup/fixture-results/resources-disabled/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-setup-avutbn3z/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.mergedLabelAndUnmergedChild"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "mergedLabelAndUnmergedChild",
+          "class": "fixture.FixtureUiTest",
+          "failure": {
+            "message": "java.lang.RuntimeException: Unable to resolve activity for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=org.robolectric.default/androidx.activity.ComponentActivity } -- see https://github.com/robolectric/robolectric/pull/4736 for details",
+            "type": "java.lang.RuntimeException"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "setup",
+      "variant": "resources-enabled",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/setup/fixture-results/resources-enabled/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-setup-avutbn3z/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.mergedLabelAndUnmergedChild"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "mergedLabelAndUnmergedChild",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "setup",
+      "variant": "resources-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/setup/fixture-results/resources-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/fixture-setup-avutbn3z/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks",
+        "--tests",
+        "fixture.FixtureUiTest.mergedLabelAndUnmergedChild"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "mergedLabelAndUnmergedChild",
+          "class": "fixture.FixtureUiTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "writing",
+      "variant": "agent-writing-baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/writing/fixture-results/agent-writing-baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-pq0jokvt/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultNotArchiveResult",
+          "class": "fixture.WritingTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "writing",
+      "variant": "agent-writing-wrong-item",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/writing/fixture-results/agent-writing-wrong-item/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-pq0jokvt/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultNotArchiveResult",
+          "class": "fixture.WritingTaskTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'Draft opened' (ignoreCase: false) is not displayed!",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "writing",
+      "variant": "agent-writing-wrong-item-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/writing/fixture-results/agent-writing-wrong-item-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-pq0jokvt/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultNotArchiveResult",
+          "class": "fixture.WritingTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "review",
+      "variant": "agent-review-baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/review/fixture-results/agent-review-baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-3lj1xh57/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "review",
+      "variant": "agent-review-noop-send",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/review/fixture-results/agent-review-noop-send/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-3lj1xh57/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.ReviewTaskTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'Sending' (ignoreCase: false) is not displayed!",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "review",
+      "variant": "agent-review-noop-send-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/review/fixture-results/agent-review-noop-send-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-3lj1xh57/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "review",
+      "variant": "agent-review-wrong-item",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/review/fixture-results/agent-review-wrong-item/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-3lj1xh57/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.ReviewTaskTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'Draft opened' (ignoreCase: false) is not displayed!",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "review",
+      "variant": "agent-review-wrong-item-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/review/fixture-results/agent-review-wrong-item-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-3lj1xh57/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "scopedOpenSelectsDraft",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendShowsReceiptAfterCompletion",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "debugging",
+      "variant": "agent-debugging-baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/debugging/fixture-results/agent-debugging-baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-f85hga2f/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "summaryChildHasDraft",
+          "class": "fixture.DebuggingTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "debugging",
+      "variant": "agent-debugging-wrong-summary-label",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/debugging/fixture-results/agent-debugging-wrong-summary-label/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-f85hga2f/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "summaryChildHasDraft",
+          "class": "fixture.DebuggingTaskTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Failed to assert the following: (Text + InputText + EditableText contains 'Draft' (ignoreCase: false))\nSemantics of the node:\nNode #3 at (l=0.0, t=0.0, r=5.0, b=35.0)px, Tag: 'summary-child'\nText = '[Wrong]'\nActions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]\nHas 1 sibling\nSelector used: (TestTag = 'summary-child')\n",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "debugging",
+      "variant": "agent-debugging-wrong-summary-label-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/debugging/fixture-results/agent-debugging-wrong-summary-label-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-f85hga2f/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "summaryChildHasDraft",
+          "class": "fixture.DebuggingTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-debugging-baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-debugging-baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-y7rvg42u/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "summaryChildHasDraft",
+          "class": "fixture.DebuggingTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-debugging-wrong-summary-label",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-debugging-wrong-summary-label/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-y7rvg42u/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "summaryChildHasDraft",
+          "class": "fixture.DebuggingTaskTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Failed to assert the following: (Text + InputText + EditableText contains 'Draft' (ignoreCase: false))\nSemantics of the node:\nNode #3 at (l=0.0, t=0.0, r=5.0, b=35.0)px, Tag: 'summary-child'\nText = '[Wrong]'\nActions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]\nHas 1 sibling\nSelector used: (TestTag = 'summary-child')\n",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-debugging-wrong-summary-label-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-debugging-wrong-summary-label-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-y7rvg42u/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "summaryChildHasDraft",
+          "class": "fixture.DebuggingTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-review-baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-review-baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-hu71m093/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultNotArchiveResult",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendingMessageStaysPendingUntilSenderReturnsReceipt",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-review-noop-send",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-review-noop-send/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-hu71m093/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultNotArchiveResult",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendingMessageStaysPendingUntilSenderReturnsReceipt",
+          "class": "fixture.ReviewTaskTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'Sending' (ignoreCase: false) is not displayed!",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-review-noop-send-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-review-noop-send-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-hu71m093/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultNotArchiveResult",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendingMessageStaysPendingUntilSenderReturnsReceipt",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-review-wrong-item",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-review-wrong-item/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-hu71m093/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultNotArchiveResult",
+          "class": "fixture.ReviewTaskTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'Draft opened' (ignoreCase: false) is not displayed!",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendingMessageStaysPendingUntilSenderReturnsReceipt",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-review-wrong-item-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-review-wrong-item-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-hu71m093/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultNotArchiveResult",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "name": "sendingMessageStaysPendingUntilSenderReturnsReceipt",
+          "class": "fixture.ReviewTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-writing-baseline",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-writing-baseline/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-a1x7tn_i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultAndNotArchiveResult",
+          "class": "fixture.WritingTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-writing-wrong-item",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-writing-wrong-item/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-a1x7tn_i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 1,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultAndNotArchiveResult",
+          "class": "fixture.WritingTaskTest",
+          "failure": {
+            "message": "java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'Draft opened' (ignoreCase: false) is not displayed!",
+            "type": "java.lang.AssertionError"
+          },
+          "error": null,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "journey": "fresh-agents",
+      "variant": "agent-writing-wrong-item-restored",
+      "artifact": ".work/verify-compose-robolectric.RspOEv/evidence/fresh-agents/fixture-results/agent-writing-wrong-item-restored/result.json",
+      "command": [
+        "/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices-skill/.work/verify-compose-robolectric.RspOEv/project/.work/agent-response-a1x7tn_i/gradlew",
+        ":fixture:testDebugUnitTest",
+        "--console=plain",
+        "--no-daemon",
+        "--rerun-tasks"
+      ],
+      "exit": 0,
+      "cases": [
+        {
+          "name": "openingDraftDisplaysDraftResultAndNotArchiveResult",
+          "class": "fixture.WritingTaskTest",
+          "failure": null,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    }
+  ]
+}

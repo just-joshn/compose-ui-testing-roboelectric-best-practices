@@ -1,0 +1,30 @@
+[
+  {
+    "guide": "compose-ui-testing-robolectric-best-practices/testing-patterns/repository-contracts.md",
+    "source_sha256": "606af1287e530d5e2c86f5cf016f8ddc1f2100d1cb21f6a2a69b874ce7d6d2f0",
+    "junit": {
+      "name": "ItemHttpContractTest",
+      "tests": "3",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-11-16T20:59:17.326Z",
+      "hostname": "mac-mini.local",
+      "time": "0.017"
+    }
+  },
+  {
+    "guide": "compose-ui-testing-robolectric-best-practices/testing-patterns/graphql.md",
+    "source_sha256": "36adcdbe2d04e0620a5da8c90278778d0f710dda0883c3ad0a166e2baec547c4",
+    "junit": {
+      "name": "GraphQlHttpContractTest",
+      "tests": "2",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-11-16T20:59:17.173Z",
+      "hostname": "mac-mini.local",
+      "time": "0.152"
+    }
+  }
+]

@@ -1,5 +1,9 @@
 # Synchronize the work that changes the UI
 
+## Continue with the topic guides
+
+Read [assertions and waiting](../core/assertions-waiting.md) before choosing synchronization. Read [clock control](../advanced/clock-control.md) for frame, coroutine, looper, and business time. Use [reactive streams](../android-apis/reactive-streams.md) and [network fakes](../advanced/network-fakes.md) for controlled external completion.
+
 ## Identify the owner
 
 Compose actions and assertions synchronize with Compose and registered idling resources. They do not repeatedly evaluate an arbitrary business assertion until it succeeds. `waitForIdle()` can return while a fake, executor, network request, or unrelated dispatcher still has unfinished work.

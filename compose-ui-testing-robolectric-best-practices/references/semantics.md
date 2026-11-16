@@ -1,5 +1,9 @@
 # Select the intended semantics node
 
+## Continue with the topic guides
+
+Read [semantics selectors](../core/semantics-selectors.md) for matcher decisions, duplicate labels, merged and unmerged trees, and lazy items. Read [accessibility](../testing-patterns/accessibility.md) for roles, states, descriptions, and the device-service boundary. Use [gestures](../testing-patterns/gestures.md) when the target must first scroll into view.
+
 ## Start with the merged tree
 
 Compose tests query semantics, not the composable call hierarchy. A layout without semantics may not create a queryable node. `clickable` and components such as buttons can merge descendant semantics into a user-facing group.
@@ -20,7 +24,7 @@ println(unmerged)
 
 For a deliberately merged row with two text children, prove the group and child separately. The canonical [example tests](../examples/) show the exact compiled version. Match the parent by its group identity and text. Use `useUnmergedTree = true` only for the child-specific assertion.
 
-[`clearAndSetSemantics`](https://developer.android.com/develop/ui/compose/accessibility/merging-clearing) can replace descendant information. Unmerged search cannot recover properties that the UI deliberately clears. Inspect the actual tree before adding tags or changing production semantics.
+[`clearAndSetSemantics`](https://developer.android.com/develop/ui/compose/accessibility/merging-clearing) replaces descendant information in the merged tree. The unmerged tree can still expose child nodes for test inspection. That does not mean accessibility services receive the child's original semantics. Inspect both trees before adding tags or changing production semantics.
 
 ## Resolve ambiguity by identity
 
