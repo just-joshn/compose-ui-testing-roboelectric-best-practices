@@ -1,0 +1,58 @@
+skills-discovery-final.log
+
+│
+●   pi  Agent detected — installing non-interactively
+│
+◇  Source: /Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices
+│
+◇  Local path validated
+│
+◇  Found 1 skill
+
+│
+◇  Available Skills
+│
+│    compose-ui-testing-robolectric-best-practices
+│
+│      Use when writing, reviewing, or debugging Jetpack Compose UI tests in Kotlin that run locally on the JVM with Robolectric. Covers Android local-unit-test setup, semantics selectors, merged and unmerged trees, ambiguous matches, observable assertions and interactions, Compose clock control, asynchronous work, test isolation, fakes, and failure diagnosis. Not a guide to screenshots, device fidelity, or general Android testing.
+
+│
+└  Use --skill <name> to install specific skills
+
+
+skills-install-final.log
+
+│
+●   pi  Agent detected — installing non-interactively
+│
+◇  Source: /Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices
+│
+◇  Local path validated
+│
+◇  Found 1 skill
+│
+●  Selected 1 skill: compose-ui-testing-robolectric-best-practices
+
+│
+◇  Installation Summary ───────────────────────────────────────────────────────╮
+│                                                                              │
+│  ~/src/personal/compose-ui-testing-roboelectric-best-practices/.work/instal  │
+│  l/.agents/skills/compose-ui-testing-robolectric-best-practices              │
+│    universal: Pi                                                             │
+│    overwrites: Pi                                                            │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────╯
+│
+◇  Installation complete
+
+│
+◇  Installed 1 skill ──────────────────────────────────────────────────────────╮
+│                                                                              │
+│  ✓ compose-ui-testing-robolectric-best-practices (copied)                    │
+│    → ~/src/personal/compose-ui-testing-roboelectric-best-practices/.work/in  │
+│  stall/.agents/skills/compose-ui-testing-robolectric-best-practices          │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────╯
+
+│
+└  Done!  Review skills before use; they run with full agent permissions.
