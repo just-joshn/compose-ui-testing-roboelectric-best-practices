@@ -59,7 +59,8 @@ def run(project, label, method=None):
             shutil.copy2(source, output / source.name)
             for case in ET.parse(source).getroot().findall("testcase"):
                 failure = case.find("failure")
-                cases.append({"name": case.attrib["name"], "class": case.attrib["classname"], "failure": failure.attrib if failure is not None else None, "skipped": case.find("skipped") is not None})
+                error = case.find("error")
+                cases.append({"name": case.attrib["name"], "class": case.attrib["classname"], "failure": failure.attrib if failure is not None else None, "error": error.attrib if error is not None else None, "skipped": case.find("skipped") is not None})
     result = {"command": command, "exit": completed.returncode, "cases": cases}
     (output / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     print(label, "exit", completed.returncode, "tests", len(cases), flush=True)
@@ -68,7 +69,7 @@ def run(project, label, method=None):
 
 def require_pass(result, methods=None):
     assert result["exit"] == 0 and result["cases"], result
-    assert all(not case["failure"] and not case["skipped"] for case in result["cases"]), result
+    assert all(case["failure"] is None and case["error"] is None and not case["skipped"] for case in result["cases"]), result
     if methods is not None:
         assert sorted(case["name"] for case in result["cases"]) == sorted(methods), result
 
@@ -93,7 +94,11 @@ def main():
                     result = run(project, label, method)
                     named = [case for case in result["cases"] if case["name"] == method]
                     assert result["exit"] != 0 and len(named) == 1, result
-                    assert named[0]["failure"] and "AssertionError" in named[0]["failure"].get("type", ""), result
+                    assert all(case["error"] is None and not case["skipped"] for case in result["cases"]), result
+                    failures = [case for case in result["cases"] if case["failure"] is not None]
+                    assert named[0]["failure"] is not None and all(
+                        "AssertionError" in case["failure"].get("type", "") for case in failures
+                    ), result
                 finally:
                     target.write_text(baseline)
                 require_pass(run(project, label + "-restored", method), (method,))

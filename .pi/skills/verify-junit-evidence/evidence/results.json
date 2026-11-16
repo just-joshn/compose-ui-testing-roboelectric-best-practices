@@ -1,0 +1,317 @@
+{
+  "executed_on": "2026-11-16",
+  "tool": "CPython standard-library bounded exhaustive checker",
+  "python": "3.12.14",
+  "sync_commit": "6fefcb5decac7f24fe81fa415b0194082043c10d",
+  "source": "scripts/verify_fixture.py",
+  "source_sha256": "8ade644edc2e389544970525b2cadab46a483e89beb6ca912f284ee6a19d87ea",
+  "checker_sha256": "05d30563c1139cbd193dc247b1d613818e83580d593704f881328c589d8d74ba",
+  "before_fix_evidence": "before-fix.json",
+  "bounds": {
+    "max_cases": 2,
+    "names": [
+      "mergedLabelAndUnmergedChild",
+      "scopedOpenSelectsDraft",
+      "unexpectedTest"
+    ],
+    "statuses": [
+      "pass",
+      "failure-empty",
+      "failure-typed",
+      "error-empty",
+      "error-typed",
+      "skipped"
+    ],
+    "exits": [
+      0,
+      1,
+      -9
+    ],
+    "requested_methods": [
+      null,
+      [],
+      [
+        "mergedLabelAndUnmergedChild"
+      ],
+      [
+        "scopedOpenSelectsDraft"
+      ],
+      [
+        "mergedLabelAndUnmergedChild",
+        "mergedLabelAndUnmergedChild"
+      ],
+      [
+        "mergedLabelAndUnmergedChild",
+        "scopedOpenSelectsDraft"
+      ],
+      [
+        "scopedOpenSelectsDraft",
+        "mergedLabelAndUnmergedChild"
+      ],
+      [
+        "scopedOpenSelectsDraft",
+        "scopedOpenSelectsDraft"
+      ]
+    ],
+    "layouts": [
+      "single",
+      "split (two cases only)"
+    ]
+  },
+  "baseline": {
+    "status": "PASS",
+    "producer_executions": 2001,
+    "acceptance_decisions": 16008,
+    "accepted": 35,
+    "mismatches": {}
+  },
+  "self_test": {
+    "status": "PASS",
+    "mutations": [
+      {
+        "mutation": "ignored-exit",
+        "new_category": "process-exit",
+        "detected": true,
+        "source_sha256": "d534f1fcebb4b14f6f245e46d8e4a188af0fb61d5019e9840356d20daf5a8889",
+        "producer_executions": 2001,
+        "acceptance_decisions": 16008,
+        "new_counterexample": {
+          "count": 70,
+          "shortest": {
+            "cases": [
+              [
+                "mergedLabelAndUnmergedChild",
+                "pass"
+              ]
+            ],
+            "exit": 1,
+            "requested_methods": null,
+            "layout": "single",
+            "xml": [
+              "<testsuite><testcase name=\"mergedLabelAndUnmergedChild\" classname=\"fixture.FixtureUiTest\" /></testsuite>"
+            ],
+            "parsed_result": {
+              "exit": 1,
+              "cases": [
+                {
+                  "name": "mergedLabelAndUnmergedChild",
+                  "class": "fixture.FixtureUiTest",
+                  "failure": null,
+                  "error": null,
+                  "skipped": false
+                }
+              ]
+            },
+            "expected_accept": false,
+            "actual_accept": true
+          }
+        }
+      },
+      {
+        "mutation": "ignored-skips",
+        "new_category": "skipped",
+        "detected": true,
+        "source_sha256": "15461b4ef8b20b074b23566a84bfb2a883a16720bc3e2b7ea2610a329817fa01",
+        "producer_executions": 2001,
+        "acceptance_decisions": 16008,
+        "new_counterexample": {
+          "count": 95,
+          "shortest": {
+            "cases": [
+              [
+                "mergedLabelAndUnmergedChild",
+                "skipped"
+              ]
+            ],
+            "exit": 0,
+            "requested_methods": null,
+            "layout": "single",
+            "xml": [
+              "<testsuite><testcase name=\"mergedLabelAndUnmergedChild\" classname=\"fixture.FixtureUiTest\"><skipped /></testcase></testsuite>"
+            ],
+            "parsed_result": {
+              "exit": 0,
+              "cases": [
+                {
+                  "name": "mergedLabelAndUnmergedChild",
+                  "class": "fixture.FixtureUiTest",
+                  "failure": null,
+                  "error": null,
+                  "skipped": true
+                }
+              ]
+            },
+            "expected_accept": false,
+            "actual_accept": true
+          }
+        }
+      },
+      {
+        "mutation": "ignored-failures",
+        "new_category": "failure-typed",
+        "detected": true,
+        "source_sha256": "f5ca08b6d8a987dbb46382e86b928553f3fba4a5f6805dc5b1b0b5f24479713a",
+        "producer_executions": 2001,
+        "acceptance_decisions": 16008,
+        "new_counterexample": {
+          "count": 125,
+          "shortest": {
+            "cases": [
+              [
+                "mergedLabelAndUnmergedChild",
+                "failure-typed"
+              ]
+            ],
+            "exit": 0,
+            "requested_methods": null,
+            "layout": "single",
+            "xml": [
+              "<testsuite><testcase name=\"mergedLabelAndUnmergedChild\" classname=\"fixture.FixtureUiTest\"><failure type=\"java.lang.AssertionError\" /></testcase></testsuite>"
+            ],
+            "parsed_result": {
+              "exit": 0,
+              "cases": [
+                {
+                  "name": "mergedLabelAndUnmergedChild",
+                  "class": "fixture.FixtureUiTest",
+                  "failure": {
+                    "type": "java.lang.AssertionError"
+                  },
+                  "error": null,
+                  "skipped": false
+                }
+              ]
+            },
+            "expected_accept": false,
+            "actual_accept": true
+          }
+        }
+      },
+      {
+        "mutation": "falsey-failures",
+        "new_category": "failure-empty",
+        "detected": true,
+        "source_sha256": "132d33cd58bdb2a5bed68aca95ab3d3e2a1f20b20bbf87940ce7593310ff96af",
+        "producer_executions": 2001,
+        "acceptance_decisions": 16008,
+        "new_counterexample": {
+          "count": 95,
+          "shortest": {
+            "cases": [
+              [
+                "mergedLabelAndUnmergedChild",
+                "failure-empty"
+              ]
+            ],
+            "exit": 0,
+            "requested_methods": null,
+            "layout": "single",
+            "xml": [
+              "<testsuite><testcase name=\"mergedLabelAndUnmergedChild\" classname=\"fixture.FixtureUiTest\"><failure /></testcase></testsuite>"
+            ],
+            "parsed_result": {
+              "exit": 0,
+              "cases": [
+                {
+                  "name": "mergedLabelAndUnmergedChild",
+                  "class": "fixture.FixtureUiTest",
+                  "failure": {},
+                  "error": null,
+                  "skipped": false
+                }
+              ]
+            },
+            "expected_accept": false,
+            "actual_accept": true
+          }
+        }
+      },
+      {
+        "mutation": "ignored-errors",
+        "new_category": "error-empty",
+        "detected": true,
+        "source_sha256": "00ac8da48a85af3b4df5803a451fa915e2640c16e9297df10ff0b9a8a0a50a29",
+        "producer_executions": 2001,
+        "acceptance_decisions": 16008,
+        "new_counterexample": {
+          "count": 125,
+          "shortest": {
+            "cases": [
+              [
+                "mergedLabelAndUnmergedChild",
+                "error-empty"
+              ]
+            ],
+            "exit": 0,
+            "requested_methods": null,
+            "layout": "single",
+            "xml": [
+              "<testsuite><testcase name=\"mergedLabelAndUnmergedChild\" classname=\"fixture.FixtureUiTest\"><error /></testcase></testsuite>"
+            ],
+            "parsed_result": {
+              "exit": 0,
+              "cases": [
+                {
+                  "name": "mergedLabelAndUnmergedChild",
+                  "class": "fixture.FixtureUiTest",
+                  "failure": null,
+                  "error": {},
+                  "skipped": false
+                }
+              ]
+            },
+            "expected_accept": false,
+            "actual_accept": true
+          }
+        }
+      },
+      {
+        "mutation": "ignored-methods",
+        "new_category": "method-multiset",
+        "detected": true,
+        "source_sha256": "8a202347a44fde66cbd1a7103d06186cba9ca35953b34ab91b745204034fd026",
+        "producer_executions": 2001,
+        "acceptance_decisions": 16008,
+        "new_counterexample": {
+          "count": 133,
+          "shortest": {
+            "cases": [
+              [
+                "mergedLabelAndUnmergedChild",
+                "pass"
+              ]
+            ],
+            "exit": 0,
+            "requested_methods": [],
+            "layout": "single",
+            "xml": [
+              "<testsuite><testcase name=\"mergedLabelAndUnmergedChild\" classname=\"fixture.FixtureUiTest\" /></testsuite>"
+            ],
+            "parsed_result": {
+              "exit": 0,
+              "cases": [
+                {
+                  "name": "mergedLabelAndUnmergedChild",
+                  "class": "fixture.FixtureUiTest",
+                  "failure": null,
+                  "error": null,
+                  "skipped": false
+                }
+              ]
+            },
+            "expected_accept": false,
+            "actual_accept": true
+          }
+        }
+      }
+    ],
+    "restored_sha256": "8ade644edc2e389544970525b2cadab46a483e89beb6ca912f284ee6a19d87ea",
+    "baseline_status": "PASS",
+    "restored": {
+      "status": "PASS",
+      "producer_executions": 2001,
+      "acceptance_decisions": 16008,
+      "mismatches": {}
+    }
+  }
+}
