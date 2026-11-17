@@ -11,106 +11,142 @@
 7. [Text Input](#text-input)
 8. [Scrolling](#scrolling)
 9. [Chaining and Return Values](#chaining-and-return-values)
-10. [Common Issues & Solutions](#common-issues--solutions)
-11. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
-12. [Related References](#related-references)
-13. [Sources](#sources)
+10. [Related References](#related-references)
+11. [Sources](#sources)
 
 ## Assertions
 
-Call `assert(matcher)` on the `SemanticsNodeInteraction` a finder returns, or use a convenience assertion. Each assertion synchronizes with the UI first, so there is no manual waiting for recomposition; see [synchronization.md](synchronization.md).
+Assertions are used to verify that the elements exist or have certain attributes.
+
+Check assertions by calling `assert()` on the `SemanticsNodeInteraction` returned by a finder with one or multiple matchers:
 
 ```kotlin
-// Generic: any SemanticsMatcher
-composeTestRule.onNode(matcher).assert(hasText("Button"))
-composeTestRule.onNode(matcher).assert(hasText("Button") or hasText("Button2"))
+// Single matcher:
+composeTestRule
+    .onNode(matcher)
+    .assert(hasText("Button")) // hasText is a SemanticsMatcher
 
-// Convenience
-composeTestRule.onNodeWithText("Welcome").assertIsDisplayed()
-composeTestRule.onNodeWithTag("title").assertExists()
-composeTestRule.onNodeWithTag("spinner").assertDoesNotExist()
-composeTestRule.onNodeWithTag("cart-count").assertTextEquals("1")
-composeTestRule.onNodeWithTag("note").assertTextContains("draft")
-composeTestRule.onNodeWithTag("icon").assertContentDescriptionEquals("Add to favorites")
-composeTestRule.onNodeWithText("Save").assertIsEnabled()
-composeTestRule.onNodeWithText("Save").assertHasClickAction()
-composeTestRule.onNodeWithTag("switch").assertIsOn()
-composeTestRule.onNodeWithTag("tab").assertIsSelected()
-composeTestRule.onNodeWithTag("email").assertIsFocused()
+// Multiple matchers can use and / or
+composeTestRule
+    .onNode(matcher).assert(hasText("Button") or hasText("Button2"))
 ```
 
-Related families on `SemanticsNodeInteraction`: `assertIsNotDisplayed`, `assertIsNotEnabled`, `assertIsOff`, `assertIsNotSelected`, `assertIsNotFocused`, `assertIsSelectable`, `assertIsToggleable`, `assertHasNoClickAction`, `assertValueEquals`, `assertRangeInfoEquals`.
+`assert` throws `AssertionError` if the matcher does not match or the node can no longer be found.
 
-`assertTextEquals(vararg values)` asserts the node's text list contains exactly those values and nothing else; order does not matter. In the merged tree that list can hold text from several children.
+You can also use convenience functions for the most common assertions, such as `assertExists`, `assertIsDisplayed`, and `assertTextEquals`.
 
-`isDisplayed()` and `isNotDisplayed()` return a Boolean and do not assert. Use them inside `waitUntil`, never instead of `assertIsDisplayed()`.
+- `assertExists` asserts that the component was found and is part of the component tree.
+- `assertDoesNotExist` asserts that no item was found or that the item is no longer in the hierarchy.
+- `assertIsEnabled` asserts that the current semantics node is enabled, and `assertIsNotEnabled` asserts that it is not enabled.
+- `assertHasClickAction` asserts that the current semantics node has a click action, and `assertHasNoClickAction` asserts that it doesn't have one.
+- `assertIsFocused` asserts that the current semantics node has a focus.
+- `assertIsSelected` asserts that the current semantics node is selected.
+- `assertValueEquals` asserts the node's value equals the given value.
+
+`assertIsDisplayed` asserts that the current semantics node is displayed on screen. Specifically, the node must be composed, placed and at least a portion of its bounds must be visible on screen after clipping is applied. It throws `AssertionError` if the node is not displayed.
+
+`assertTextEquals` asserts that the node's list of text values contains exactly the given values and nothing else. The order of the elements does not matter.
+
+In the merged semantics tree (the default in Compose testing), the `Text` property's list often contains multiple text items merged from child nodes. `assertTextEquals` evaluates the entire list.
+
+To also evaluate `InputText`, which holds the raw user input of fields like passwords, bypassing visual transformations, set `includeInputText` to `true`.
+
+`assertTextContains` asserts that the node's list of text values contains the given value. By default, this requires an exact string match with at least one complete item in the list.
+
+`isDisplayed()` returns true if the matched node is displayed on screen. If no matching node is found, returns false. If multiple nodes match, throws an `AssertionError`.
 
 ```kotlin
-// Good: waiting on a Boolean
 val interaction = composeTestRule.onNodeWithTag("test")
 composeTestRule.waitUntil { interaction.isDisplayed() }
-
-// Bad: the Boolean is dropped, the test cannot fail
-composeTestRule.onNodeWithTag("test").isDisplayed()
 ```
 
-"Displayed" means composed, placed, and at least part of the bounds visible after clipping. `isDisplayed()` returns false when no node matches, and throws `AssertionError` when several do.
+`isNotDisplayed()` returns true if the matched node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied.
 
 ## Collection Assertions
 
+There are also functions to check assertions on a collection of nodes:
+
 ```kotlin
-// Exact count
-composeTestRule.onAllNodesWithContentDescription("Beatle").assertCountEquals(4)
+// Check number of matched nodes
+composeTestRule
+    .onAllNodesWithContentDescription("Beatle").assertCountEquals(4)
 // At least one matches
-composeTestRule.onAllNodesWithContentDescription("Beatle").assertAny(hasTestTag("Drummer"))
-// Every one matches
-composeTestRule.onAllNodesWithContentDescription("Beatle").assertAll(hasClickAction())
+composeTestRule
+    .onAllNodesWithContentDescription("Beatle").assertAny(hasTestTag("Drummer"))
+// All of them match
+composeTestRule
+    .onAllNodesWithContentDescription("Beatle").assertAll(hasClickAction())
 ```
 
-Filter a collection first with `filter(matcher)`, or reduce it to one node with `filterToOne(matcher)`, `onFirst()`, or `onLast()`.
+`assertAll` passes also for empty collections.
+
+`assertCountEquals` provides a detailed error message on failure.
 
 ## Bounds Assertions
 
-Layout assertions take `Dp`:
+`assertHeightIsAtLeast` asserts that the layout of this node has height that is greater than or equal to the expected minimum height.
+
+`assertPositionInRootIsEqualTo` asserts that the layout of this node has position in the root composable that is equal to the expected left and top values. Its `tolerance` parameter is the tolerance within which the values should be treated as equal. It defaults to the tolerance configured in `ComposeUiTestConfig`, or `0.5.dp` if unspecified.
 
 ```kotlin
-composeTestRule.onNodeWithTag("card")
-    .assertWidthIsEqualTo(200.dp)
-    .assertHeightIsAtLeast(48.dp)
-    .assertPositionInRootIsEqualTo(expectedLeft = 16.dp, expectedTop = 8.dp)
+composeTestRule
+    .onNodeWithTag("icon", useUnmergedTree = true)
+    .assertLeftPositionInRootIsEqualTo(16.dp)
+    .assertTopPositionInRootIsEqualTo(16.dp)
 ```
-
-`assertWidthIsEqualTo` and similar also accept a `tolerance: Dp`. The `ComposeUiTestConfig(boundsAssertionTolerance = ...)` setting is a 1.13.0-rc01 API that sets a default tolerance.
 
 ## Actions
 
-Inject events with `perform...()`:
+Actions inject simulated user events on the elements, such as clicks or other gestures.
+
+To inject an action on a node, call a `perform...()` function:
 
 ```kotlin
-composeTestRule.onNodeWithText("Continue").performClick()
-composeTestRule.onNode(...).performSemanticsAction(key)            // key: a semantics action property key
-composeTestRule.onNodeWithTag("field").performKeyPress(keyEvent)   // sends to the focused component
+composeTestRule.onNode(...).performClick()
 ```
 
-`performClick` is the convenience. `performSemanticsAction(key)` calls a semantics action that takes no parameters and fails with a clear `AssertionError` if the node does not define it. The docs list `performGesture { swipeLeft() }` in the APIs overview, but `performGesture` is deprecated in the API reference in favor of `performTouchInput`.
+You cannot chain actions inside a perform function. Instead, make multiple `perform...()` calls.
+
+- `performClick` performs a click action on the element represented by the given semantics node. Depending on the platform this may be implemented by a touch click (tap), a mouse click, or another more appropriate method for that platform.
+- `performSemanticsAction(key)` provides support to call custom semantics actions on this node. This method is for calling actions that have no parameters. It throws `AssertionError` if the semantics action is not defined on this node.
+- `performKeyPress(keyEvent)` sends the specified `KeyEvent` to the focused component. It returns true if the event was consumed and false otherwise.
+- `performGesture` is deprecated: it is replaced by `performTouchInput`.
 
 ## Touch Input
 
-`performTouchInput { }` takes a `TouchInjectionScope` block. Events in one block are batched and sent together, so no recomposition happens between events.
+`performTouchInput` executes the touch gesture specified in the given block. The gesture doesn't need to be complete and can be resumed in a later invocation of one of the `perform.*Input` methods. The event time is initialized to the current time of the `MainTestClock`.
+
+Be aware that if you split a gesture over multiple invocations of `perform.*Input`, everything that happens in between will run as if the gesture is still ongoing (imagine a finger still touching the screen).
+
+Due to the batching of events, all events in a block are sent together and no recomposition will take place in between events.
+
+Example of performing a swipe up:
 
 ```kotlin
-import androidx.compose.ui.test.click
-import androidx.compose.ui.test.swipeUp
-
-// Swipe
 composeTestRule.onNodeWithTag("myComponent").performTouchInput { swipeUp() }
+```
 
-// Off-center click
+Example of performing an off-center click:
+
+```kotlin
 composeTestRule.onNodeWithTag("myComponent").performTouchInput {
     click(percentOffset(.2f, .5f))
 }
+```
 
-// Click, wait 100 ms of event time, then swipe
+Example of doing an assertion during a click:
+
+```kotlin
+composeTestRule
+    .onNodeWithTag("myComponent")
+    .performTouchInput { down(topLeft) }
+    .assertHasClickAction()
+    .performTouchInput { up() }
+```
+
+Example of performing a click-and-drag:
+
+```kotlin
 composeTestRule.onNodeWithTag("myComponent").performTouchInput {
     click()
     advanceEventTime(100)
@@ -118,85 +154,123 @@ composeTestRule.onNodeWithTag("myComponent").performTouchInput {
 }
 ```
 
-A gesture can be split across invocations. Everything between runs as if the finger is still down:
-
-```kotlin
-composeTestRule
-    .onNodeWithTag("myComponent")
-    .performTouchInput { down(topLeft) }
-    .assertHasClickAction()   // assertion while pressed
-    .performTouchInput { up() }
-```
-
-Event time starts at the current `MainTestClock` time. Also available: `performMouseInput`, `performRotaryScrollInput`, `performTrackpadInput`, `performMultiModalInput`.
-
 ## Key Input and Focus
 
-```kotlin
-// Forward and reverse traversal
-firstCard.performKeyInput { pressKey(Key.Tab) }
-secondCard.performKeyInput {
-    withKeyDown(Key.ShiftLeft) { pressKey(Key.Tab) }
-}
+To write focus tests, use `createComposeRule()` from the Compose testing library:
 
-// D-pad / arrow keys: Key.DirectionDown, DirectionUp, DirectionLeft, DirectionRight
+```kotlin
+@RunWith(AndroidJUnit4::class)
+class FocusNavigationTest {
+    @get:Rule
+    val composeTestRule = createComposeRule()
 ```
 
-v2 test APIs enforce `InputMode.Touch` at the start of every test. For keyboard focus tests set `ComposeUiTestConfig(inputMode = InputMode.Keyboard)` (1.13.0-rc01 API). Focus-navigation test recipes live in [accessibility.md](../testing-patterns/accessibility.md).
+You can verify whether a UI element can receive focus by performing a click or requesting focus, and then asserting its state using `assertIsFocused()` and `assertIsNotFocused()`.
+
+```kotlin
+@Test
+fun interactiveElement_isFocusTarget() {
+    composeTestRule.setContent {
+        AppTheme {
+            CardListScreen()
+        }
+    }
+
+    val firstCard = composeTestRule.onNodeWithTag("card_1")
+    val secondCard = composeTestRule.onNodeWithTag("card_2")
+
+    // Focus the first element
+    firstCard.performClick()
+    firstCard.assertIsFocused()
+    secondCard.assertIsNotFocused()
+}
+```
+
+As a best practice, verify both forward navigation (`Key.Tab`) and reverse navigation (`Key.Tab` with `Key.ShiftLeft` held down) to ensure two-way traversal integrity:
+
+```kotlin
+@Test
+fun tabKey_navigatesInAppearanceOrder() {
+    composeTestRule.setContent {
+        AppTheme {
+            CardListScreen()
+        }
+    }
+
+    val firstCard = composeTestRule.onNodeWithTag("card_1")
+    val secondCard = composeTestRule.onNodeWithTag("card_2")
+    val thirdCard = composeTestRule.onNodeWithTag("card_3")
+
+    firstCard.performClick()
+    firstCard.assertIsFocused()
+
+    // Press Tab -> Moves to second card
+    firstCard.performKeyInput {
+        pressKey(Key.Tab)
+    }
+    secondCard.assertIsFocused()
+    firstCard.assertIsNotFocused()
+
+    // Press Tab -> Moves to third card
+    secondCard.performKeyInput {
+        pressKey(Key.Tab)
+    }
+    thirdCard.assertIsFocused()
+
+    // Press Shift + Tab -> Moves backward to second card
+    thirdCard.performKeyInput {
+        withKeyDown(Key.ShiftLeft) {
+            pressKey(Key.Tab)
+        }
+    }
+    secondCard.assertIsFocused()
+}
+```
+
+Arrow keys or D-pad directional keys are simulated using `Key.DirectionDown`, `Key.DirectionUp`, `Key.DirectionRight`, and `Key.DirectionLeft`.
+
+When migrating to the v2 APIs, tests can fail if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.
+
+To resolve this, specify the required input mode in `ComposeUiTestConfig`:
+
+```kotlin
+class FocusTest {
+    @get:Rule
+    val rule = createComposeRule(
+        config = ComposeUiTestConfig(inputMode = InputMode.Keyboard)
+    )
+
+    @Test
+    fun testFocus() {}
+}
+```
+
+The `ComposeUiTestConfig` class is included, starting in version 1.13, in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact (`androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`).
 
 ## Text Input
 
-```kotlin
-composeTestRule.onNodeWithTag("email").performTextInput("ada@example.com")
-composeTestRule.onNodeWithTag("email").performTextClearance()
-composeTestRule.onNodeWithTag("email").performTextReplacement("grace@example.com")
-composeTestRule.onNodeWithTag("email").performImeAction()
-composeTestRule.onNodeWithTag("email").assertTextEquals("grace@example.com")
-```
-
-`performTextInput` sends text "in similar way to IME". `assertTextEquals` searches `Text` and `EditableText`; pass `includeInputText = true` to also check the raw input of fields with visual transformations, such as passwords.
+- `performTextInput(text)` sends the given text to this node in similar way to IME.
+- `performTextClearance()` clears the text in this node in similar way to IME.
+- `performTextReplacement(text)` replaces existing text with the given text in this node in similar way to IME. This does not reflect text selection. All the text gets cleared out and new inserted.
+- `performImeAction()` sends to this node the IME action associated with it in a similar way to the IME. The node needs to define its IME action in semantics via `onImeAction`.
 
 ## Scrolling
 
-```kotlin
-composeTestRule.onNodeWithTag("row-40").performScrollTo()            // call on the item
-composeTestRule.onNodeWithTag("list").performScrollToIndex(40)      // call on the container
-composeTestRule.onNodeWithTag("list").performScrollToKey("id-40")
-```
-
-`performScrollTo` fails with `AssertionError` if a scroll is needed and `mainClock.autoAdvance` is `false`, because scroll animations need clock frames. Re-enable auto-advance first; see [clock-control.md](../advanced/clock-control.md).
+- `performScrollTo` scrolls the closest enclosing scroll parent by the smallest amount such that this node is fully visible in its viewport. This action should be performed on the `SemanticsNodeInteraction` that is part of the scrollable content, not on the scrollable container.
+- `performScrollTo` throws `AssertionError` if there is no scroll parent, or if a scroll is needed but `MainTestClock#autoAdvance()` is set to `false`. Compose scroll actions rely on clock frames to execute scroll animations, so scrolling cannot make progress when clock auto-advancement is disabled.
+- `performScrollToIndex(index)` scrolls a scrollable container with items to the item with the given index. This action should be performed on a `SemanticsNodeInteraction` that is a scrollable container, not on a node that is part of the content of that container.
+- `performScrollToKey(key)` scrolls a scrollable container with keyed items to the item with the given key.
+- `performScrollToNode(matcher)` scrolls a scrollable container to the content that matches the given matcher.
 
 ## Chaining and Return Values
 
-Most assertions and actions return the same `SemanticsNodeInteraction`, so they chain. You cannot chain actions inside a `perform` lambda; make separate calls.
+Here you can see how you can locate a checkbox, click it and verify that it's checked:
 
 ```kotlin
-// Good: one perform call per action
-composeTestRule.onNodeWithTag("field").performTextInput("hello")
-composeTestRule.onNodeWithText("Submit").performClick()
+composeTestRule.onNode(isToggleable()).performClick().assertIsOn()
 ```
 
-Text actions such as `performTextInput` and `performImeAction` return `Unit` and end a chain. `performKeyPress` returns a `Boolean` (true if the event was consumed).
-
-## Common Issues & Solutions
-
-| Issue                                              | Solution                                                                         |
-| -------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Assertion fails right after a state change in test | Go through the rule so it synchronizes; see [synchronization.md](synchronization.md) |
-| `performScrollTo` throws `AssertionError`          | No scroll parent, or `autoAdvance` is `false`                                    |
-| `assertTextEquals` fails with extra text           | Merged tree holds several texts; list all of them or use `assertTextContains`    |
-| Password field text does not match                 | `assertTextEquals(..., includeInputText = true)`                                 |
-| Keyboard focus test sees touch mode                | Set `inputMode = InputMode.Keyboard` in `ComposeUiTestConfig`                    |
-| Exact `Dp` comparison off by a hair                | Pass `tolerance`                                                                 |
-
-## Anti-Patterns to Avoid
-
-| Anti-Pattern                                  | Problem                              | Solution                                            |
-| --------------------------------------------- | ------------------------------------ | --------------------------------------------------- |
-| `isDisplayed()` used as an assertion          | Test cannot fail                     | `assertIsDisplayed()`                               |
-| `performGesture { ... }`                      | Deprecated                           | `performTouchInput { ... }`                         |
-| Reading state after mutating it with no sync  | UI appears paused, no recomposition  | Assert or act through the rule, or `waitForIdle()`  |
-| Chaining actions inside `perform`             | Not supported                        | Separate `perform...()` calls                       |
+`performTextInput` and `performImeAction` return `Unit`.
 
 ## Related References
 
@@ -208,8 +282,7 @@ Text actions such as `performTextInput` and `performImeAction` return `Unit` and
 ## Sources
 
 - https://developer.android.com/develop/ui/compose/testing/apis
-- https://developer.android.com/develop/ui/compose/testing/migrate-v2
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection
 - https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus
-- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig
-- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary
-- https://developer.android.com/jetpack/androidx/releases/compose-ui
+- https://developer.android.com/develop/ui/compose/testing/migrate-v2

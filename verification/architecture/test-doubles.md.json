@@ -1,0 +1,197 @@
+{
+  "units": [
+    {
+      "text": "A post on robolectric.org that calls itself an outside read, not an official AndroidX position, says Android's guidance also prefers fakes (lightweight, no mocking framework) over mocks, and tells consumers to \"check with the authors to see if they provide any officially-supported testing infrastructures, such as fakes, that you can reliably depend on\".",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "This is an outside read of the code as it stands in mid-2026, not an official AndroidX position"
+        },
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "Android's guidance also prefers fakes (lightweight, no mocking framework) over mocks"
+        },
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "check with the authors to see if they provide any officially-supported testing infrastructures, such as fakes, that you can reliably depend on"
+        }
+      ]
+    },
+    {
+      "text": "In general, if you implement a testable architecture you shouldn't need to use Robolectric for unit testing as your code should be testable in isolation, with no dependencies on the Android framework.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "In general, if you implement a testable architecture you shouldn't need to use Robolectric for unit testing as your code should be testable in isolation, with no dependencies on the Android framework."
+        }
+      ]
+    },
+    {
+      "text": "The Compose testing page shows a typical UI test that passes a fake UI state to the content under test:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "A typical UI test for Compose looks like this:"
+        }
+      ]
+    },
+    {
+      "text": "class MyComposeTest {\n\n    @get:Rule val composeTestRule = createComposeRule()\n    // use createAndroidComposeRule<YourActivity>() if you need access to\n    // an activity\n\n    @Test\n    fun myTest() {\n        // Start the app\n        composeTestRule.setContent {\n            MyAppTheme {\n                MainScreen(uiState = fakeUiState, /*...*/)\n            }\n        }\n\n        composeTestRule.onNodeWithText(\"Continue\").performClick()\n\n        composeTestRule.onNodeWithText(\"Welcome\").assertIsDisplayed()\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "class MyComposeTest {\n\n    @get:Rule val composeTestRule = createComposeRule()\n    // use createAndroidComposeRule<YourActivity>() if you need access to\n    // an activity\n\n    @Test\n    fun myTest() {\n        // Start the app\n        composeTestRule.setContent {\n            MyAppTheme {\n                MainScreen(uiState = fakeUiState, /*...*/)\n            }\n        }\n\n        composeTestRule.onNodeWithText(\"Continue\").performClick()\n\n        composeTestRule.onNodeWithText(\"Welcome\").assertIsDisplayed()\n    }\n}"
+        }
+      ]
+    },
+    {
+      "text": "For authors of Robolectric-based local-testing libraries, the checklist in the same post (an outside read, not an official AndroidX position) says: Prefer a fake to a shadow. Write a plain object that implements your real interface and holds in-memory state. Reach for a Robolectric shadow only for genuine platform surfaces (a system property in AppFunctions, service binding in Tiles, a Parcel in Lifecycle), and shadow the OS outright only when the contract is the OS (XR projected).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "This is an outside read of the code as it stands in mid-2026, not an official AndroidX position"
+        },
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "Prefer a fake to a shadow. Write a plain object that implements your real interface and holds in-memory state. Reach for a Robolectric shadow only for genuine platform surfaces (a system property in AppFunctions, service binding in Tiles, a Parcel in Lifecycle), and shadow the OS outright only when the contract is the OS (XR projected)."
+        }
+      ]
+    },
+    {
+      "text": "You can also use Robolectric's fakes (called shadows) as dependencies for unit tests. For example, if your class uses a Bundle or you need to fake a Bluetooth connection.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You can also use Robolectric's fakes (called shadows) as dependencies for unit tests. For example, if your class uses a Bundle or you need to fake a Bluetooth connection."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric works by creating a runtime environment that includes the real Android framework code. However, there are limitations:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "Robolectric works by creating a runtime environment that includes the real Android framework code."
+        },
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "However, there are limitations:"
+        }
+      ]
+    },
+    {
+      "text": "- Android native code cannot execute on your development machine.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "Android native code cannot execute on your development machine."
+        }
+      ]
+    },
+    {
+      "text": "- There are no Android system services running on your development machine.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "There are no Android system services running on your development machine."
+        }
+      ]
+    },
+    {
+      "text": "- Android includes next to no APIs suitable for testing.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "Android includes next to no APIs suitable for testing."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric fills these gaps with a set of classes known as Shadows. Each shadow can modify or extend the behavior of a corresponding class in the Android OS.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "Robolectric fills these gaps with a set of classes known as Shadows. Each shadow can modify or extend the behavior of a corresponding class in the Android OS."
+        }
+      ]
+    },
+    {
+      "text": "Shadow classes are associated to the class that they Shadow with an @Implements annotation on the class declaration. Shadow methods must be marked with the @Implementation annotation.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "They are associated to the class that they Shadow with an @Implements annotation on the class declaration."
+        },
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "Shadow methods must be marked with the @Implementation annotation."
+        }
+      ]
+    },
+    {
+      "text": "@Implements(ImageView::class)\nclass ShadowImageView : ShadowView {\n  @Implementation\n  protected fun setImageResource(resId: Int) {\n    // Implementation goes here\n  }\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "@Implements(ImageView::class)\nclass ShadowImageView : ShadowView {\n  @Implementation\n  protected fun setImageResource(resId: Int) {\n    // Implementation goes here\n  }\n}"
+        }
+      ]
+    },
+    {
+      "text": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. Context, SharedPreferences, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades. The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. Context, SharedPreferences, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades. The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners."
+        }
+      ]
+    },
+    {
+      "text": "DO test layout inflation in your Robolectric test and ensure that click listeners are set up correctly by testing the Activity and layout interaction directly, rather than mocking the LayoutInflater or providing an abstraction over the View.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DO test layout inflation in your Robolectric test and ensure that click listeners are set up correctly by testing the Activity and layout interaction directly, rather than mocking the LayoutInflater or providing an abstraction over the View."
+        }
+      ]
+    },
+    {
+      "text": "DO use public lifecycle APIs (e.g., via Robolectric.buildActivity()), rather than exposing @VisibleForTesting methods when testing Android components such as Activities and Services. Calling those methods directly makes it difficult to refactor the code under test later. The AndroidX Test page on Robolectric.org says `Robolectric.buildActivity()` has proved problematic as it requires developers to fully understand valid lifecycle transitions and possible valid states, and that `ActivityScenario` provides a replacement, but places tighter restrictions around lifecycle transitions.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DO use public lifecycle APIs (e.g., via Robolectric.buildActivity()), rather than exposing @VisibleForTesting methods when testing Android components such as"
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Calling those methods directly makes it difficult to refactor the code under test later."
+        },
+        {
+          "url": "https://robolectric.org/androidx_test/",
+          "quote": "This has proved problematic as it requires developers to fully understand valid lifecycle transitions and possible valid states."
+        },
+        {
+          "url": "https://robolectric.org/androidx_test/",
+          "quote": "ActivityScenario provides a replacement for both of these use cases, but places tighter restrictions around lifecycle transitions"
+        }
+      ]
+    },
+    {
+      "text": "DO limit the number of threads that are running during each test. Rogue threads often cause test pollution because they are not automatically cleaned up between tests. One of the main sources of additional threads during tests are ExecutorServices that maintain thread pools. If possible, mock dependent components that spawn threads, or use MoreExecutors.directExecutor(). If it's necessary to run multiple threads during a test, make sure to explicitly stop all threads and ExecutorServices to avoid test pollution.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DO limit the number of threads that are running during each test. Rogue threads often cause test pollution because they are not automatically cleaned up between tests."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "One of the main sources of additional threads during tests are ExecutorServices that maintain thread pools."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "If possible, mock dependent components that spawn threads, or use MoreExecutors.directExecutor(). If it's necessary to run multiple threads during a test, make sure to explicitly stop all threads and ExecutorServices to avoid test pollution."
+        }
+      ]
+    }
+  ]
+}

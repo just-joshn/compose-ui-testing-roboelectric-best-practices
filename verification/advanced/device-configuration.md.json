@@ -1,0 +1,496 @@
+{
+  "units": [
+    {
+      "text": "Android apps need to adapt to many changing conditions: window sizes, locales, font sizes, dark and light themes, and more. Testing different configurations directly in a test is difficult since the test must configure device-level properties.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Android apps need to adapt to many changing conditions: window sizes, locales, font sizes, dark and light themes, and more."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Testing different configurations directly in a test is difficult since the test must configure device-level properties."
+        }
+      ]
+    },
+    {
+      "text": "`DeviceConfigurationOverride` is a test-only API that lets you simulate different device configurations in a localized way for the `@Composable` content under test.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "is a test-only API that lets you simulate different device configurations in a localized way for the @Composable content under test."
+        }
+      ]
+    },
+    {
+      "text": "The release notes for 1.7.0-alpha01 say: adds `DeviceConfigurationOverride` API to `ui-test` to allow locally overriding the behavior of content under test, such as to specify an available size, locale, layout direction, font scale, or theme.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/jetpack/androidx/releases/compose-ui",
+          "quote": "Adds DeviceConfigurationOverride API to ui-test to allow locally overriding the behavior of content under test, such as to specify an available size, locale, layout direction, font scale, or theme."
+        }
+      ]
+    },
+    {
+      "text": "The companion object of `DeviceConfigurationOverride` has the following extension functions, which override device-level configuration properties:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "The companion object of DeviceConfigurationOverride has the following extension functions, which override device-level configuration properties:"
+        }
+      ]
+    },
+    {
+      "text": "- `DeviceConfigurationOverride.DarkMode()`: Overrides the system to dark theme or light theme.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Overrides the system to dark theme or light theme."
+        }
+      ]
+    },
+    {
+      "text": "- `DeviceConfigurationOverride.FontScale()`: Overrides the system font scale.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Overrides the system font scale."
+        }
+      ]
+    },
+    {
+      "text": "- `DeviceConfigurationOverride.FontWeightAdjustment()`: Overrides the system font weight adjustment.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Overrides the system font weight adjustment."
+        }
+      ]
+    },
+    {
+      "text": "- `DeviceConfigurationOverride.ForcedSize()`: Forces a specific amount of space regardless of device size.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Forces a specific amount of space regardless of device size."
+        }
+      ]
+    },
+    {
+      "text": "- `DeviceConfigurationOverride.LayoutDirection()`: Overrides the layout direction (left-to-right or right-to-left).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Overrides the layout direction (left-to-right or right-to-left)."
+        }
+      ]
+    },
+    {
+      "text": "- `DeviceConfigurationOverride.Locales()`: Overrides the locale.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Overrides the locale."
+        }
+      ]
+    },
+    {
+      "text": "- `DeviceConfigurationOverride.RoundScreen()`: Overrides if the screen is round.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Overrides if the screen is round."
+        }
+      ]
+    },
+    {
+      "text": "The `androidx.compose.ui.test` API reference also lists `Keyboard`, `Navigation`, `Touchscreen`, `UiMode`, `WindowInsets`, and `WindowSize` overrides.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "that overrides the current keyboard type."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "that overrides the current navigation type and whether it is hidden."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "that overrides the current touchscreen type."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "that overrides the current ui mode type."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "that overrides the window insets for the contained content."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "that overrides the window size for the contained content."
+        }
+      ]
+    },
+    {
+      "text": "To apply a specific override, wrap the content under test in a call to the `DeviceConfigurationOverride()` top-level function, passing the override to apply as a parameter.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "To apply a specific override, wrap the content under test in a call to the"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "top-level function, passing the override to apply as a parameter."
+        }
+      ]
+    },
+    {
+      "text": "For example, the following code applies the `DeviceConfigurationOverride.ForcedSize()` override to change the density locally, forcing the `MyScreen` composable to be rendered in a large landscape window, even if the device the test is running on doesn't support that window size directly:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "For example, the following code applies the DeviceConfigurationOverride.ForcedSize() override to change the density locally, forcing the MyScreen composable to be rendered in a large landscape window, even if the device the test is running on doesn't support that window size directly:"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.setContent {\n    DeviceConfigurationOverride(\n        DeviceConfigurationOverride.ForcedSize(DpSize(1280.dp, 800.dp))\n    ) {\n        MyScreen() // Will be rendered in the space for 1280dp by 800dp without clipping.\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "composeTestRule.setContent {\n    DeviceConfigurationOverride(\n        DeviceConfigurationOverride.ForcedSize(DpSize(1280.dp, 800.dp))\n    ) {\n        MyScreen() // Will be rendered in the space for 1280dp by 800dp without clipping.\n    }\n}"
+        }
+      ]
+    },
+    {
+      "text": "To apply multiple overrides together, use `DeviceConfigurationOverride.then()`:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "To apply multiple overrides together, use"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "infix fun DeviceConfigurationOverride.then(other: DeviceConfigurationOverride): DeviceConfigurationOverride"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.setContent {\n    DeviceConfigurationOverride(\n        DeviceConfigurationOverride.FontScale(1.5f) then\n            DeviceConfigurationOverride.FontWeightAdjustment(200)\n    ) {\n        Text(text = \"text with increased scale and weight\")\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "composeTestRule.setContent {\n    DeviceConfigurationOverride(\n        DeviceConfigurationOverride.FontScale(1.5f) then\n            DeviceConfigurationOverride.FontWeightAdjustment(200)\n    ) {\n        Text(text = \"text with increased scale and weight\")\n    }\n}"
+        }
+      ]
+    },
+    {
+      "text": "`then` combines the override with the other override into a single override, by applying this override as the outer override first, then the other override as an inner override, and then the content.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "into a single override, by applying this override as the outer override first, then the"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "override as an inner override, and then the content."
+        }
+      ]
+    },
+    {
+      "text": "The `ForcedSize` reference says it is only suitable for tests, since it overrides `LocalDensity` to ensure that the `ForcedSize` is met (as opposed to `Modifier.requiredSize` which will result in clipping).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "This is only suitable for tests, since this will override"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "is met (as opposed to Modifier.requiredSize which will result in clipping)."
+        }
+      ]
+    },
+    {
+      "text": "The `WindowSize` reference says that, unlike `ForcedSize`, this override will override `LocalWindowInfo` and `LocalConfiguration` on Android to reflect the requested size.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "this override will override"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "and LocalConfiguration on Android to reflect the requested size."
+        }
+      ]
+    },
+    {
+      "text": "DeviceConfigurationOverride(DeviceConfigurationOverride.Locales(LocaleList(\"es-ES\"))) {\n    MyScreen() // will be rendered with overridden locale\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "DeviceConfigurationOverride(DeviceConfigurationOverride.Locales(LocaleList(\"es-ES\"))) {\n    MyScreen() // will be rendered with overridden locale\n}"
+        }
+      ]
+    },
+    {
+      "text": "`Locales` will change resource resolution for the content under test, and also override the layout direction as specified by the locales.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "This will change resource resolution for the content under test, and also override the layout direction as specified by the locales."
+        }
+      ]
+    },
+    {
+      "text": "DeviceConfigurationOverride(DeviceConfigurationOverride.DarkMode(true)) {\n    isSystemInDarkTheme() // will be true\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "DeviceConfigurationOverride(DeviceConfigurationOverride.DarkMode(true)) {\n    isSystemInDarkTheme() // will be true\n}"
+        }
+      ]
+    },
+    {
+      "text": "`FontWeightAdjustment` is annotated `@RequiresApi(value = 31)` and `RoundScreen` is annotated `@RequiresApi(value = 23)`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "@RequiresApi(value = 31) fun DeviceConfigurationOverride.Companion.FontWeightAdjustment( fontWeightAdjustment: Int ): DeviceConfigurationOverride"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "@RequiresApi(value = 23) fun DeviceConfigurationOverride.Companion.RoundScreen( isScreenRound: Boolean ): DeviceConfigurationOverride"
+        }
+      ]
+    },
+    {
+      "text": "Robolectric makes it easy to simulate a variety of device configurations. In particular, the properties that make up the Configuration class can be specified at the test method, test class, package, or suite level.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Robolectric makes it easy to simulate a variety of device configurations. In particular, the properties that make up the Configuration class can be specified at the test method, test class, package, or suite level"
+        }
+      ]
+    },
+    {
+      "text": "The Android device configuration can be specified using the qualifiers `@Config` argument:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "The Android device configuration can be specified using the qualifiers @Config argument:"
+        }
+      ]
+    },
+    {
+      "text": "@Test\n@Config(qualifiers = \"fr-rFR-w360dp-h640dp-xhdpi\")\nfun testItOnFrenchNexus5() {\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "@Test\n@Config(qualifiers = \"fr-rFR-w360dp-h640dp-xhdpi\")\nfun testItOnFrenchNexus5() {\n}"
+        }
+      ]
+    },
+    {
+      "text": "The system's Configuration, Display and DisplayMetrics objects will all reflect the specified configuration, the locale will be set, and appropriate resources will be selected.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "The system's Configuration, Display and DisplayMetrics objects will all reflect the specified configuration, the locale will be set, and appropriate resources will be selected."
+        }
+      ]
+    },
+    {
+      "text": "Multiple qualifiers should be separated by dashes.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/using-qualifiers/",
+          "quote": "Multiple qualifiers should be separated by dashes"
+        }
+      ]
+    },
+    {
+      "text": "For unspecified properties, Robolectric picks consistent values based on the properties that have been specified, or uses default values. Some of the defaults:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "For unspecified properties, Robolectric picks consistent values based on the properties that have been specified, or uses default values as follows:"
+        }
+      ]
+    },
+    {
+      "text": "| Language, region, and script (locale) | `en-rUS` |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Language, region, and script (locale) None en-rUS"
+        }
+      ]
+    },
+    {
+      "text": "| Width | `w320dp` |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Width If screen size is specified, the corresponding width as declared here w320dp"
+        }
+      ]
+    },
+    {
+      "text": "| Height | `h470dp` |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Height If screen size is specified, the corresponding height as declared here. If screen aspect is specified as long, the height is increased by 25%. h470dp"
+        }
+      ]
+    },
+    {
+      "text": "| Screen orientation | `port` |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Screen orientation If width and height are specified, port or land as appropriate port"
+        }
+      ]
+    },
+    {
+      "text": "| Screen pixel density | `mdpi` |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Screen pixel density None mdpi"
+        }
+      ]
+    },
+    {
+      "text": "If screen orientation is specified, width and height will be swapped as appropriate.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "If screen orientation is specified, width and height will be swapped as appropriate"
+        }
+      ]
+    },
+    {
+      "text": "Specifying a resource qualifier is quite simple: simply add the desired qualifiers to the `@Config` annotation on your test case or test class, depending on whether you would like to change the resource qualifiers for the whole file, or simply one test.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/using-qualifiers/",
+          "quote": "Specifying a resource qualifier is quite simple: simply add the desired qualifiers to the @Config annotation on your test case or test class, depending on whether you would like to change the resource qualifiers for the whole file, or simply one test."
+        }
+      ]
+    },
+    {
+      "text": "By default, specifying qualifiers causes any previous specification of qualifiers to be ignored. For example, qualifiers at the test method level occlude qualifiers at the test class level. However, if the qualifiers config property starts with a + (plus sign), it is interpreted as an overlay to any higher-level qualifiers that have been specified:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "By default, specifying qualifiers causes any previous specification of qualifiers to be ignored. For example, qualifiers at the test method level occlude qualifiers at the test class level. However, if the qualifiers config property starts with a + (plus sign), it is interpreted as an overlay to any higher-level qualifiers that have been specified:"
+        }
+      ]
+    },
+    {
+      "text": "@Config(qualifiers = \"xlarge-port\")\nclass MyTest {\n  @Test\n  fun testItWithXlargePort() {\n    // Config is \"xlarge-port\"\n  }\n\n  @Test\n  @Config(qualifiers = \"+land\")\n  fun testItWithXlargeLand() {\n    // Config is \"xlarge-land\"\n  }\n\n  @Test\n  @Config(qualifiers = \"land\")\n  fun testItWithLand() {\n    // Config is \"normal-land\"\n  }\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "@Config(qualifiers = \"xlarge-port\")\nclass MyTest {\n  @Test\n  fun testItWithXlargePort() {\n    // Config is \"xlarge-port\"\n  }\n\n  @Test\n  @Config(qualifiers = \"+land\")\n  fun testItWithXlargeLand() {\n    // Config is \"xlarge-land\"\n  }\n\n  @Test\n  @Config(qualifiers = \"land\")\n  fun testItWithLand() {\n    // Config is \"normal-land\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "text": "Values for unspecified properties are calculated, and rules are applied, after all configs have been merged.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Values for unspecified properties are calculated, and rules are applied, after all configs have been merged."
+        }
+      ]
+    },
+    {
+      "text": "The device configuration can be changed within a test using `RuntimeEnvironment.setQualifiers()`:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "The device configuration can be changed within a test using RuntimeEnvironment.setQualifiers():"
+        }
+      ]
+    },
+    {
+      "text": "@Test\n@Config(qualifiers = \"+port\")\nfun testOrientationChange() {\n  val controller = Robolectric.buildActivity(MyActivity::class)\n  controller.setup()\n  // assert that activity is in portrait mode\n  RuntimeEnvironment.setQualifiers(\"+land\")\n  controller.configurationChange()\n  // assert that activity is in landscape mode\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "@Test\n@Config(qualifiers = \"+port\")\nfun testOrientationChange() {\n  val controller = Robolectric.buildActivity(MyActivity::class)\n  controller.setup()\n  // assert that activity is in portrait mode\n  RuntimeEnvironment.setQualifiers(\"+land\")\n  controller.configurationChange()\n  // assert that activity is in landscape mode\n}"
+        }
+      ]
+    },
+    {
+      "text": "The string parameter to `RuntimeEnvironment.setQualifiers()` has the same rules as `Config.qualifiers`.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "The string parameter to RuntimeEnvironment.setQualifiers() has the same rules as Config.qualifiers."
+        }
+      ]
+    },
+    {
+      "text": "Note that `RuntimeEnvironment.setQualifiers()` updates the system and application resources with the new configuration, but does not trigger any action on extant activities or other components.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Note that RuntimeEnvironment.setQualifiers() updates the system and application resources with the new configuration, but does not trigger any action on extant activities or other components."
+        }
+      ]
+    },
+    {
+      "text": "`ActivityController.configurationChange()` can be used to simulate the sequence of events that take place on a device when its configuration changes. If the Activity is configured to handle the configuration changes, `ActivityController.configurationChange()` will call the Activity's `onConfigurationChanged()` method. If not, `ActivityController` destroys and recreates the Activity.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "ActivityController.configurationChange() can be used to simulate the sequence of events that take place on a device when its configuration changes. If the Activity is configured to handle the configuration changes, ActivityController.configurationChange() will call the Activity's onConfigurationChanged() method. If not, ActivityController destroys and recreates the Activity."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric allows display properties to be changed during a test using setters on `ShadowDisplay`. Multiple displays can be simulated using APIs on `ShadowDisplayManager`.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/device-configuration/",
+          "quote": "Robolectric allows display properties to be changed during a test using setters on ShadowDisplay. Multiple displays can be simulated using APIs on ShadowDisplayManager."
+        }
+      ]
+    },
+    {
+      "text": "The AndroidX Test page on Robolectric.org says Robolectric provides `Robolectric.setupActivity()` for the coarse-grained use case where you require a launched activity in the resumed state and visible for the user to interact with, and `Robolectric.buildActivity()`, which returns an `ActivityController` that allows the developer to step through the Activity lifecycle. It says `buildActivity()` has proved problematic as it requires developers to fully understand valid lifecycle transitions and possible valid states, and that `ActivityScenario` provides a replacement for both of these use cases, but places tighter restrictions around lifecycle transitions, namely that invalid or incomplete transitions are not possible.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/androidx_test/",
+          "quote": "Robolectric provides Robolectric.setupActivity() for the coarse-grained use case where you require a launched activity in the resumed state and visible for the user to interact with."
+        },
+        {
+          "url": "https://robolectric.org/androidx_test/",
+          "quote": "Robolectric also provides Robolectric.buildActivity(), which returns an ActivityController that allows the developer to step through the Activity lifecycle. This has proved problematic as it requires developers to fully understand valid lifecycle transitions and possible valid states."
+        },
+        {
+          "url": "https://robolectric.org/androidx_test/",
+          "quote": "ActivityScenario provides a replacement for both of these use cases, but places tighter restrictions around lifecycle transitions, namely that invalid or incomplete transitions are not possible."
+        }
+      ]
+    },
+    {
+      "text": "A Robolectric blog post that calls itself an outside read of the code, not an official AndroidX position, says of `window-testing` that the fakes are pure JUnit and that Robolectric only provides the JVM Android types (`Rect`, `WindowLayoutInfo`) so the tests can build them off-device.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/",
+          "quote": "This is an outside read of the code as it stands in mid-2026, not an official AndroidX position"
+        },
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/",
+          "quote": "The fakes are pure JUnit; Robolectric only provides the JVM Android types (Rect, WindowLayoutInfo) so the tests can build them off-device."
+        }
+      ]
+    }
+  ]
+}

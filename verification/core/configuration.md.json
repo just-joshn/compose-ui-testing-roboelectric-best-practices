@@ -1,0 +1,541 @@
+{
+ "units": [
+  {
+   "text": "| `androidx.compose.ui:ui-*` | Stable `1.12.1`; release candidate `1.13.0-rc01` | Compose UI release notes (latest update November 04, 2026) |",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/jetpack/androidx/releases/compose-ui",
+     "quote": "| Latest Update | Stable Release | Release Candidate | Beta Release | Alpha Release | |---|---|---|---|---| | November 04, 2026 | 1.12.1 | 1.13.0-rc01 | - | - |"
+    }
+   ]
+  },
+  {
+   "text": "| Robolectric | `4.18`, the newest release on the Robolectric GitHub releases page (published 2026-11-13) | GitHub releases |",
+   "quotes": [
+    {
+     "url": "https://github.com/robolectric/robolectric/releases",
+     "quote": "# Robolectric 4.18 (2026-11-13T18:14:14Z)"
+    }
+   ]
+  },
+  {
+   "text": "| Robolectric `4.18` Android API levels | 24 to 37 | Robolectric compatibility table |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/compatibility_table/",
+     "quote": "This table shows the minimum and maximum Android SDK versions per Robolectric release"
+    },
+    {
+     "url": "https://robolectric.org/compatibility_table/",
+     "quote": "4.18 24 → 37 9.8.2 9.5.0"
+    }
+   ]
+  },
+  {
+   "text": "| JUnit | `junit:junit:4.13.2` | Robolectric Getting Started |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/getting-started/",
+     "quote": "testImplementation(\"junit:junit:4.13.2\")"
+    }
+   ]
+  },
+  {
+   "text": "The Android Robolectric page's example uses `org.robolectric:robolectric:4.13`, while Robolectric Getting Started uses `org.robolectric:robolectric:4.18`.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+     "quote": "testImplementation(\"org.robolectric:robolectric:4.13\")"
+    },
+    {
+     "url": "https://robolectric.org/getting-started/",
+     "quote": "testImplementation(\"org.robolectric:robolectric:4.18\")"
+    }
+   ]
+  },
+  {
+   "text": "The Compose testing page's setup section says to add the following dependencies to the `build.gradle` file of the module containing your UI tests:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing",
+     "quote": "First, add the following dependencies to the build.gradle file of the module containing your UI tests:"
+    }
+   ]
+  },
+  {
+   "text": "// Test rules and transitive dependencies:\nandroidTestImplementation(\"androidx.compose.ui:ui-test-junit4:$compose_version\")\n// Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>():\ndebugImplementation(\"androidx.compose.ui:ui-test-manifest:$compose_version\")",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing",
+     "quote": "// Test rules and transitive dependencies: androidTestImplementation(\"androidx.compose.ui:ui-test-junit4:$compose_version\") // Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>(): debugImplementation(\"androidx.compose.ui:ui-test-manifest:$compose_version\")"
+    }
+   ]
+  },
+  {
+   "text": "The Robolectric Getting Started page says to start by adding the following to your module's `build.gradle`/`build.gradle.kts` file:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/getting-started/",
+     "quote": "Start by adding the following to your module's build.gradle/build.gradle.kts file:"
+    }
+   ]
+  },
+  {
+   "text": "android {\n  testOptions {\n    unitTests {\n      isIncludeAndroidResources = true\n    }\n  }\n}\n\ndependencies {\n  testImplementation(\"junit:junit:4.13.2\")\n  testImplementation(\"org.robolectric:robolectric:4.18\")\n}",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/getting-started/",
+     "quote": "android { testOptions { unitTests { isIncludeAndroidResources = true } } } dependencies { testImplementation(\"junit:junit:4.13.2\") testImplementation(\"org.robolectric:robolectric:4.18\") }"
+    }
+   ]
+  },
+  {
+   "text": "The `ComposeUiTestConfig` class is included, starting in version 1.13, in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact (`androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`).",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The ComposeUiTestConfig class is included, starting in version 1.13, in the junit4 and ui-test parts of the androidx.compose.ui AndroidX artifact (androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+ and androidx.compose.ui:ui-test:1.13.0-alpha01+"
+    }
+   ]
+  },
+  {
+   "text": "Compose test v2 APIs use `ComposeUiTestConfig` to customize the test environment. This configuration object consolidates environmental related APIs like `effectContext`, `runTestContext`, and `testTimeout` into a single object.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Compose test v2 APIs use ComposeUiTestConfig to customize the test environment."
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "This configuration object consolidates environmental related APIs like"
+    }
+   ]
+  },
+  {
+   "text": "val testConfig = ComposeUiTestConfig(\n    effectContext = EmptyCoroutineContext,\n    runTestContext = EmptyCoroutineContext,\n    testTimeout = 30.seconds\n)\n\n@get:Rule\nval rule = createComposeRule(config = testConfig)\n\n// OR\n\nrunComposeUiTest(config = testConfig) {}",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "val testConfig = ComposeUiTestConfig( effectContext = EmptyCoroutineContext, runTestContext = EmptyCoroutineContext, testTimeout = 30.seconds ) @get:Rule val rule = createComposeRule(config = testConfig) // OR runComposeUiTest(config = testConfig) {}"
+    }
+   ]
+  },
+  {
+   "text": "Compose test v2 APIs enforce `InputMode.Touch` by default at the start of each test to ensure determinism and prevent input mode state from leaking between tests. Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. To resolve this, specify the required input mode in `ComposeUiTestConfig`:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Compose test v2 APIs enforce InputMode.Touch) by default at the start of each test to ensure determinism and prevent input mode state from leaking between tests."
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts."
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "To resolve this, specify the required input mode in ComposeUiTestConfig:"
+    }
+   ]
+  },
+  {
+   "text": "class FocusTest {\n    @get:Rule\n    val rule = createComposeRule(\n        config = ComposeUiTestConfig(inputMode = InputMode.Keyboard)\n    )\n\n    @Test\n    fun testFocus() {}\n}",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "class FocusTest { @get:Rule val rule = createComposeRule( config = ComposeUiTestConfig(inputMode = InputMode.Keyboard) ) @Test fun testFocus() {} }"
+    }
+   ]
+  },
+  {
+   "text": "The Robolectric compatibility table shows the minimum Java version required to run Robolectric tests against a specific version of Android:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/compatibility_table/",
+     "quote": "This table shows the minimum Java version required to run Robolectric tests against a specific version of Android."
+    }
+   ]
+  },
+  {
+   "text": "| 37, 36 | 21 |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/compatibility_table/",
+     "quote": "Android 17 37 21 Android 16 36 21"
+    }
+   ]
+  },
+  {
+   "text": "| 35, 34 | 17 |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/compatibility_table/",
+     "quote": "Android 15 35 17 Android 14 34 17"
+    }
+   ]
+  },
+  {
+   "text": "| 33, 32, 31, 30, 29 | 9 |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/compatibility_table/",
+     "quote": "Android 13 33 9 Android 12.1 32 9 Android 12 31 9 Android 11 30 9 Android 10 29 9"
+    }
+   ]
+  },
+  {
+   "text": "| 28, 27, 26, 25, 24 | 8 |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/compatibility_table/",
+     "quote": "Android 9 28 8 Android 8.1 27 8 Android 8.0 26 8 Android 7.1 25 8 Android 7.0 24 8"
+    }
+   ]
+  },
+  {
+   "text": "When running tests on Java 17 or higher, the JVM requires `--add-opens` flags so that Robolectric can access internal OpenJDK classes and APIs (java.lang, java.io, jdk.internal.access, etc.). Add the following `jvmArgs` to your unit test configuration in `build.gradle` / `build.gradle.kts`:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/getting-started/",
+     "quote": "When running tests on Java 17 or higher, the JVM requires --add-opens flags so that Robolectric can access internal OpenJDK classes and APIs (java.lang, java.io, jdk.internal.access, etc.). Add the following jvmArgs to your unit test configuration in build.gradle / build.gradle.kts:"
+    }
+   ]
+  },
+  {
+   "text": "android {\n  testOptions {\n    unitTests.all {\n      it.jvmArgs(\n        \"--add-opens=java.base/java.lang=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.util=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.io=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.net=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.security=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.text=ALL-UNNAMED\",\n        \"--add-opens=java.base/jdk.internal.access=ALL-UNNAMED\",\n        \"--add-opens=java.desktop/java.awt.font=ALL-UNNAMED\",\n        \"--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED\",\n      )\n    }\n  }\n}",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/getting-started/",
+     "quote": "android { testOptions { unitTests.all { it.jvmArgs( \"--add-opens=java.base/java.lang=ALL-UNNAMED\", \"--add-opens=java.base/java.util=ALL-UNNAMED\", \"--add-opens=java.base/java.io=ALL-UNNAMED\", \"--add-opens=java.base/java.net=ALL-UNNAMED\", \"--add-opens=java.base/java.security=ALL-UNNAMED\", \"--add-opens=java.base/java.text=ALL-UNNAMED\", \"--add-opens=java.base/jdk.internal.access=ALL-UNNAMED\", \"--add-opens=java.desktop/java.awt.font=ALL-UNNAMED\", \"--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED\", ) } } }"
+    }
+   ]
+  },
+  {
+   "text": "Several aspects of Robolectric's behavior can be configured at runtime, using either `@Config` annotations for class- or method-level configuration, or `robolectric.properties` files for package-level configuration.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "Several aspects of Robolectric's behavior can be configured at runtime, using either @Config annotations for class- or method-level configuration, or robolectric.properties files for package-level configuration."
+    }
+   ]
+  },
+  {
+   "text": "To configure Robolectric for a single test class or method, use the `@Config` annotation on the desired class or method. Annotations applied on methods take precedence over the ones at the class level.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "To configure Robolectric for a single test class or method, use the @Config annotation on the desired class or method. Annotations applied on methods take precedence over the ones at the class level."
+    }
+   ]
+  },
+  {
+   "text": "Base classes are also searched for annotations. So if you find yourself specifying the same values on a large number of tests, you can create a base class and move your `@Config` annotation to that class.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "Base classes are also searched for annotations. So if you find yourself specifying the same values on a large number of tests, you can create a base class and move your @Config annotation to that class."
+    }
+   ]
+  },
+  {
+   "text": "@Config(\n  sdk = Build.VERSION_CODES.TIRAMISU,\n  shadows = [ShadowFoo::class, ShadowBar::class]\n)\nclass SandwichTest",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "@Config( sdk = Build.VERSION_CODES.TIRAMISU, shadows = [ShadowFoo::class, ShadowBar::class] ) class SandwichTest"
+    }
+   ]
+  },
+  {
+   "text": "To configure all Robolectric tests within a package or group of packages, create a file named `robolectric.properties` in the appropriate package. Generally, this file would be placed within the appropriate package directory under `src/test/resources` in your project tree. Robolectric will search for properties files up the hierarchy of packages (including the unnamed default package at the top level), with values in deeper packages overriding values in more shallow packages. When test classes or methods have `@Config` annotations, those override any config from properties files.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "To configure all Robolectric tests within a package or group of packages, create a file named robolectric.properties in the appropriate package. Generally, this file would be placed within the appropriate package directory under src/test/resources in your project tree. Robolectric will search for properties files up the hierarchy of packages (including the unnamed default package at the top level), with values in deeper packages overriding values in more shallow packages. When test classes or methods have @Config annotations, those override any config from properties files."
+    }
+   ]
+  },
+  {
+   "text": "# src/test/resources/com/mycompany/app/robolectric.properties\nsdk=33\nshadows=com.mycompany.ShadowFoo,com.mycompany.ShadowBar",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "src/test/resources/com/mycompany/app/robolectric.propertiessdk=33 shadows=com.mycompany.ShadowFoo,com.mycompany.ShadowBar"
+    }
+   ]
+  },
+  {
+   "text": "If you wish to change the default for any configurable value for all your tests, you can provide a `GlobalConfigProvider` service implementation.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "If you wish to change the default for any configurable value for all your tests, you can provide a GlobalConfigProvider service implementation."
+    }
+   ]
+  },
+  {
+   "text": "By default, Robolectric will run your code against the `targetSdk` specified in your module's `build.gradle`/`build.gradle.kts` or `AndroidManifest.xml` file. If you want to test your code under a different SDK, you can specify the desired SDK(s) using the `sdk`, `minSdk` and `maxSdk` config properties:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "By default, Robolectric will run your code against the targetSdk specified in your module's build.gradle/build.gradle.kts or AndroidManifest.xml file. If you want to test your code under a different SDK, you can specify the desired SDK(s) using the sdk, minSdk and maxSdk config properties:"
+    }
+   ]
+  },
+  {
+   "text": "@Config(sdk = [TIRAMISU, UPSIDE_DOWN_CAKE])\nclass SandwichTest {\n  @Test\n  fun getSandwich_shouldReturnHamSandwich() {\n    // will run on TIRAMISU and UPSIDE_DOWN_CAKE\n  }\n\n  @Test\n  @Config(sdk = TIRAMISU)\n  fun onTiramisu_getSandwich_shouldReturnChocolateWaferSandwich() {\n    // will run on TIRAMISU\n  }\n\n  @Test\n  @Config(minSdk = UPSIDE_DOWN_CAKE)\n  fun fromUpsideDownCakeOn_getSandwich_shouldReturnTunaSandwich() {\n    // will run on UPSIDE_DOWN_CAKE, VANILLA_ICE_CREAM, etc.\n  }\n}",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "@Config(sdk = [TIRAMISU, UPSIDE_DOWN_CAKE]) class SandwichTest { @Test fun getSandwich_shouldReturnHamSandwich() { // will run on TIRAMISU and UPSIDE_DOWN_CAKE } @Test @Config(sdk = TIRAMISU) fun onTiramisu_getSandwich_shouldReturnChocolateWaferSandwich() { // will run on TIRAMISU } @Test @Config(minSdk = UPSIDE_DOWN_CAKE) fun fromUpsideDownCakeOn_getSandwich_shouldReturnTunaSandwich() { // will run on UPSIDE_DOWN_CAKE, VANILLA_ICE_CREAM, etc. } }"
+    }
+   ]
+  },
+  {
+   "text": "Note that `sdk` and `minSdk`/`maxSdk` may not be specified in the same `@Config` annotation or file; however, `minSdk` and `maxSdk` may be specified together. If any of them is present, they override any SDK specification from a less-specific configuration location.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "Note that sdk and minSdk/maxSdk may not be specified in the same @Config annotation or file; however, minSdk and maxSdk may be specified together. If any of them is present, they override any SDK specification from a less-specific configuration location."
+    }
+   ]
+  },
+  {
+   "text": "Robolectric will attempt to create an instance of your `Application` class as specified in the AndroidManifest. If you want to provide a custom implementation, you can specify it by setting:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "Robolectric will attempt to create an instance of your Application class as specified in the AndroidManifest. If you want to provide a custom implementation, you can"
+    }
+   ]
+  },
+  {
+   "text": "@Config(application = CustomApplication::class)\nclass SandwichTest {\n  @Test\n  @Config(application = CustomApplicationOverride::class)\n  fun getSandwich_shouldReturnHamSandwich() {\n  }\n}",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "@Config(application = CustomApplication::class) class SandwichTest { @Test @Config(application = CustomApplicationOverride::class) fun getSandwich_shouldReturnHamSandwich() { } }"
+    }
+   ]
+  },
+  {
+   "text": "You can explicitly configure the set of resource qualifiers in effect for a test:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "You can explicitly configure the set of resource qualifiers in effect for a test:"
+    }
+   ]
+  },
+  {
+   "text": "class SandwichTest {\n  @Test\n  @Config(qualifiers = \"fr-xlarge\")\n  fun getSandwichName() {\n    assertThat(sandwich.name).isEqualTo(\"Grande Croque Monégasque\")\n  }\n}",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "class SandwichTest { @Test @Config(qualifiers = \"fr-xlarge\") fun getSandwichName() { assertThat(sandwich.name).isEqualTo(\"Grande Croque Monégasque\") } }"
+    }
+   ]
+  },
+  {
+   "text": "The `@Config` Javadoc for 4.18 describes these elements:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "Configuration settings that can be used on a per-class or per-test basis."
+    }
+   ]
+  },
+  {
+   "text": "| `sdk` | The Android SDK level to emulate. This value will also be set as `Build.VERSION.SDK_INT`. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "The Android SDK level to emulate. This value will also be set as Build.VERSION.SDK_INT."
+    }
+   ]
+  },
+  {
+   "text": "| `minSdk` | The minimum Android SDK level to emulate when running tests on multiple API versions. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "The minimum Android SDK level to emulate when running tests on multiple API versions."
+    }
+   ]
+  },
+  {
+   "text": "| `maxSdk` | The maximum Android SDK level to emulate when running tests on multiple API versions. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "The maximum Android SDK level to emulate when running tests on multiple API versions."
+    }
+   ]
+  },
+  {
+   "text": "| `qualifiers` | Qualifiers specifying device configuration for this test, such as \"fr-normal-port-hdpi\". If the string is prefixed with '+', the qualifiers that follow are overlaid on any more broadly-scoped qualifiers. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "Qualifiers specifying device configuration for this test, such as \"fr-normal-port-hdpi\". If the string is prefixed with '+', the qualifiers that follow are overlaid on any more broadly-scoped qualifiers."
+    }
+   ]
+  },
+  {
+   "text": "| `application` | The Application class to use in the test, this takes precedence over any application specified in the AndroidManifest.xml. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "The Application class to use in the test, this takes precedence over any application specified in the AndroidManifest.xml."
+    }
+   ]
+  },
+  {
+   "text": "| `fontScale` | The default font scale. In U+, users will have a slider to determine font scale. In all previous APIs, font scales are either small (0.85f), normal (1.0f), large (1.15f) or huge (1.3f) |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "The default font scale. In U+, users will have a slider to determine font scale. In all previous APIs, font scales are either small (0.85f), normal (1.0f), large (1.15f) or huge (1.3f)"
+    }
+   ]
+  },
+  {
+   "text": "| `shadows` | A list of shadow classes to enable, in addition to those that are already present. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "A list of shadow classes to enable, in addition to those that are already present."
+    }
+   ]
+  },
+  {
+   "text": "| `instrumentedPackages` | A list of instrumented packages, in addition to those that are already instrumented. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html",
+     "quote": "A list of instrumented packages, in addition to those that are already instrumented."
+    }
+   ]
+  },
+  {
+   "text": "Some additional options can be configured globally by setting these system properties:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "Some additional options can be configured globally by setting these system properties:"
+    }
+   ]
+  },
+  {
+   "text": "| `robolectric.enabledSdks` | Comma-separated list of SDK levels or names (e.g. 33, 34 or TIRAMISU, UPSIDE_DOWN_CAKE) which are enabled for this process. Only tests targeting a listed SDKs will be run. | All SDKs |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "robolectric.enabledSdks Comma-separated list of SDK levels or names (e.g. 33, 34 or TIRAMISU, UPSIDE_DOWN_CAKE) which are enabled for this process. Only tests targeting a listed SDKs will be run. All SDKs"
+    }
+   ]
+  },
+  {
+   "text": "| `robolectric.offline` | Set to true to disable runtime fetching of jars. | `false` |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "robolectric.offline Set to true to disable runtime fetching of jars. false"
+    }
+   ]
+  },
+  {
+   "text": "| `robolectric.dependency.dir` | Specifies a folder containing runtime dependencies. | `null` |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "robolectric.dependency.dir Specifies a folder containing runtime dependencies. null"
+    }
+   ]
+  },
+  {
+   "text": "| `robolectric.dependency.repo.id` | Set the ID of the Maven repository to use for the runtime dependencies. | `mavenCentral` |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "robolectric.dependency.repo.id Set the ID of the Maven repository to use for the runtime dependencies. mavenCentral"
+    }
+   ]
+  },
+  {
+   "text": "| `robolectric.dependency.repo.url` | Set the URL of the Maven repository to use for the runtime dependencies. | `https://repo1.maven.org/maven2` |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "robolectric.dependency.repo.url Set the URL of the Maven repository to use for the runtime dependencies. https://repo1.maven.org/maven2"
+    }
+   ]
+  },
+  {
+   "text": "| `robolectric.logging.enabled` | Set to true to enable debug logging. | `false` |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "robolectric.logging.enabled Set to true to enable debug logging. false"
+    }
+   ]
+  },
+  {
+   "text": "When using Gradle, you can configure the System Properties for unit tests with the `android.testOptions.unitTests.all` block. For example, to override the Maven repository URL and ID to download the runtime dependencies from a repository other than Maven Central:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "When using Gradle, you can configure the System Properties for unit tests with the android.testOptions.unitTests.all block"
+    },
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "to override the Maven repository URL and ID to download the runtime dependencies from a repository other than Maven Central:"
+    }
+   ]
+  },
+  {
+   "text": "android {\n  testOptions {\n    unitTests.all {\n      it.systemProperty(\"robolectric.dependency.repo.url\", \"https://local-mirror/repo\")\n      it.systemProperty(\"robolectric.dependency.repo.id\", \"local\")\n    }\n  }\n}",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "android { testOptions { unitTests.all { it.systemProperty(\"robolectric.dependency.repo.url\", \"https://local-mirror/repo\") it.systemProperty(\"robolectric.dependency.repo.id\", \"local\")"
+    }
+   ]
+  },
+  {
+   "text": "| Robolectric needs to access internal OpenJDK classes and APIs on Java 17 or higher. | The JVM requires `--add-opens` flags; add the `jvmArgs` to your unit test configuration. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/getting-started/",
+     "quote": "When running tests on Java 17 or higher, the JVM requires --add-opens flags so that Robolectric can access internal OpenJDK classes and APIs"
+    }
+   ]
+  },
+  {
+   "text": "| Running tests against Android API 36 or 37. | The minimum Java version is 21. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/compatibility_table/",
+     "quote": "Android 17 37 21 Android 16 36 21"
+    }
+   ]
+  },
+  {
+   "text": "| `sdk` and `minSdk`/`maxSdk` are specified together. | They may not be specified in the same `@Config` annotation or file. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/configuring/",
+     "quote": "Note that sdk and minSdk/maxSdk may not be specified in the same @Config annotation or file;"
+    }
+   ]
+  },
+  {
+   "text": "| You are not sure if resources are being loaded for a particular library. | Enable debug logging by setting the system property `robolectric.logging.enabled = true` and run your tests. |",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/getting-started/",
+     "quote": "If you are not sure if resources are being loaded for a particular library, enable debug logging by setting the system property robolectric.logging.enabled = true and run your tests."
+    }
+   ]
+  }
+ ]
+}

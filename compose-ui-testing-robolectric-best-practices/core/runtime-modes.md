@@ -15,120 +15,113 @@
 
 ## Overview
 
-Robolectric exposes a few annotations that choose how much of Android is real. Each can go on a package, class, or method.
-
-| Annotation                    | Choices                                          | Default in 4.18                         |
-| ----------------------------- | ------------------------------------------------ | --------------------------------------- |
-| `@LooperMode`                 | `PAUSED`, `INSTRUMENTATION_TEST`, `LEGACY`       | `PAUSED`                                |
-| `@GraphicsMode`               | `NATIVE`, `LEGACY`                               | Not stated in the 4.18 Javadoc (see below) |
-| `@SQLiteMode` (deprecated)    | `NATIVE`, `LEGACY`                               | Native SQLite                           |
-
-Robolectric.org has no Compose-specific page. No allowed page recommends a particular `@GraphicsMode` or `@Config` combination for Compose tests, so treat the settings below as per-need, not as a required recipe.
+| Annotation | Applies to | Javadoc description (4.18) |
+| --- | --- | --- |
+| `@LooperMode` | `PACKAGE`, `TYPE`, `METHOD` | A Configurer annotation for controlling Robolectric's Looper behavior. |
+| `@GraphicsMode` | `PACKAGE`, `TYPE`, `METHOD` | A Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package. |
+| `@SQLiteMode` (deprecated) | `PACKAGE`, `TYPE`, `METHOD` | A Configurer annotation for controlling which SQLite shadow implementation is used for the android.database package. This annotation will be deleted in a forthcoming Robolectric release. |
 
 ## Looper Mode
 
-```kotlin
-import org.robolectric.annotation.LooperMode
+Currently Robolectric will default to `LooperMode.Mode.PAUSED` behavior, but this can be overridden by applying a `@LooperMode(NewMode)` annotation to a test package, test class, or test method, or via the `robolectric.looperMode` system property.
 
-@RunWith(AndroidJUnit4::class)
-@LooperMode(LooperMode.Mode.PAUSED)   // already the default in 4.18
-class CheckoutScreenTest { /* ... */ }
+| Mode | Javadoc description |
+| --- | --- |
+| `PAUSED` | A mode that more accurately models real Android's Looper behavior. |
+| `INSTRUMENTATION_TEST` | A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread. |
+| `LEGACY` | Deprecated: use `LooperMode.PAUSED`. `LEGACY` mode is not supported on Android SDKs > Baklava. |
+
+The upgrade guide's entries for deprecated APIs such as `Robolectric#getForegroundThreadScheduler()` say: "This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)".
+
+The Robolectric blog post "Improving Robolectric's Looper simulation" (2019) lists these highlights of the `PAUSED` mode compared with the `LEGACY` mode:
+
+- Tasks posted to the main Looper are not automatically executed inline.
+- Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue. This is a hint that the unexecuted behavior is important for the test case.
+- AndroidX Test APIs, like `ActivityScenario`, `FragmentScenario` and Espresso will automatically idle the main Looper.
+- Tasks posted to background Loopers are executed in real threads.
+
+The same post says: if you see test failures like `Main looper has queued unexecuted runnables`, you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper.
+
+```java
+import static android.os.Looper.getMainLooper;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
+import static org.robolectric.Shadows.shadowOf;
+import org.robolectric.annotation.LooperMode;
+
+@RunWith(AndroidJUnit4.class)
+@LooperMode(PAUSED)
+public class MyTest {
+  @Test
+  public void testCodeThatPosts() {
+    List<String> events = new ArrayList<>();
+    events.add("before");
+    new Handler(Looper.getMainLooper()).post(() -> events.add("after"));
+    events.add("between");
+    // the 'after' task is posted, but has not been executed yet
+    assertThat(events).containsExactly("before", "between").inOrder();
+    // execute all tasks posted to main Looper
+    shadowOf(getMainLooper()).idle();
+    assertThat(events).containsExactly("before", "between", "after").inOrder();
+  }
+}
 ```
 
-| Mode                    | Behavior                                                                              |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| `PAUSED`                | Models real Looper behavior; tasks on the main `Looper` run only when idled           |
-| `INSTRUMENTATION_TEST`  | Separate test thread distinct from the main looper thread                             |
-| `LEGACY`                | Deprecated; "not supported on Android SDKs > Baklava"                                 |
-
-Override globally with the `robolectric.looperMode` system property. The upgrade guide: "We strongly encourage you to use the `PAUSED` looper mode (which is the default)".
-
-In `PAUSED` mode:
-
-- Tests run on the main looper thread.
-- Tasks posted to the main `Looper` are not executed automatically. Run them with `shadowOf(Looper.getMainLooper()).idle()`.
-- `SystemClock` time is frozen; advance with `ShadowSystemClock.advanceBy(Duration)` or `ShadowLooper.idleFor(Duration)`.
-- Each background `Looper` has its own thread and runs tasks asynchronously.
-- `ActivityScenario`, `FragmentScenario`, and Espresso idle the main `Looper` for you.
-- A failing test with unexecuted main-looper tasks gets a warning.
-
-```kotlin
-// Good: drain the main Looper before asserting on code that posts to a Handler
-Handler(Looper.getMainLooper()).post { events.add("after") }
-shadowOf(Looper.getMainLooper()).idle()
-assertThat(events).containsExactly("before", "between", "after").inOrder()
-```
-
-Compose's own idling is separate from this; see [synchronization.md](synchronization.md).
+The same post says under Animations: Use of Animations can cause delayed tasks to be posted to the main Looper queue. You can use the `ShadowLooper.idleFor()` or `ShadowLooper.runToEndOfTasks()` APIs to execute these tasks.
 
 ## Graphics Mode
 
-```kotlin
-import org.robolectric.annotation.GraphicsMode
+| Mode | Javadoc description |
+| --- | --- |
+| `NATIVE` | Use graphics shadows libraries backed by native Android graphics code. |
+| `LEGACY` | Use legacy graphics shadows that are no-ops and fakes. |
 
-@RunWith(AndroidJUnit4::class)
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
-class CardRenderingTest { /* ... */ }
-```
+The Robolectric 4.10 release notes (the release that added native graphics) say native graphics "can be enabled using `@GraphicsMode(NATIVE)`. When native graphics is enabled, interactions with Android graphics classes use real native Android graphics code and are much higher fidelity."
 
-| Mode      | Meaning                                                              |
-| --------- | -------------------------------------------------------------------- |
-| `NATIVE`  | Graphics shadows backed by native Android graphics code              |
-| `LEGACY`  | "no-ops and fakes"                                                   |
-
-Facts from the release notes:
-
-- Native graphics was introduced in 4.10 "disabled by default" and enabled with `@GraphicsMode(NATIVE)`. The 4.18 Javadoc states no default and no later note changing it was found. Set the annotation explicitly when a test needs real rendering.
-- 4.13: better hardware rendering support in Robolectric Native Graphics, supported down to Android P, and "increased compatibility with Compose's graphics layer".
-- 4.12.2: to use hardware rendering with `PixelCopy`, set `robolectric.pixelCopyRenderMode=hardware`.
-- 4.18: Linux arm64 gets a native runtime for native SQLite and `@GraphicsMode(NATIVE)`.
-- 4.18 on SDK 33 and 34: `RuntimeShader` uniform setters forward to native, which "can change how Material ripples are drawn in screenshot tests". `robolectric.runtimeShaderScalarUniform=false` restores the old behavior temporarily.
-
-```kotlin
-// Good: native graphics only where rendered pixels matter
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Test fun themeColors_render() { /* capture and compare, see visual-regression.md */ }
-```
-
-The Robolectric 2026 blog says Compose screenshot tests use Robolectric's native-graphics `PixelCopy` shadow. Screenshot comparison is covered in [visual-regression.md](../testing-patterns/visual-regression.md).
+- 4.13: Better support for HW rendering in Robolectric Native Graphics (RNG). HW rendering is now supported all the way down to Android P. Increased compatibility with Compose's graphics layer.
+- 4.12.2: In order to use HW rendering with PixelCopy, you must set the `robolectric.pixelCopyRenderMode=hardware` system property.
+- 4.18: Robolectric's native runtime now includes Linux arm64 (aarch64) native libraries, so tests that use native SQLite (the default) and native graphics (`@GraphicsMode(NATIVE)`) can run on Linux arm64 environments.
 
 ## SQLite and Other Native Modes
 
-- `SQLiteMode.Mode.NATIVE` is the default; per the upgrade guide "usages of these APIs can be removed". `@SQLiteMode` is `@Deprecated` and "will be deleted in a forthcoming Robolectric release". Legacy SQLite mode is unsupported on Linux arm64 and Apple silicon.
-- 4.18 removed `@TextLayoutMode`: "Realistic text layout ... is now always used".
-- 4.18 adds native resources (`ResourcesMode.NATIVE`) on SDK 36 and higher.
+- `SQLiteMode.Mode.NATIVE` is the default mode and does not need to be stated explicitly. `SQLiteMode.Mode.LEGACY` is obsolete and will be removed soon.
+- The upgrade guide for 4.17 says: SQLiteMode.Mode.NATIVE is now the default, and usages of these APIs can be removed.
+- 4.18: As on Apple silicon, the legacy SQLite mode (`SQLiteMode.Mode.LEGACY`) isn't supported on Linux arm64.
+- 4.18: `@TextLayoutMode` has been removed. Realistic text layout, the default since 2019, is now always used.
+- 4.18: Native resources (`ResourcesMode.NATIVE`) now work on SDK 36 and above, not only SDK 36.
 
 ## What This Means for Compose Tests
 
-- The 2026 Robolectric blog says Compose's JVM idling strategy forces layout "where there is no draw pass". `MainTestClock` drives recomposition, animations, and gestures, not Android's measure and draw passes; after advancing the clock, for rendering assertions (such as `captureToImage`) call `waitForIdle()` or `runOnIdle` after advancing the clock.
-- For behavior tests (for example a Compose test verifying the UI changed after a click), the Android docs say Robolectric's fidelity is "more than enough". They do not say to set `@GraphicsMode` for them.
-- Screenshots on Robolectric are lower fidelity: "different devices render screens slightly differently". The docs say to take them only when pixel accuracy is not critical, for example font size or theme reactions.
-- Use `@Config(sdk = ...)` to pick the API level and JDK accordingly; see [configuration.md](configuration.md).
+The Robolectric blog post "Designing Robolectric-based local-testing libraries for platforms and modules" describes itself as "an outside read of the code as it stands in mid-2026, not an official AndroidX position".
+
+- The post says the same `createAndroidComposeRule<ComponentActivity>()` / `runComposeUiTest { }` code runs on a device and on the JVM from one binary, with no Robolectric-specific source set.
+- The post says the only runtime detection is a single fingerprint check, and that boolean swaps one internal `IdlingStrategy` (Espresso on device; a main-thread loop that pumps Compose and forces layout on the JVM, where there is no draw pass). Frames come from a virtual-time test clock rather than a real Choreographer, and screenshot tests use Robolectric's native-graphics `PixelCopy` shadow.
+- The post's table says what Robolectric does for Compose UI: JVM Looper plus native-graphics shadows for rendering and PixelCopy screenshots.
+- The `MainTestClock` reference says that on Android only measure and layout are performed synchronously, and that the draw pass on Android is driven by the Choreographer and will not happen as a result of forwarding this clock.
+- The `MainTestClock` reference also says that if you want to assert anything related to rendering (for example `SemanticsNodeInteraction.captureToImage`) after advancing the clock, you will need a call to `ComposeTestRule.waitForIdle` or `ComposeTestRule.runOnIdle` to make sure that any triggered draw pass has been completed.
+- The Android Robolectric page says you can run other UI tests with Robolectric, such as screenshot tests. However the fidelity is lower as different devices render screens slightly differently.
+- The Android Robolectric page recommends using Robolectric to take screenshots when the pixel accuracy is not critical, for example to test how a component reacts to different font sizes or themes.
+- Robolectric can take screenshots natively, but you need a third-party library to perform screenshot testing with it.
 
 ## Known Limits
 
-The 1.0.0-beta09 Compose release notes listed limits that predate native graphics: no native bitmap (`ImageBitmap()` threw NPE), no drawing (`captureToImage()` deadlocked awaiting a draw pass), no loaded fonts so text measured incorrectly, and `waitUntil` not running the main thread while waiting. These are 2021-era notes. Verify against your versions before repeating them.
-
-Per the API reference, `ComposeTestRule.enableAccessibilityChecks` "requires API 34+ and currently does not work on Robolectric". `captureToImage` is `@RequiresApi(26)`.
+- `ComposeTestRule.enableAccessibilityChecks`: "This requires API 34+ (Android U), and currently does not work on Robolectric."
+- `ComposeUiTest.enableAccessibilityChecks`: "Requires API 34+ (Android U) and is not supported on Robolectric."
 
 ## Common Issues & Solutions
 
-| Issue                                                        | Solution                                                         |
-| ------------------------------------------------------------ | ---------------------------------------------------------------- |
-| Handler-posted work has not run when asserting               | `shadowOf(Looper.getMainLooper()).idle()`                        |
-| "Main looper has queued unexecuted runnables" failure        | Same; the work matters to the test                               |
-| Rendering looks different after a Robolectric upgrade        | Check release notes (runtime shader, hardware rendering, `PixelCopy` mode) |
-| Delayed work after animation never runs                      | `ShadowLooper.idleFor()` or `runToEndOfTasks()`                  |
-| `LEGACY` looper fails on a new SDK                           | Move to `PAUSED`; `LEGACY` is unsupported above Baklava          |
+| Issue | Solution |
+| --- | --- |
+| Test failures like `Main looper has queued unexecuted runnables`. | The 2019 Looper blog post says you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper. |
+| Use of animations can cause delayed tasks to be posted to the main Looper queue. | The 2019 Looper blog post says you can use the `ShadowLooper.idleFor()` or `ShadowLooper.runToEndOfTasks()` APIs to execute these tasks. |
+| `LEGACY` looper mode on a newer SDK. | `LEGACY` mode is not supported on Android SDKs > Baklava; use `LooperMode.PAUSED`. |
+| Using hardware rendering with `PixelCopy`. | You must set the `robolectric.pixelCopyRenderMode=hardware` system property. |
 
 ## Anti-Patterns to Avoid
 
-| Anti-Pattern                                   | Problem                                 | Solution                                        |
-| ---------------------------------------------- | --------------------------------------- | ----------------------------------------------- |
-| `@LooperMode(LEGACY)` in new tests             | Deprecated, runs tasks inline           | `PAUSED`                                        |
-| `@SQLiteMode` annotations                      | Deprecated; native is default           | Remove                                          |
-| Enabling `NATIVE` graphics for all behavior tests | Docs call default fidelity "more than enough" for behavior | Enable only where rendering is asserted |
-| Treating Robolectric pixels as device pixels   | Lower fidelity                          | Use screenshot tests where pixel accuracy is not critical |
+| Anti-Pattern | Problem | Solution |
+| --- | --- | --- |
+| `@LooperMode(LEGACY)` | Deprecated. The `LooperMode.Mode` Javadoc lists as a problem with `LEGACY` mode that the default `UNPAUSED` state will execute tasks posted to a Looper inline synchronously, which differs from real Android behaviour. | Use `PAUSED`. |
+| `@SQLiteMode` annotations | `@SQLiteMode` is deprecated and `NATIVE` is the default mode. | Usages of these APIs can be removed. |
 
 ## Related References
 
@@ -140,14 +133,17 @@ Per the API reference, `ComposeTestRule.enableAccessibilityChecks` "requires API
 ## Sources
 
 - https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.html
+- https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html
 - https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.html
+- https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.Mode.html
+- https://robolectric.org/javadoc/4.18/org/robolectric/annotation/SQLiteMode.html
+- https://robolectric.org/javadoc/4.18/org/robolectric/annotation/SQLiteMode.Mode.html
 - https://robolectric.org/upgrade_to_version_4/
 - https://robolectric.org/blog/2019/06/04/paused-looper/
 - https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/
-- https://robolectric.org/simulator/
 - https://github.com/robolectric/robolectric/releases
 - https://developer.android.com/training/testing/local-tests/robolectric
-- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock
-- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTest
 - https://developer.android.com/jetpack/androidx/releases/compose-ui

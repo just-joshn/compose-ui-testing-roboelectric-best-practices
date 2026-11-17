@@ -1,0 +1,105 @@
+{
+  "units": [
+    {
+      "text": " Use when writing, reviewing, or debugging Jetpack Compose UI tests that run locally on the JVM with Robolectric. Covers compose test rules (createComposeRule, createAndroidComposeRule, runComposeUiTest), semantics finders and matchers, merged vs unmerged trees, assertions and actions, synchronization and idling resources, waitUntil, the MainTestClock and animations, coroutines in the v2 test APIs, state restoration (StateRestorationTester), device configuration (DeviceConfigurationOverride, Robolectric qualifiers), accessibility checks and focus tests, View, Espresso and UiAutomator interoperability, fakes and shadows, Robolectric @Config, robolectric.properties, LooperMode, GraphicsMode, SQLiteMode, screenshots, flaky tests, debugging with printToLog, choosing Robolectric or device tests, and CI.",
+      "meta": true
+    },
+    {
+      "text": " Robolectric 4.18 supports Android API 24 → 37. Compose ui-test stable release 1.12.1, release candidate 1.13.0-rc01.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Robolectric version Android API levels Gradle version Android Gradle Plugin version 4.18 24 → 37"
+        },
+        {
+          "url": "https://developer.android.com/jetpack/androidx/releases/compose-ui",
+          "quote": "| Stable Release | Release Candidate | Beta Release | Alpha Release |"
+        },
+        {
+          "url": "https://developer.android.com/jetpack/androidx/releases/compose-ui",
+          "quote": "November 04, 2026 | 1.12.1 | 1.13.0-rc01"
+        }
+      ]
+    },
+    {
+      "text": "This skill provides guidance for Jetpack Compose UI tests that run on the JVM with Robolectric. It uses only the official Compose UI testing and Robolectric documentation. Every statement in the reference files is backed by a quote from those pages, recorded in the repository's `verification/` ledgers.",
+      "meta": true
+    },
+    {
+      "text": "Consult these references based on what you're doing:",
+      "meta": true
+    },
+    {
+      "text": "**When to use**: Creating new test files, writing test cases, implementing test scenarios",
+      "meta": true
+    },
+    {
+      "text": "**When to use**: Testing font scale, locale, layout direction, dark mode, sizes, and Robolectric qualifiers",
+      "meta": true
+    },
+    {
+      "text": "**When to use**: Testing Compose alongside Views, Espresso, or UiAutomator",
+      "meta": true
+    },
+    {
+      "text": "**When to use**: Test failures, node not found, idle timeouts, unexpected behavior",
+      "meta": true
+    },
+    {
+      "text": "**When to use**: Choosing between Robolectric and device tests, or deciding what to replace",
+      "meta": true
+    },
+    {
+      "text": "**When to use**: Improving existing tests, code review",
+      "meta": true
+    },
+    {
+      "text": "**When to use**: Setting up the project, Robolectric config, CI",
+      "meta": true
+    },
+    {
+      "text": "After writing or modifying tests:",
+      "meta": true
+    },
+    {
+      "text": "1. **Run the tests**: `./gradlew test`. Robolectric's sharedTest post says to \"test it with ./gradlew test for local tests on Robolectric\".",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/blog/2021/10/06/sharedTest",
+          "quote": "test it with ./gradlew test for local tests on Robolectric"
+        }
+      ]
+    },
+    {
+      "text": "2. **Look at the semantics tree**, the main way to solve problems in your tests: `composeTestRule.onRoot().printToLog()` → [debugging.md](debugging/debugging.md)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
+          "quote": "The main way to solve problems in your tests is to look at the semantics tree. Print the tree by calling composeTestRule.onRoot().printToLog() at any point in your test."
+        }
+      ]
+    },
+    {
+      "text": "3. **Match unmerged nodes when needed**: set `useUnmergedTree` to `true` → [semantics-finders.md](core/semantics-finders.md)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "If you need to match a node of what would be the *unmerged* tree, you can set useUnmergedTree to true"
+        }
+      ]
+    },
+    {
+      "text": "4. **Conditions that depend on external work**: use a more general concept such as `waitUntil()` → [synchronization.md](core/synchronization.md)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+        }
+      ]
+    },
+    {
+      "text": "5. **Repeat** until the tests pass.",
+      "meta": true
+    }
+  ]
+}

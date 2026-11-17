@@ -1,0 +1,254 @@
+{
+  "units": [
+    {
+      "text": "The Compose testing page adds the following dependencies, using `androidTestImplementation` and `debugImplementation`, to the `build.gradle` file of the module containing your UI tests:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "First, add the following dependencies to the build.gradle file of the module containing your UI tests:"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "androidTestImplementation(\"androidx.compose.ui:ui-test-junit4:$compose_version\")"
+        }
+      ]
+    },
+    {
+      "text": "// Test rules and transitive dependencies:\nandroidTestImplementation(\"androidx.compose.ui:ui-test-junit4:$compose_version\")\n// Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>():\ndebugImplementation(\"androidx.compose.ui:ui-test-manifest:$compose_version\")",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "// Test rules and transitive dependencies:\nandroidTestImplementation(\"androidx.compose.ui:ui-test-junit4:$compose_version\")\n// Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>():\ndebugImplementation(\"androidx.compose.ui:ui-test-manifest:$compose_version\")"
+        }
+      ]
+    },
+    {
+      "text": "This module includes a `ComposeTestRule` and an implementation for Android called `AndroidComposeTestRule`. Through this rule you can set Compose content or access the activity. You construct the rules using factory functions, either `createComposeRule` or, if you need access to an activity, `createAndroidComposeRule`. A typical UI test for Compose looks like this:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "This module includes a ComposeTestRule and an implementation for Android called AndroidComposeTestRule. Through this rule you can set Compose content or access the activity. You construct the rules using factory functions, either createComposeRule"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "or, if you need access to an activity, createAndroidComposeRule"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "A typical UI test for Compose looks like this:"
+        }
+      ]
+    },
+    {
+      "text": "class MyComposeTest {\n\n    @get:Rule val composeTestRule = createComposeRule()\n    // use createAndroidComposeRule<YourActivity>() if you need access to\n    // an activity\n\n    @Test\n    fun myTest() {\n        // Start the app\n        composeTestRule.setContent {\n            MyAppTheme {\n                MainScreen(uiState = fakeUiState, /*...*/)\n            }\n        }\n\n        composeTestRule.onNodeWithText(\"Continue\").performClick()\n\n        composeTestRule.onNodeWithText(\"Welcome\").assertIsDisplayed()\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "class MyComposeTest {\n\n    @get:Rule val composeTestRule = createComposeRule()\n    // use createAndroidComposeRule<YourActivity>() if you need access to\n    // an activity\n\n    @Test\n    fun myTest() {\n        // Start the app\n        composeTestRule.setContent {\n            MyAppTheme {\n                MainScreen(uiState = fakeUiState, /*...*/)\n            }\n        }\n\n        composeTestRule.onNodeWithText(\"Continue\").performClick()\n\n        composeTestRule.onNodeWithText(\"Welcome\").assertIsDisplayed()\n    }\n}"
+        }
+      ]
+    },
+    {
+      "text": "`ComposeTestRule` lets you start an activity displaying any composable: your full application, a single screen, or a small element. It's also a good practice to check that your composables are correctly encapsulated and they work independently, allowing for easier and more focused UI testing.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "ComposeTestRule lets you start an activity displaying any composable: your full application, a single screen, or a small element. It's also a good practice to check that your composables are correctly encapsulated and they work independently, allowing for easier and more focused UI testing."
+        }
+      ]
+    },
+    {
+      "text": "This doesn't mean you should only create unit UI tests. UI tests scoping larger parts of your UI are also very important.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "This doesn't mean you should *only* create unit UI tests. UI tests scoping larger parts of your UI are also very important."
+        }
+      ]
+    },
+    {
+      "text": "Oftentimes you need to set the content under test using `composeTestRule.setContent` and you also need to access activity resources, for example to assert that a displayed text matches a string resource. However, you can't call `setContent` on a rule created with `createAndroidComposeRule()` if the activity already calls it.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Oftentimes you need to set the content under test using composeTestRule.setContent and you also need to access activity resources, for example to assert that a displayed text matches a string resource. However, you can't call setContent on a rule created with createAndroidComposeRule() if the activity already calls it."
+        }
+      ]
+    },
+    {
+      "text": "A common pattern to achieve this is to create an `AndroidComposeTestRule` using an empty activity such as `ComponentActivity`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "A common pattern to achieve this is to create an AndroidComposeTestRule using an empty activity such as ComponentActivity."
+        }
+      ]
+    },
+    {
+      "text": "class MyComposeTest {\n\n    @get:Rule\n    val composeTestRule = createAndroidComposeRule<ComponentActivity>()\n\n    @Test\n    fun myTest() {\n        // Start the app\n        composeTestRule.setContent {\n            MyAppTheme {\n                MainScreen(uiState = exampleUiState, /*...*/)\n            }\n        }\n        val continueLabel = composeTestRule.activity.getString(R.string.next)\n        composeTestRule.onNodeWithText(continueLabel).performClick()\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "class MyComposeTest {\n\n    @get:Rule\n    val composeTestRule = createAndroidComposeRule<ComponentActivity>()\n\n    @Test\n    fun myTest() {\n        // Start the app\n        composeTestRule.setContent {\n            MyAppTheme {\n                MainScreen(uiState = exampleUiState, /*...*/)\n            }\n        }\n        val continueLabel = composeTestRule.activity.getString(R.string.next)\n        composeTestRule.onNodeWithText(continueLabel).performClick()\n    }\n}"
+        }
+      ]
+    },
+    {
+      "text": "Note that `ComponentActivity` needs to be added to your app's `AndroidManifest.xml` file. Enable that by adding this dependency to your module:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Note that ComponentActivity needs to be added to your app's AndroidManifest.xml file. Enable that by adding this dependency to your module:"
+        }
+      ]
+    },
+    {
+      "text": "debugImplementation(\"androidx.compose.ui:ui-test-manifest:$compose_version\")",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "debugImplementation(\"androidx.compose.ui:ui-test-manifest:$compose_version\")"
+        }
+      ]
+    },
+    {
+      "text": "You can create custom semantics properties to expose information to tests. To do this, define a new `SemanticsPropertyKey` and make it available using the `SemanticsPropertyReceiver`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "You can create custom semantics properties to expose information to tests. To do this, define a new SemanticsPropertyKey and make it available using the SemanticsPropertyReceiver."
+        }
+      ]
+    },
+    {
+      "text": "// Creates a semantics property of type Long.\nval PickedDateKey = SemanticsPropertyKey<Long>(\"PickedDate\")\nvar SemanticsPropertyReceiver.pickedDate by PickedDateKey",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "// Creates a semantics property of type Long.\nval PickedDateKey = SemanticsPropertyKey<Long>(\"PickedDate\")\nvar SemanticsPropertyReceiver.pickedDate by PickedDateKey"
+        }
+      ]
+    },
+    {
+      "text": "Now use that property in the `semantics` modifier:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Now use that property in the semantics modifier:"
+        }
+      ]
+    },
+    {
+      "text": "val datePickerValue by remember { mutableStateOf(0L) }\nMyCustomDatePicker(\n    modifier = Modifier.semantics { pickedDate = datePickerValue }\n)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "val datePickerValue by remember { mutableStateOf(0L) }\nMyCustomDatePicker(\n    modifier = Modifier.semantics { pickedDate = datePickerValue }\n)"
+        }
+      ]
+    },
+    {
+      "text": "From tests, use `SemanticsMatcher.expectValue` to assert the value of the property:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "From tests, use SemanticsMatcher.expectValue to assert the value of the property:"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule\n    .onNode(SemanticsMatcher.expectValue(PickedDateKey, 1445378400)) // 2015-10-21\n    .assertExists()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "composeTestRule\n    .onNode(SemanticsMatcher.expectValue(PickedDateKey, 1445378400)) // 2015-10-21\n    .assertExists()"
+        }
+      ]
+    },
+    {
+      "text": "You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers. Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers. Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric can also run UI tests such as Espresso or Compose tests. You can convert an instrumented test to Robolectric by moving it to the `test` source set and setting up the Robolectric dependencies.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric can also run UI tests such as Espresso or Compose tests. You can convert an instrumented test to Robolectric by moving it to the test source set and setting up the Robolectric dependencies."
+        }
+      ]
+    },
+    {
+      "text": "android {\n  testOptions {\n    unitTests {\n      isIncludeAndroidResources = true\n    }\n  }\n}\n\ndependencies {\n  testImplementation(\"junit:junit:4.18.2\")\n  testImplementation(\"org.robolectric:robolectric:4.18\")\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/getting-started",
+          "quote": "android { testOptions { unitTests { isIncludeAndroidResources = true } } } dependencies { testImplementation(\"junit:junit:4.13.2\") testImplementation(\"org.robolectric:robolectric:4.18\") }"
+        }
+      ]
+    },
+    {
+      "text": "Any UI test present in the `test` source set runs with Robolectric.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Any UI test present in the test source set runs with Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button."
+        }
+      ]
+    },
+    {
+      "text": "Use Robolectric for isolated UI behavior tests for components, feature or application tests. In general these tests check the state management and behavior of the UIs and don't interact with external dependencies.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Use Robolectric for isolated UI behavior tests for components, feature or application tests. In general these tests check the state management and behavior of the UIs and don't interact with external dependencies."
+        }
+      ]
+    },
+    {
+      "text": "You must decide whether Robolectric's implementation is good enough for each use case.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You must decide whether Robolectric's implementation is good enough for each use case"
+        }
+      ]
+    },
+    {
+      "text": "A Robolectric blog post, which describes itself as \"an outside read of the code as it stands in mid-2026, not an official AndroidX position\", says the same `createAndroidComposeRule<ComponentActivity>()` / `runComposeUiTest { }` code runs on a device and on the JVM from one binary, with no Robolectric-specific source set.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "This is an outside read of the code as it stands in mid-2026, not an official AndroidX position"
+        },
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "The same createAndroidComposeRule<ComponentActivity>() / runComposeUiTest { } code runs on a device and on the JVM from one binary, with no Robolectric-specific source set."
+        }
+      ]
+    },
+    {
+      "text": "Don't mock or spy on Android classes that will be acted on by other Android code (e.g. `Context`, `SharedPreferences`, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. Context, SharedPreferences, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades."
+        }
+      ]
+    }
+  ]
+}

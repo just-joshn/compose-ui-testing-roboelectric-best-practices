@@ -2,50 +2,31 @@
 
 ## Table of Contents
 
-1. [Pipeline Shape](#pipeline-shape)
-2. [JDK Selection](#jdk-selection)
-3. [Local Tests Task](#local-tests-task)
-4. [Android-all Downloads](#android-all-downloads)
-5. [Custom Mirror and Proxy](#custom-mirror-and-proxy)
-6. [Preloaded Jars and Offline](#preloaded-jars-and-offline)
-7. [Restricting SDKs](#restricting-sdks)
-8. [Flakiness and Retries](#flakiness-and-retries)
-9. [Best Practices](#best-practices)
-10. [Common Issues & Solutions](#common-issues--solutions)
-11. [Related References](#related-references)
-12. [Sources](#sources)
+1. [Java Version](#java-version)
+2. [Local Tests Task](#local-tests-task)
+3. [Android-all Downloads](#android-all-downloads)
+4. [Custom Mirror and Proxy](#custom-mirror-and-proxy)
+5. [Preloaded Jars and Offline](#preloaded-jars-and-offline)
+6. [Differences from a Device](#differences-from-a-device)
+7. [Related References](#related-references)
+8. [Sources](#sources)
 
-> **Scope**: The official docs give generic CI guidance plus Robolectric download settings. No page covers a CI provider (GitHub Actions, GitLab), sharding, or report merging for Compose/Robolectric, so none is shown here.
+## Java Version
 
-## Pipeline Shape
+This table shows the minimum Java version required to run Robolectric tests against a specific version of Android.
 
-A typical CI workflow:
+| Android version     | API level | Java version |
+| ------------------- | --------- | ------------ |
+| Android 16, 17      | 36, 37    | 21           |
+| Android 14, 15      | 34, 35    | 17           |
+| Android 10 to 13    | 29 to 33  | 9            |
+| Android 7.0 to 9    | 24 to 28  | 8            |
 
-1. Detect a change (pull request).
-2. Provision a server.
-3. Fetch the code, plus the Android SDK or emulator images if needed.
-4. Build: `./gradlew build`.
-5. Run local tests: `./gradlew test`.
-6. Start emulators and run instrumented tests.
-7. Upload artifacts (test results, APKs).
+Robolectric 4.18 supports Android API levels 24 to 37.
 
-Robolectric UI tests in `src/test` run in step 5 with no emulator. Run Unit and Component tests on every commit, Feature tests pre-merge, Application tests post-merge, and release candidates nightly. See [test-architecture.md](../architecture/test-architecture.md).
-
-## JDK Selection
-
-Pick the JDK from the highest Android API level the tests target.
-
-| Android API under test | Minimum Java |
-| ---------------------- | ------------ |
-| 36-37 (Android 16, 17) | 21           |
-| 34-35 (Android 14, 15) | 17           |
-| 29-33 (Android 10-13)  | 9            |
-| 24-28 (Android 7.0-9)  | 8            |
-
-Robolectric 4.18 supports API 24-37. On Java 17 or higher, add `--add-opens` flags to the unit-test JVM:
+When running tests on Java 17 or higher, the JVM requires --add-opens flags so that Robolectric can access internal OpenJDK classes and APIs (java.lang, java.io, jdk.internal.access, etc.). Add the following jvmArgs to your unit test configuration in build.gradle / build.gradle.kts:
 
 ```kotlin
-// build.gradle.kts
 android {
   testOptions {
     unitTests.all {
@@ -65,137 +46,118 @@ android {
 }
 ```
 
-Match the CI JDK to the one in [configuration.md](../core/configuration.md).
-
 ## Local Tests Task
 
-```bash
-./gradlew test
-```
+The 2021 sharedTest post on robolectric.org ends by saying to test with ./gradlew test for local tests on Robolectric and ./gradlew connectedCheck for instrumentation tests on Emulator.
 
-Local tests (`src/test`, including Robolectric UI tests) run on the JVM. Instrumented tests need an emulator or device and are a separate step.
-
-Keep Robolectric dependencies and `isIncludeAndroidResources = true` in the module, as covered in [configuration.md](../core/configuration.md).
+Any UI test present in the `test` source set runs with Robolectric.
 
 ## Android-all Downloads
 
-Robolectric downloads the android-all jar for each SDK it runs. It uses its own `MavenArtifactFetcher` and "does not use any proxies defined by the Gradle build system." Restricted CI networks (Artifactory, corporate proxies) cause failures here.
+The Robolectric blog post on android-all downloading on CI says that in recent years, the team has received multiple issues regarding Robolectric's inability to download/resolve the necessary android-all jars when running Robolectric tests in a CI environment.
 
-| Property                                | Purpose                                              | Default                          |
-| --------------------------------------- | ---------------------------------------------------- | -------------------------------- |
-| `robolectric.dependency.repo.url`       | Maven repository for runtime dependencies            | `https://repo1.maven.org/maven2` |
-| `robolectric.dependency.repo.id`        | Repository ID                                        | `mavenCentral`                   |
-| `robolectric.dependency.repo.username`  | Repository username                                  | `null`                           |
-| `robolectric.dependency.repo.password`  | Repository password                                  | `null`                           |
-| `robolectric.dependency.proxy.host`     | Proxy host (since 4.9.1)                             | `null`                           |
-| `robolectric.dependency.proxy.port`     | Proxy port (since 4.9.1)                             | `0`                              |
-| `robolectric.dependency.dir`            | Folder with preloaded jars                           | `null`                           |
-| `robolectric.offline`                   | Disable runtime fetching of jars                     | `false`                          |
+The post says Robolectric downloads the necessary android-all jars using its MavenArtifactFetcher when running Robolectric tests. It says it does not use any proxies defined by the Gradle build system. In a CI environment, especially in environments used by large companies internally, there are often network restrictions that can cause the aforementioned issues.
+
+Some examples of the issues include "Flaky SHA mismatch on CI builds when retrieving Maven artifacts since upgrading to 4.10.x".
+
+Some additional options can be configured globally by setting these system properties:
+
+| Property                               | Description                                                                                                                                                      | Default                          |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `robolectric.enabledSdks`              | Comma-separated list of SDK levels or names (e.g. 33, 34 or TIRAMISU, UPSIDE_DOWN_CAKE) which are enabled for this process. Only tests targeting a listed SDKs will be run. | All SDKs                         |
+| `robolectric.offline`                  | Set to true to disable runtime fetching of jars.                                                                                                                 | false                            |
+| `robolectric.dependency.dir`           | Specifies a folder containing runtime dependencies.                                                                                                              | null                             |
+| `robolectric.dependency.repo.id`       | Set the ID of the Maven repository to use for the runtime dependencies.                                                                                          | mavenCentral                     |
+| `robolectric.dependency.repo.url`      | Set the URL of the Maven repository to use for the runtime dependencies.                                                                                         | `https://repo1.maven.org/maven2` |
+| `robolectric.dependency.repo.username` | Username of the repository that you defined in robolectric.dependency.repo.url.                                                                                  | null                             |
+| `robolectric.dependency.repo.password` | Password of the repository that you defined in robolectric.dependency.repo.url.                                                                                  | null                             |
+
+Since Robolectric 4.9.1, you can now add these parameters:
+
+| Property                            | Description                                              | Default |
+| ----------------------------------- | -------------------------------------------------------- | ------- |
+| `robolectric.dependency.proxy.host` | Set the host of the proxy to use for the runtime dependencies. | null    |
+| `robolectric.dependency.proxy.port` | Set the port number of the proxy to use for the runtime dependencies. | 0       |
 
 ## Custom Mirror and Proxy
 
+When using Gradle, you can configure the System Properties for unit tests with the android.testOptions.unitTests.all block. For example, to override the Maven repository URL and ID to download the runtime dependencies from a repository other than Maven Central:
+
 ```kotlin
-// build.gradle.kts
 android {
   testOptions {
-    unitTests {
-      isIncludeAndroidResources = true
-      all {
-        it.systemProperty("robolectric.dependency.repo.url", "https://local-mirror/repo")
-        it.systemProperty("robolectric.dependency.repo.id", "local")
-        // Username and password only needed when the repository requires an account
-        it.systemProperty("robolectric.dependency.repo.username", "username")
-        it.systemProperty("robolectric.dependency.repo.password", "password")
-        // Since Robolectric 4.9.1
-        it.systemProperty("robolectric.dependency.proxy.host", System.getenv("ROBOLECTRIC_PROXY_HOST"))
-        it.systemProperty("robolectric.dependency.proxy.port", System.getenv("ROBOLECTRIC_PROXY_PORT"))
-      }
+    unitTests.all {
+      it.systemProperty("robolectric.dependency.repo.url", "https://local-mirror/repo")
+      it.systemProperty("robolectric.dependency.repo.id", "local")
+
+      // Username and password only needed when the local repository needs account information.
+      it.systemProperty("robolectric.dependency.repo.username", "username")
+      it.systemProperty("robolectric.dependency.repo.password", "password")
+
+      // Since Robolectric 4.9.1, these are available
+      it.systemProperty("robolectric.dependency.proxy.host", project.findProperty("systemProp.https.proxyHost") ?: System.getenv("ROBOLECTRIC_PROXY_HOST"))
+      it.systemProperty("robolectric.dependency.proxy.port", project.findProperty("systemProp.https.proxyPort") ?: System.getenv("ROBOLECTRIC_PROXY_PORT"))
     }
   }
 }
 ```
 
-`repo.url` and `repo.id` are enough for most scenarios.
+The post says robolectric.dependency.repo.url and robolectric.dependency.repo.id are enough for most scenarios.
 
 ## Preloaded Jars and Offline
 
-Load android-all jars from a local directory instead of downloading:
+The post says Robolectric can load android-all jars from a local directory instead of downloading them from the network when running Robolectric tests, and sets the robolectric.dependency.dir system property to that directory like the following snippet:
 
 ```kotlin
-// build.gradle.kts
-android {
-  testOptions {
+testOptions {
     unitTests {
-      all {
-        it.systemProperty(
-          "robolectric.dependency.dir",
-          "${rootDir}/robolectric-jars/preinstrumented"
-        )
-      }
+        includeAndroidResources = true
+        returnDefaultValues = true
+        isIncludeUnitTestDependencies = true
+        all {
+            it.systemProperty(
+                "robolectric.dependency.dir",
+                "${rootDir}/robolectric-jars/preinstrumented"
+            )
+        }
     }
-  }
 }
 ```
 
-- When `robolectric.dependency.dir` is set, Robolectric always reads from it and never downloads, regardless of `robolectric.offline`.
-- A missing jar fails the test with `Path is not a file: ...`.
-- Set it only in environments that have the jars (for example CI machines with a pre-populated cache).
-- `robolectric.offline=true` only matters when `robolectric.dependency.dir` is not set: Robolectric then looks for jars in the test's working directory.
+- Per the post, when robolectric.dependency.dir is set, Robolectric always looks for android-all jars in that directory and never downloads them, regardless of the value of robolectric.offline.
+- Per the post, if a jar is missing from the directory, the tests fail with a `Path is not a file: ...` error.
+- Per the post, if only some environments have these jars, such as CI machines with a pre-populated cache, only set robolectric.dependency.dir in those environments.
+- Per the post, robolectric.offline is only useful when robolectric.dependency.dir is not set: setting it to true makes Robolectric look for android-all jars in the test's working directory instead.
 
-Alternative: fetch the jars with a script before any Gradle task, so no Gradle properties change. Populate the directory with the jars for your Robolectric version before tests run.
+The post says that to make it work, android-all jars need to be downloaded into the ${rootDir}/robolectric-jars/preinstrumented directory before running any Robolectric tests.
 
-## Restricting SDKs
+The post says that because Robolectric might add a new android-all jar for a new Android version or modify internal logic to update an existing android-all jar's version, these android-all jars might change across different Robolectric versions.
 
-`robolectric.enabledSdks` takes a comma-separated list of SDK levels or names (for example `33, 34` or `TIRAMISU, UPSIDE_DOWN_CAKE`); only tests targeting a listed SDK run. Default: all SDKs.
+The post says that if you don't store android-all jars in your Git repository for robolectric.dependency.dir, and you don't want to modify your system properties for Robolectric in your build.gradle.kts, you can try to download android-all jars in a script and download them manually before running any Gradle tasks.
 
-```kotlin
-android { testOptions { unitTests.all { it.systemProperty("robolectric.enabledSdks", "34") } } }
-```
+## Differences from a Device
 
-## Flakiness and Retries
+Android libcore and OpenJDK have different implementations. Because of that, you may notice different behaviours when running your app on a device or emulator, and running your tests on the JVM with Robolectric.
 
-Fix flaky tests first. A retry mechanism (JUnit rule, CI step) is acceptable on big tests: "Add retrying mechanisms to big tests, but always fix flaky tests." Use `waitUntil` to wait for conditions. See [flaky-tests.md](../debugging/flaky-tests.md) and [synchronization.md](../core/synchronization.md).
+When using SimpleDateFormat#parse() to parse a timezone using the Z marker, Android supports time zones with a colon (i.e. 08:00), while OpenJDK doesn't (i.e. 0800). To work around this:
 
-## Best Practices
+- If your min SDK version is 24 or higher, you can use the X marker instead.
+- Use the java.time API, with library desugaring enabled.
+- Run the corresponding tests using regular Android tests.
 
-| Practice                                         | Benefit                                         |
-| ------------------------------------------------ | ----------------------------------------------- |
-| Run `./gradlew test` on every commit             | Fast feedback without an emulator               |
-| Match CI JDK to the highest API under test       | Meets the minimum Java per Android API level       |
-| Set `robolectric.dependency.repo.*` behind a mirror | Reliable android-all resolution              |
-| Preload jars into `robolectric.dependency.dir`   | No network dependency on CI                     |
-| Upload test results as artifacts                 | Debug failures after the run                    |
-| Keep instrumented tests in a separate step       | Local lane stays emulator-free                  |
-| Limit threads in tests                           | Avoid cross-test pollution                      |
-
-## Common Issues & Solutions
-
-| Problem                                              | Cause                                                       | Fix                                                               |
-| ---------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
-| android-all not downloaded on CI                     | Network restrictions; Gradle proxy settings are not used    | Set repo URL/ID or proxy properties above                         |
-| Flaky SHA mismatch retrieving Maven artifacts        | Reported after upgrading to 4.10.x on CI                    | Mirror or preload the jars                                        |
-| `Path is not a file: ...`                            | `robolectric.dependency.dir` set but jar missing            | Populate the directory, or unset the property                     |
-| Failure on JDK 17+ about internal access             | Missing `--add-opens` flags                                 | Add the `jvmArgs` block                                           |
-| SDK 36/37 tests fail on JDK 17                       | API 36-37 need Java 21                                      | Use JDK 21                                                        |
-| Tests differ between Mac and Linux (screenshots)     | Platform rendering differences                              | Record screenshots on CI, or tolerate small changes; see [visual-regression.md](../testing-patterns/visual-regression.md) |
-| `SimpleDateFormat`/`DateTimeFormatter` output differs | Android libcore vs OpenJDK                                  | Use `X` marker (min SDK 24+) or `java.time` with desugaring       |
+When using DateTimeFormatter.ofPattern(String) to create a formatter displaying a short month name (using the MMM pattern), Android will use three-characters names (i.e. Jan), while OpenJDK will use three-characters names followed by a period (i.e. Jan.). In this case, we recommend running the corresponding tests as regular Android tests.
 
 ## Related References
 
-- **Gradle and JDK setup**: See [configuration.md](../core/configuration.md)
-- **Choosing test types and lanes**: See [test-architecture.md](../architecture/test-architecture.md)
-- **Flaky tests**: See [flaky-tests.md](../debugging/flaky-tests.md)
-- **Waiting without sleeps**: See [synchronization.md](../core/synchronization.md)
-- **Screenshot tests on CI**: See [visual-regression.md](../testing-patterns/visual-regression.md)
+- **Gradle and Robolectric setup**: See [configuration.md](../core/configuration.md)
+- **Choosing test types**: See [test-architecture.md](../architecture/test-architecture.md)
 
 ## Sources
 
-- https://developer.android.com/training/testing/continuous-integration
-- https://developer.android.com/training/testing/fundamentals/strategies
-- https://developer.android.com/training/testing/instrumented-tests/stability
-- https://developer.android.com/training/testing/ui-tests/screenshot
-- https://robolectric.org/getting-started/
-- https://robolectric.org/compatibility_table/
-- https://robolectric.org/configuring/
-- https://robolectric.org/best-practices/
-- https://robolectric.org/blog/2023/11/11/improving-android-all-downloading/
+- https://developer.android.com/training/testing/local-tests/robolectric
+- https://robolectric.org/getting-started
+- https://robolectric.org/compatibility_table
+- https://robolectric.org/configuring
+- https://robolectric.org/best-practices
+- https://robolectric.org/blog/2021/10/06/sharedTest
+- https://robolectric.org/blog/2023/11/11/improving-android-all-downloading

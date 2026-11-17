@@ -1,0 +1,139 @@
+{
+  "units": [
+    {
+      "text": "Verify that the state of your Compose elements is correctly restored when the activity or process is recreated. Perform such checks without relying on activity recreation with the `StateRestorationTester` class.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Verify that the state of your Compose elements is correctly restored when the activity or process is recreated. Perform such checks without relying on activity recreation with the StateRestorationTester class."
+        }
+      ]
+    },
+    {
+      "text": "This class lets you simulate the recreation of a composable. It's especially useful to verify the implementation of `rememberSaveable`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "This class lets you simulate the recreation of a composable. It's especially useful to verify the implementation of rememberSaveable"
+        }
+      ]
+    },
+    {
+      "text": "class MyStateRestorationTests {\n\n    @get:Rule\n    val composeTestRule = createComposeRule()\n\n    @Test\n    fun onRecreation_stateIsRestored() {\n        val restorationTester = StateRestorationTester(composeTestRule)\n\n        restorationTester.setContent { MainScreen() }\n\n        // TODO: Run actions that modify the state\n\n        // Trigger a recreation\n        restorationTester.emulateSavedInstanceStateRestore()\n\n        // TODO: Verify that state has been correctly restored.\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "class MyStateRestorationTests {\n\n    @get:Rule\n    val composeTestRule = createComposeRule()\n\n    @Test\n    fun onRecreation_stateIsRestored() {\n        val restorationTester = StateRestorationTester(composeTestRule)\n\n        restorationTester.setContent { MainScreen() }\n\n        // TODO: Run actions that modify the state\n\n        // Trigger a recreation\n        restorationTester.emulateSavedInstanceStateRestore()\n\n        // TODO: Verify that state has been correctly restored.\n    }\n}"
+        }
+      ]
+    },
+    {
+      "text": "Instead of calling `ComposeContentTestRule.setContent` you need to use `StateRestorationTester.setContent` on this object, then change your state so there is some change to be restored, then execute `emulateSavedInstanceStateRestore()` and assert your state is restored properly.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "Instead of calling"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "you need to use"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "on this object, then change your state so there is some change to be restored, then execute"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "and assert your state is restored properly."
+        }
+      ]
+    },
+    {
+      "text": "`emulateSavedInstanceStateRestore()` saves all the state stored via savedInstanceState or `rememberSaveable`, disposes current composition, and composes again the content passed to `StateRestorationTester.setContent`. Note that the state stored via regular `state()` or `remember()` will be lost.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "Saves all the state stored via savedInstanceState or"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "disposes current composition, and composes again the content passed to"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "Note that the state stored via regular state() or remember() will be lost."
+        }
+      ]
+    },
+    {
+      "text": "Note that this tests only the restoration of the local state of the composable you passed to `StateRestorationTester.setContent`. It is not testing the integration with any other life cycles or Activity callbacks.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "Note that this tests only the restoration of the local state of the composable you passed to"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/StateRestorationTester",
+          "quote": "It is not testing the integration with any other life cycles or Activity callbacks."
+        }
+      ]
+    },
+    {
+      "text": "Android's Robolectric page says you can simulate the launch of an Activity and test the logic inside it, calling all the lifecycle methods. In its UI testing section, right after the sentence \"Any UI test present in the `test` source set runs with Robolectric.\", it shows an Espresso example that destroys and recreates the Activity with `scenario.recreate()`:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "you can simulate the launch of an Activity and test the logic inside it, calling all the lifecycle methods."
+        },
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Any UI test present in the test source set runs with Robolectric."
+        },
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "// Destroy and recreate Activity scenario.recreate()"
+        }
+      ]
+    },
+    {
+      "text": "import androidx.test.espresso.Espresso.onView\n\n@RunWith(AndroidJUnit4::class)\nclass AddContactActivityTest {\n    @Test\n    fun inputTextShouldBeRetainedAfterActivityRecreation() {\n        // GIVEN\n        val contactName = \"Test User\"\n        val scenario = ActivityScenario.launchActivity<AddContactActivity>()\n\n        // WHEN\n        // Enter contact name\n        onView(withId(R.id.contact_name_text))\n            .perform(typeText(contactName))\n        // Destroy and recreate Activity\n        scenario.recreate()\n\n        // THEN\n        // Check contact name was preserved.\n        onView(withId(R.id.contact_name_text))\n            .check(matches(withText(contactName)))\n     }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "import androidx.test.espresso.Espresso.onView\n\n@RunWith(AndroidJUnit4::class)\nclass AddContactActivityTest {\n    @Test\n    fun inputTextShouldBeRetainedAfterActivityRecreation() {\n        // GIVEN\n        val contactName = \"Test User\"\n        val scenario = ActivityScenario.launchActivity<AddContactActivity>()\n\n        // WHEN\n        // Enter contact name\n        onView(withId(R.id.contact_name_text))\n            .perform(typeText(contactName))\n        // Destroy and recreate Activity\n        scenario.recreate()\n\n        // THEN\n        // Check contact name was preserved.\n        onView(withId(R.id.contact_name_text))\n            .check(matches(withText(contactName)))\n     }\n}"
+        }
+      ]
+    },
+    {
+      "text": "A Robolectric blog post, which describes itself as \"an outside read of the code as it stands in mid-2026, not an official AndroidX position\", says a ViewModel needs a ViewModelStoreOwner + SavedStateRegistryOwner + lifecycle from its host, and the hardest thing to test is process death. `viewModelScenario { }` fabricates that owner trio in-memory and exposes `recreate()`:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "This is an outside read of the code as it stands in mid-2026, not an official AndroidX position"
+        },
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "A ViewModel needs a ViewModelStoreOwner + SavedStateRegistryOwner + lifecycle from its host, and the hardest thing to test is process death. viewModelScenario { } fabricates that owner trio in-memory and exposes recreate()"
+        }
+      ]
+    },
+    {
+      "text": "viewModelScenario { TestViewModel(handle = createSavedStateHandle()) }.use { scenario ->\n    scenario.viewModel.handle[\"key\"] = \"value\"\n    scenario.recreate()                                  // simulate process death\n    assertThat(scenario.viewModel.handle.get<String>(\"key\")).isEqualTo(\"value\")\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "viewModelScenario { TestViewModel(handle = createSavedStateHandle()) }.use { scenario ->\n    scenario.viewModel.handle[\"key\"] = \"value\"\n    scenario.recreate()                                  // simulate process death\n    assertThat(scenario.viewModel.handle.get<String>(\"key\")).isEqualTo(\"value\")\n}"
+        }
+      ]
+    },
+    {
+      "text": "The same blog post says `recreate()` round-trips the saved state through a real Parcel (and enforces the 1 MB Binder limit), reproducing real serialization loss rather than an in-memory copy.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries",
+          "quote": "recreate() round-trips the saved state through a real Parcel (and enforces the 1 MB Binder limit), reproducing real serialization loss rather than an in-memory copy."
+        }
+      ]
+    }
+  ]
+}

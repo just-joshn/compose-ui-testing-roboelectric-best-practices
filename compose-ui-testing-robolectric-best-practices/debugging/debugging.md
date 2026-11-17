@@ -2,59 +2,19 @@
 
 ## Table of Contents
 
-1. [Debug Tools](#debug-tools)
-2. [Semantics Tree Printing](#semantics-tree-printing)
-3. [Merged vs Unmerged Tree](#merged-vs-unmerged-tree)
-4. [Identifying Flaky Tests](#identifying-flaky-tests)
-5. [Failure Artifacts](#failure-artifacts)
-6. [Debugging Robolectric Environment Issues](#debugging-robolectric-environment-issues)
-7. [Debugging Rendering and Screenshots](#debugging-rendering-and-screenshots)
-8. [Common Issues & Solutions](#common-issues--solutions)
-9. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
-10. [Related References](#related-references)
-11. [Sources](#sources)
-
-## Debug Tools
-
-The main way to solve problems in Compose tests is to look at the semantics tree.
-
-| Tool                                              | Use when                                              | Notes                                                          |
-| ------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------- |
-| `printToLog(tag)`                                 | You can read the log output                           | Debug-level Android log message                                |
-| `printToString()`                                 | You want the tree in an assertion message or `println` | Returns `String`; works on one node or a node collection       |
-| `useUnmergedTree = true`                          | A child node is "missing"                             | See [Merged vs Unmerged Tree](#merged-vs-unmerged-tree)        |
-| `TestFailurePolicy`                               | You want artifacts on every failure                   | Compose 1.13.0-alpha01+, see [Failure Artifacts](#failure-artifacts) |
-| `robolectric.logging.enabled`                     | Resources or SDK setup look wrong                     | Robolectric debug logging                                      |
-| Robolectric Simulator                             | You need to see what Robolectric renders              | Experimental, 4.15+                                            |
+1. [Semantics Tree Printing](#semantics-tree-printing)
+2. [Merged vs Unmerged Tree](#merged-vs-unmerged-tree)
+3. [Failure Artifacts](#failure-artifacts)
+4. [Debugging Robolectric Environment Issues](#debugging-robolectric-environment-issues)
+5. [Debugging Rendering and Screenshots](#debugging-rendering-and-screenshots)
+6. [Common Issues & Solutions](#common-issues--solutions)
+7. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+8. [Related References](#related-references)
+9. [Sources](#sources)
 
 ## Semantics Tree Printing
 
-```kotlin
-@RunWith(AndroidJUnit4::class)
-class CheckoutTest {
-    @get:Rule
-    val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-
-    @Test
-    fun showsTotal() {
-        composeTestRule.setContent { CheckoutScreen() }
-
-        // Print the whole tree at any point in the test
-        composeTestRule.onRoot().printToLog("TAG")
-
-        // Limit depth: 0 prints just this node
-        composeTestRule.onRoot().printToLog("TAG", maxDepth = 2)
-
-        // Get it as a String instead of relying on the log
-        val tree = composeTestRule.onRoot().printToString()
-        println(tree)
-
-        composeTestRule.onNodeWithText("Total").assertIsDisplayed()
-    }
-}
-```
-
-The output lists each node with the properties it exposes:
+The main way to solve problems in your tests is to look at the semantics tree. Print the tree by calling `composeTestRule.onRoot().printToLog()` at any point in your test. This function prints a log like this:
 
 ```
 Node #1 at (...)px
@@ -67,57 +27,75 @@ Node #1 at (...)px
       Text = 'There'
 ```
 
-Both functions fetch the latest snapshot of the nodes the interaction found earlier, so output can change over time if the tree changes. Call them after the synchronization point you care about.
+`printToLog` prints all the semantics nodes information into logs (as debug level). `printToString` prints all the semantics nodes information it holds into string.
 
-```kotlin
-// Good: print right before the failing assertion, after state has settled
-composeTestRule.waitForIdle()
-composeTestRule.onRoot().printToLog("BEFORE_ASSERT")
-composeTestRule.onNodeWithText("Done").assertExists()
+By default both also print all the sub-hierarchy. This can be changed by setting a custom max depth in `maxDepth`. Zero will print just this node.
 
-// Bad: print immediately after mutating state; nothing has recomposed yet
-myState.value = 1
-composeTestRule.onRoot().printToLog("TAG")
-```
-
-The sources do not say where debug-level `printToLog` output ends up under Robolectric. If you see nothing in the Gradle test report, use `printToString()` and print or assert on the string.
+Both fetch the latest snapshot of nodes they see in the hierarchy for the IDs they collected before, so the output can change over time if the tree changes.
 
 ## Merged vs Unmerged Tree
 
-By default finders search the merged tree: a clickable parent merges its children's semantics, so a button with two `Text` children appears as one node with `Text = '[Hello, World]'` and `MergeDescendants = 'true'`.
+Some nodes merge the semantics information of their children. For example, a button with two text elements merges the text element labels:
 
 ```kotlin
-// Print both views of the same hierarchy
-composeTestRule.onRoot().printToLog("MERGED")
-composeTestRule.onRoot(useUnmergedTree = true).printToLog("UNMERGED")
-
-// Good: target a merged-away child explicitly
-composeTestRule
-    .onNodeWithText("World", useUnmergedTree = true)
-    .assertIsDisplayed()
-
-// Bad: assuming the child is a separate node in the default (merged) tree
-composeTestRule.onNodeWithText("World").assertIsDisplayed() // may not find it
+MyButton {
+    Text("Hello")
+    Text("World")
+}
 ```
 
-`useUnmergedTree` is available on all finders. For selector choice and custom semantics, see [semantics-finders.md](../core/semantics-finders.md).
+From a test, use `printToLog()` to show the semantics tree:
 
-## Identifying Flaky Tests
+```kotlin
+composeTestRule.onRoot().printToLog("TAG")
+```
 
-| Behavior                                    | Likely Cause                                       | Next Step                                                        |
-| ------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
-| Passes, then fails after a rule/API upgrade | v1 to v2 dispatcher change exposes a latent race   | [flaky-tests.md](flaky-tests.md)                                 |
-| Assertion sees old state                    | No recomposition yet, or coroutine queued          | [synchronization.md](../core/synchronization.md)                 |
-| "Multiple nodes found"                      | Same text or tag appears more than once            | Narrow the finder, see [semantics-finders.md](../core/semantics-finders.md) |
-| Fails only on CI                            | JDK, SDK download, or environment difference       | [ci-cd.md](../infrastructure-ci-cd/ci-cd.md)                     |
-| Passes on device, fails on Robolectric      | Fidelity gap (rendering, system UI, `WebView`)     | [test-architecture.md](../architecture/test-architecture.md)     |
+This code prints the following output:
+
+```
+Node #1 at (...)px
+ |-Node #2 at (...)px
+   Role = 'Button'
+   Text = '[Hello, World]'
+   Actions = [OnClick, GetTextLayoutResult]
+   MergeDescendants = 'true'
+```
+
+If you need to match a node of what would be the unmerged tree, you can set `useUnmergedTree` to `true`:
+
+```kotlin
+composeTestRule.onRoot(useUnmergedTree = true).printToLog("TAG")
+```
+
+This code prints the following output:
+
+```
+Node #1 at (...)px
+ |-Node #2 at (...)px
+   OnClick = '...'
+   MergeDescendants = 'true'
+    |-Node #3 at (...)px
+    | Text = '[Hello]'
+    |-Node #5 at (83.0, 86.0, 191.0, 135.0)px
+      Text = '[World]'
+```
+
+The `useUnmergedTree` parameter is available in all finders. For example, here it's used in an `onNodeWithText` finder.
+
+```kotlin
+composeTestRule
+    .onNodeWithText("World", useUnmergedTree = true).assertIsDisplayed()
+```
 
 ## Failure Artifacts
 
-`TestFailurePolicy`, `TestFailureHandler`, and `FailureContext` capture a screenshot and UI hierarchy when a test fails. They ship in `androidx.compose.ui:ui-test:1.13.0-alpha01+` and `ui-test-junit4:1.13.0-alpha01+`; 1.12.1 is the latest stable, so this needs a 1.13 pre-release (rc01 at the time of writing).
+Debugging UI tests often requires inspecting the screen state and composition hierarchy when an assertion fails. Compose provides a native failure handling pipeline to streamline diagnostics. You can automatically capture screenshots and UI hierarchies upon failure, or register custom handlers to forward crash telemetry to external tools.
+
+The APIs associated with the failure handler pipeline (`TestFailurePolicy`, `TestFailureHandler`, and `FailureContext`) are included in `androidx.compose.ui:ui-test:1.13.0-alpha01+` and `androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+`.
+
+To configure failure handling, pass a `TestFailurePolicy` object to `ComposeUiTestConfig`. To capture screenshots and UI hierarchies upon test failure, set the `screenshotCaptureMode` and `uiHierarchyCaptureMode` properties in `TestFailurePolicy`.
 
 ```kotlin
-// Compose 1.13.0-alpha01+
 class MyComposeTest {
     private val customConfig = ComposeUiTestConfig(
         failurePolicy = TestFailurePolicy(
@@ -133,128 +111,174 @@ class MyComposeTest {
 }
 ```
 
-Add a custom handler to forward artifacts elsewhere. Each handler receives a `FailureContext` with the original error and the artifacts produced by earlier handlers.
+To define custom behavior for test failures, add a `TestFailureHandler` to the `failureHandlers` list. Each handler receives a `FailureContext` object that contains the original error and a list of artifacts generated by the preceding pipeline handlers.
 
 ```kotlin
-private val customConfig = ComposeUiTestConfig(
-    failurePolicy = TestFailurePolicy(
-        screenshotCaptureMode = TestFailurePolicy.CaptureMode.Enabled,
-        failureHandlers = listOf(
-            TestFailureHandler { context ->
-                val screenshot = context.artifacts.firstOrNull {
-                    it.type == FailureArtifact.Type.Screenshot
+class MyComposeTestWithHandler {
+    private val customConfig = ComposeUiTestConfig(
+        failurePolicy = TestFailurePolicy(
+            screenshotCaptureMode = TestFailurePolicy.CaptureMode.Enabled,
+            failureHandlers = listOf(
+                TestFailureHandler { context ->
+                    val screenshot = context.artifacts.firstOrNull {
+                        it.type == FailureArtifact.Type.Screenshot
+                    }
+                    // ...
                 }
-                // ...
-            }
+            )
         )
     )
-)
 
-@get:Rule
-val rule = createComposeRule(config = customConfig)
+    @get:Rule
+    val rule = createComposeRule(config = customConfig)
+
+    // ...
+}
 ```
 
-To enable capture suite-wide, the docs use instrumentation runner arguments:
+You can enable failure artifact captures for an entire test suite by passing instrumentation runner arguments in your module's `build.gradle` file. This eliminates the need to update individual test files.
 
 ```kotlin
 // build.gradle.kts
 android {
     defaultConfig {
+        // ...
         testInstrumentationRunnerArguments["androidx.compose.ui.test.failure.isUiHierarchyCaptureEnabled"] = "true"
         testInstrumentationRunnerArguments["androidx.compose.ui.test.failure.isScreenshotCaptureEnabled"] = "true"
     }
 }
 ```
 
-Precedence: an explicit `CaptureMode.Enabled` or `Disabled` in the test policy overrides the runner argument; `CaptureMode.Unspecified` (or a `null` policy) falls back to it. The docs show the runner arguments only as instrumentation arguments and do not say whether local Robolectric runs honor them, so set the policy in code (`ComposeUiTestConfig`) for `src/test`.
+The framework evaluates both the local `TestFailurePolicy` and the suite-level runner arguments:
+
+- If you explicitly set a mode to `CaptureMode.Enabled`/`Disabled` in your test `failurePolicy`, this overrides the runner argument.
+- If you set a mode to `CaptureMode.Unspecified` (or leave `failurePolicy` as `null`), the framework falls back to the runner argument.
 
 ## Debugging Robolectric Environment Issues
 
 ### Debug logging
 
+If you are not sure if resources are being loaded for a particular library, enable debug logging by setting the system property `robolectric.logging.enabled = true` and run your tests. You should see lots of output.
+
+When using Gradle, you can configure the System Properties for unit tests with the `android.testOptions.unitTests.all` block.
+
+### Robolectric Simulator
+
+Starting with Robolectric 4.15, it's possible to launch an interactive preview of your app or tests in a Robolectric environment. The Robolectric simulator can be a useful way to preview how your UI would look in a Robolectric environment. This can be helpful, for instance, when debugging failing Robolectric tests.
+
+The Robolectric simulator is highly experimental and is still largely in the proof-of-concept stage. UI rendered in the Robolectric simulator may not match an Android emulator or device 100%.
+
+There are two ways to launch the simulator: with the simulator Gradle plugin or by invoking the simulator APIs from tests. To enable the Robolectric simulator with the Gradle plugin, add the plugin to the plugins block of your app's `build.gradle`/`build.gradle.kts` file:
+
 ```kotlin
-// build.gradle.kts: set Robolectric system properties on the unit-test task
-android {
-    testOptions {
-        unitTests.all {
-            it.systemProperty("robolectric.logging.enabled", "true")
+id("org.robolectric.simulator") version "1.0.3"
+```
+
+Then, run `./gradlew simulate<variant>` (for example, `./gradlew simulateDebug` or `./gradlew simulateDemoDebug`) to start the simulator for the `<variant>` build variant. It will run the main Activity that is configured in your manifest.
+
+To enable the simulator to work with JDK 23 and newer, you must add the following extra jvmArgs to your unit test configuration:
+
+```kotlin
+testOptions {
+    unitTests {
+        all { test ->
+            test.jvmArgs(
+                "--add-exports=java.desktop/sun.awt=ALL-UNNAMED",
+                "--add-exports=java.base/sun.reflect.misc=ALL-UNNAMED",
+                "--add-exports=java.base/sun.security.action=ALL-UNNAMED",
+                "--add-exports=java.desktop/sun.swing=ALL-UNNAMED",
+                "--add-exports=java.desktop/sun.lwawt.macosx=ALL-UNNAMED",
+            )
         }
     }
 }
 ```
 
-The Robolectric getting-started page recommends this when you are unsure whether resources are being loaded for a library: you should see a lot of resource-loading output.
-
-### Robolectric Simulator (experimental)
-
-Since Robolectric 4.15 you can launch an interactive preview of your app or test, useful when debugging failing Robolectric tests. The docs call it "highly experimental" and "proof-of-concept", and its rendering may not match a device 100%.
+Inside a Robolectric test, you can also start the simulator using the standalone API. To do this, first add a dependency to the simulator in your project's `build.gradle`/`build.gradle.kts` file.
 
 ```kotlin
-// build.gradle.kts, Gradle plugin route: ./gradlew simulateDebug
-plugins {
-    id("org.robolectric.simulator") version "1.0.3"
-}
-
-// Standalone API route
-dependencies {
-    testImplementation("org.robolectric:simulator:4.18")
-}
+testImplementation("org.robolectric:simulator:4.18")
 ```
 
-The standalone route calls `Simulator().start()` inside a test annotated `@Config(sdk = [VANILLA_ICE_CREAM])` and `@GraphicsMode(GraphicsMode.Mode.NATIVE)`. On JDK 23 and newer, add the `--add-exports` `jvmArgs` listed on the simulator page to the unit-test configuration.
+Next, you can create a `Simulator` object and start it using:
+
+```kotlin
+import android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+import org.robolectric.simulator.Simulator
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [VANILLA_ICE_CREAM])
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+class MainActivityTest {
+    @Test
+    fun simulateMainActivity() {
+        Robolectric.setupActivity(MainActivity::class.java)
+        Simulator().start()
+    }
+}
+```
 
 ### Looper warnings
 
-With the default `PAUSED` looper mode, Robolectric warns when a test fails with unexecuted tasks in the main `Looper` queue: that is a hint the pending work matters to the test. AndroidX Test APIs such as `ActivityScenario` and Espresso idle the main looper automatically; for other posted work use `shadowOf(Looper.getMainLooper()).idle()`. See [flaky-tests.md](flaky-tests.md) and [runtime-modes.md](../core/runtime-modes.md).
+The 2019 Robolectric blog post on PAUSED LooperMode says that in PAUSED mode, Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue. This is a hint that the unexecuted behavior is important for the test case.
+
+The same post says AndroidX Test APIs, like `ActivityScenario`, `FragmentScenario` and Espresso will automatically idle the main Looper.
+
+The post's troubleshooting section says: if you see test failures like `Main looper has queued unexecuted runnables`, you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper. It's recommended to step through your test code with a watch set on `Looper.getMainLooper().getQueue()` to see the status of the Looper queue, to determine the appropriate point to add a `shadowOf(getMainLooper()).idle()` call.
 
 ## Debugging Rendering and Screenshots
 
-```kotlin
-// After advancing the clock manually, wait for the draw pass before capturing
-composeTestRule.mainClock.autoAdvance = false
-composeTestRule.mainClock.advanceTimeBy(50L)
-composeTestRule.waitForIdle()
-val bitmap = composeTestRule.onRoot().captureToImage()
-```
+If, after any call to `advanceTimeBy`, you want to assert anything related to rendering (e.g. `SemanticsNodeInteraction.captureToImage`), you will need a call to `ComposeTestRule.waitForIdle` or `ComposeTestRule.runOnIdle` to make sure that any triggered draw pass has been completed.
 
-- `advanceTimeBy` does not trigger a draw. Assert anything rendering-related only after `waitForIdle()` or `runOnIdle`.
-- If you change a state variable that is read during draw, `advanceTimeBy` will not update the UI; use `waitForIdle()`.
-- `captureToImage` takes a `timeoutMillis` parameter (default 2000 ms) since 1.13.0-alpha01 for waiting on redraw passes.
-- Rendering on the JVM needs native graphics: `@GraphicsMode(GraphicsMode.Mode.NATIVE)`. See [runtime-modes.md](../core/runtime-modes.md) and [visual-regression.md](../testing-patterns/visual-regression.md).
-- From Robolectric 4.18 on SDK 33/34, `RuntimeShader` uniform setters forward to native code, which can change how Material ripples are drawn in screenshot tests. `robolectric.runtimeShaderScalarUniform=false` restores the old behavior (documented as temporary).
+If you change a state variable that is read during draw, calling `advanceTimeBy` will not produce the desired update to the UI. Use `ComposeTestRule.waitForIdle` for this case.
+
+`SemanticsNodeInteraction.captureToImage` has a `timeoutMillis` parameter, the maximum time (in ms) to wait for the drawing to complete. Default is 2000 ms.
+
+The Robolectric blog post "Designing local testing libraries" describes itself as "an outside read of the code as it stands in mid-2026, not an official AndroidX position". In its section on Jetpack Compose UI test, the post says screenshot tests use Robolectric's native-graphics `PixelCopy` shadow.
+
+Robolectric can take screenshots natively, but you need a third-party library to perform screenshot testing with it.
+
+You can run other UI tests with Robolectric, such as screenshot tests. However the fidelity is lower as different devices render screens slightly differently.
+
+On SDK 33 and 34, the scalar and int[] `RuntimeShader` uniform setters now forward their values to native code. This can change how Material ripples are drawn in screenshot tests. You can temporarily restore the previous behavior by setting the `robolectric.runtimeShaderScalarUniform` system property to false. This property will be removed in a future release.
 
 ## Common Issues & Solutions
 
-| Symptom                                                        | Cause                                                              | Fix                                                                                       |
-| -------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| State changed in test but assertion sees old value             | Compose only recomposes on a sync point                            | Assert via the rule (it syncs first), or call `waitForIdle()`                             |
-| Assertion sees "Loading" after upgrading to v2 rules           | v2 queues launched coroutines on a `StandardTestDispatcher`        | `composeTestRule.waitForIdle()` or `composeTestRule.runOnIdle { ... }` before asserting   |
-| Child text not found                                           | Parent merged descendants                                          | `useUnmergedTree = true`, confirm with `printToLog`                                       |
-| "Multiple nodes found" with Compose nested in Views            | Identical Compose content in several Views                         | `onRootWithViewInteraction` (experimental, 1.12.0-alpha01+); see [interoperability.md](../advanced/interoperability.md) |
-| Test hangs or times out waiting on a condition                 | Condition reads non-Compose state, or an external `CountDownLatch` | Use `waitUntil*` APIs; the test clock is not advanced by external latches                 |
-| `Main looper has queued unexecuted runnables`                  | Non-Compose work posted to main `Looper` was never idled           | `shadowOf(Looper.getMainLooper()).idle()` at the right point                              |
-| Date or time strings differ from device                        | Android libcore vs OpenJDK (`Z` timezone marker, `MMM` month)      | Use `X` marker (min SDK 24+) or `java.time` with desugaring; run those tests on a device  |
-| Screenshot differs between Mac and Linux CI                    | Different rendering across platforms                               | See [visual-regression.md](../testing-patterns/visual-regression.md)                                          |
+- If your tests fail after upgrading to v2, they likely exhibit the following pattern: you launch a task (for example, a ViewModel loads data), but your assertion fails immediately because the data is still in a "Loading" state. With the v2 APIs, coroutines are queued rather than executed immediately. Explicitly advance time: use `waitForIdle` or `runOnIdle` to execute queued tasks before asserting.
+
+```kotlin
+viewModel.loadData()
+
+// Explicitly run all queued tasks
+composeTestRule.waitForIdle()
+
+assertEquals(Success, viewModel.state.value)
+```
+
+- If you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused.
+- When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views, such as within a `RecyclerView` or a `ViewPager`. In these scenarios, a standard Compose search like `onNodeWithText("Save")` might fail with a "Multiple nodes found" error. Use the `onRootWithViewInteraction` API on your test rule. This function accepts an Espresso `ViewInteraction`. The `onRootWithViewInteraction` API is included in `androidx.compose.ui:ui-test-junit4:1.12.0-alpha01+` and `androidx.compose.ui:ui-test:1.12.0-alpha01+`. This API is experimental and subject to change.
+- **Timezone handling.** When using `SimpleDateFormat#parse()` to parse a timezone using the `Z` marker, Android supports time zones with a colon (i.e. 08:00), while OpenJDK doesn't (i.e. 0800). To work around this, if your min SDK version is 24 or higher, you can use the `X` marker instead; use the `java.time` API, with library desugaring enabled; or run the corresponding tests using regular Android tests.
+- **Month names.** When using `DateTimeFormatter.ofPattern(String)` to create a formatter displaying a short month name (using the `MMM` pattern), Android will use three-characters names (i.e. Jan), while OpenJDK will use three-characters names followed by a period (i.e. Jan.). In this case, Robolectric recommends running the corresponding tests as regular Android tests.
+- Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like `WebView`.
 
 ## Anti-Patterns to Avoid
 
-| Anti-Pattern                                   | Problem                                         | Solution                                                         |
-| ---------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
-| `Thread.sleep()` to "let the UI settle"        | Slow or flaky; hides the real race              | `waitForIdle()`, `waitUntil*`, or idling resources              |
-| Guessing at selectors                          | Wasted iterations                               | `printToLog` / `printToString` first, then pick the finder       |
-| Printing the tree right after mutating state   | Shows stale tree                                | Print after `waitForIdle()` or an assertion                      |
-| Leaving `printToLog` calls in committed tests  | Noisy logs                                      | Remove, or use failure artifacts                                 |
-| Mocking `Context` or `SharedPreferences` to dodge a failure | Brittle stubbing of Android classes | Use the real Robolectric environment or a fake                   |
-| Assuming a Robolectric pass means device pass  | Fidelity differs (rendering, system UI, `WebView`) | Keep device tests for those cases                             |
+- Do not mock or spy on Android classes that will be acted on by other Android code (e.g. `Context`, `SharedPreferences`, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades.
+- In some cases, using mechanisms in a test like an external `CountDownLatch` instead of the `waitUntil` APIs could behave unexpectedly, since the test clock won't be advanced.
 
 ## Related References
 
-- **Flaky tests**: See [flaky-tests.md](flaky-tests.md) for timing, sync, and thread causes
+- **Flaky tests**: See [flaky-tests.md](flaky-tests.md) for synchronization, coroutine, and thread causes
 - **Synchronization**: See [synchronization.md](../core/synchronization.md) for `waitForIdle`, `waitUntil*`, idling resources
 - **Selectors**: See [semantics-finders.md](../core/semantics-finders.md) for merged vs unmerged trees and finders
 - **Runtime modes**: See [runtime-modes.md](../core/runtime-modes.md) for `LooperMode` and `GraphicsMode`
 - **Visual testing**: See [visual-regression.md](../testing-patterns/visual-regression.md) for screenshot comparison
-- **CI**: See [ci-cd.md](../infrastructure-ci-cd/ci-cd.md) for android-all downloads and JDK selection
 
 ## Sources
 
@@ -263,15 +287,15 @@ val bitmap = composeTestRule.onRoot().captureToImage()
 - https://developer.android.com/develop/ui/compose/testing/common-patterns
 - https://developer.android.com/develop/ui/compose/testing/migrate-v2
 - https://developer.android.com/develop/ui/compose/testing/synchronization
+- https://developer.android.com/develop/ui/compose/testing/interoperability
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction
-- https://developer.android.com/develop/ui/compose/testing/interoperability
-- https://developer.android.com/jetpack/androidx/releases/compose-ui
-- https://robolectric.org/simulator/
-- https://robolectric.org/configuring/
-- https://robolectric.org/getting-started/
-- https://robolectric.org/best-practices/
-- https://robolectric.org/upgrade_to_version_4/
-- https://robolectric.org/blog/2019/06/04/paused-looper/
-- https://developer.android.com/training/testing/ui-tests/screenshot
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary
+- https://robolectric.org/simulator
+- https://robolectric.org/configuring
+- https://robolectric.org/getting-started
+- https://robolectric.org/best-practices
+- https://robolectric.org/upgrade_to_version_4
+- https://robolectric.org/blog/2019/06/04/paused-looper
+- https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries
 - https://developer.android.com/training/testing/local-tests/robolectric
