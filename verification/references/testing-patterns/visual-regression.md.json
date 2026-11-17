@@ -161,7 +161,7 @@
       ]
     },
     {
-      "text": "`captureToImage` can be used to capture nodes in a normal composable, as well as across multiple roots. Popups and Dialogs (if API >= 28) are specific cases of this, where they can be captured together with their anchor.",
+      "text": "`captureToImage`: This can be used to capture nodes in a normal composable, as well as across multiple roots. Popups and Dialogs (if API >= 28) are specific cases of this, where they can be captured together with their anchor.",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",

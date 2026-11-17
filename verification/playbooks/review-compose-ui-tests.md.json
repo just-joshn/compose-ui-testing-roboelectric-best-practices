@@ -186,7 +186,7 @@
       "meta": true
     },
     {
-      "text": "- For v1 setup functions, follow [migrate-to-v2-apis.md](migrate-to-v2-apis.md).",
+      "text": "- For v1 setup functions, follow [migrate-to-v2-testing-apis.md](migrate-to-v2-testing-apis.md).",
       "meta": true
     },
     {

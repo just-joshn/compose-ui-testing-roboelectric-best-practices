@@ -58,7 +58,7 @@ fun ComposeTestRule.onRootWithViewInteraction(
 ): SemanticsNodeInteractionsProvider
 ```
 
-`onRootWithViewInteraction` resolves the View from the Espresso interaction, locates all Compose roots within that view hierarchy, and creates a new, scoped `SemanticsNodeInteractionsProvider`.
+`onRootWithViewInteraction`: It resolves the View from the Espresso interaction, locates all Compose roots within that view hierarchy, and creates a new, scoped `SemanticsNodeInteractionsProvider`.
 
 ### With a Rule
 

@@ -314,8 +314,6 @@ class FocusTest {
 }
 ```
 
-The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.
-
 ## Text Input
 
 | Action                       | Behavior                                                                                                                                                           |

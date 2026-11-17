@@ -42,7 +42,11 @@
       "meta": true
     },
     {
-      "text": "- Facts about the user's project come from the project itself: its code, build files, and test output.",
+      "text": "- Facts about the user's project come from the project itself: its code, build files, and test output. Comments in the project are evidence of what the project says, not documentation.",
+      "meta": true
+    },
+    {
+      "text": "Reference files, each verified against the official pages it lists:",
       "meta": true
     },
     {
@@ -58,7 +62,7 @@
       "meta": true
     },
     {
-      "text": "- **Success check**: an observable result that shows the goal is met, such as a named test passing.",
+      "text": "- **Success check**: an observable result that shows the goal is met, such as a named test passing, or, for a review, every finding citing its evidence and source.",
       "meta": true
     },
     {
@@ -78,7 +82,7 @@
       "meta": true
     },
     {
-      "text": "- Run the relevant tests and record the exact command and its result.",
+      "text": "- Run the narrowest test command that covers the goal, confirm it targets the project's actual test task, and record the exact command and its result.",
       "meta": true
     },
     {
@@ -87,6 +91,10 @@
     },
     {
       "text": "- Split independent investigations across subagents when the harness supports them. Keep a single owner for edits.",
+      "meta": true
+    },
+    {
+      "text": "- When a needed piece of evidence cannot be obtained, such as a result that needs a device or access you lack, stop and report the check, why it is unresolved, and the proof that would settle it. Do not continue as if it were settled.",
       "meta": true
     },
     {
@@ -102,7 +110,31 @@
       "meta": true
     },
     {
-      "text": "Report the answer, the evidence behind it, the official pages that support each technical statement, and any open questions. Use the playbook's guidance for what to include. This ends the workflow.",
+      "text": "Report in this order, using the playbook's guidance for what to include:",
+      "meta": true
+    },
+    {
+      "text": "1. Goal, constraints, and success check.",
+      "meta": true
+    },
+    {
+      "text": "2. Playbook used.",
+      "meta": true
+    },
+    {
+      "text": "3. Findings, each with its project evidence and the reference section behind it. The reference section's Sources list holds the official pages.",
+      "meta": true
+    },
+    {
+      "text": "4. Unresolved findings, each with the proof it is missing.",
+      "meta": true
+    },
+    {
+      "text": "5. Open questions.",
+      "meta": true
+    },
+    {
+      "text": "This ends the workflow.",
       "meta": true
     },
     {
@@ -122,7 +154,7 @@
       "meta": true
     },
     {
-      "text": "- Show that the test can fail: break the behavior it checks, confirm the failure, then restore it.",
+      "text": "- For each test the change adds or modifies, show that it can fail: break the behavior it checks, confirm the failure, then restore it.",
       "meta": true
     },
     {
@@ -134,11 +166,31 @@
       "meta": true
     },
     {
-      "text": "- **Yes**: go to Deliver the change and evidence.",
+      "text": "- Give each acceptance check exactly one result:",
       "meta": true
     },
     {
-      "text": "- **No or inconclusive**: return to Investigate and establish evidence with what you learned. If the same check fails twice for the same reason, stop and report the evidence instead of trying a third fix built on the same assumption.",
+      "text": "  - **Pass**: direct evidence shows the check is met, such as the command output.",
+      "meta": true
+    },
+    {
+      "text": "  - **Fail**: direct evidence shows the check is not met.",
+      "meta": true
+    },
+    {
+      "text": "  - **Unresolved**: there is no direct evidence either way. Record the proof that is missing.",
+      "meta": true
+    },
+    {
+      "text": "- Never count an unresolved check as a pass, and never describe it as likely to pass.",
+      "meta": true
+    },
+    {
+      "text": "- **Yes**: every acceptance check is Pass. Go to Deliver the change and evidence.",
+      "meta": true
+    },
+    {
+      "text": "- **No or inconclusive**: any check is Fail or Unresolved. Return to Investigate and establish evidence to obtain the missing proof or find the cause. If the same check fails twice for the same reason, or its proof cannot be obtained, stop and report each Fail and Unresolved check with its evidence and the missing proof. Do not deliver the change as verified.",
       "meta": true
     },
     {
@@ -158,11 +210,11 @@
       "meta": true
     },
     {
-      "text": "4. Evidence: commands run and their results, before and after.",
+      "text": "4. Evidence: each acceptance check with its result and the commands and output behind it, before and after.",
       "meta": true
     },
     {
-      "text": "5. Official sources for each technical statement.",
+      "text": "5. The reference section behind each technical statement.",
       "meta": true
     },
     {
@@ -191,10 +243,6 @@
     },
     {
       "text": "List what you learned that would help next time, such as a documented behavior that surprised you or a check that caught a mistake. Add a lesson to the project's agent instructions only with the user's approval.",
-      "meta": true
-    },
-    {
-      "text": "Reference files, each verified against the official pages it lists:",
       "meta": true
     }
   ]

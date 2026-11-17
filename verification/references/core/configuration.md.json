@@ -190,15 +190,6 @@
       ]
     },
     {
-      "text": "The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-          "quote": "The ComposeUiTestConfig class is included, starting in version 1.13, in the junit4 and ui-test parts of the androidx.compose.ui AndroidX artifact (androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+ and androidx.compose.ui:ui-test:1.13.0-alpha01+"
-        }
-      ]
-    },
-    {
       "text": "Compose test v2 APIs use `ComposeUiTestConfig` to customize the test environment. This configuration object consolidates environmental related APIs like `effectContext`, `runTestContext`, and `testTimeout` into a single object.",
       "quotes": [
         {

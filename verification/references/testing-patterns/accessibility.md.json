@@ -361,19 +361,6 @@
       ]
     },
     {
-      "text": "The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
-          "quote": "Artifact: androidx.compose.ui:ui-test"
-        },
-        {
-          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-          "quote": "class is included, starting in version 1.13, in the junit4 and ui-test parts of the androidx.compose.ui AndroidX artifact"
-        }
-      ]
-    },
-    {
       "text": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.",
       "quotes": [
         {

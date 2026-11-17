@@ -135,7 +135,7 @@
       ]
     },
     {
-      "text": "`onRootWithViewInteraction` resolves the View from the Espresso interaction, locates all Compose roots within that view hierarchy, and creates a new, scoped `SemanticsNodeInteractionsProvider`.",
+      "text": "`onRootWithViewInteraction`: It resolves the View from the Espresso interaction, locates all Compose roots within that view hierarchy, and creates a new, scoped `SemanticsNodeInteractionsProvider`.",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",

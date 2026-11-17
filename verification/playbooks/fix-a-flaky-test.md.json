@@ -284,6 +284,10 @@
     {
       "text": "- Ask an independent reviewer for a different explanation that fits the same pass and fail record.",
       "meta": true
+    },
+    {
+      "text": "- Report the result as the record itself, such as the number of failing runs out of the total. A run of passes is not proof that the flakiness is gone; if the record cannot show the cause is removed, mark the check Unresolved.",
+      "meta": true
     }
   ]
 }
