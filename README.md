@@ -6,8 +6,8 @@ A skill that gives the AI specialized guidance for writing, debugging, and maint
 
 The skill uses only current official Compose UI testing and Robolectric documentation. [`sources.txt`](sources.txt) defines that boundary:
 
-- **Compose UI testing**: the Testing section of the Compose docs on developer.android.com, the `androidx.compose.ui.test` API reference, and the Compose UI release notes.
-- **Robolectric**: robolectric.org (guides, javadoc, and blog), Robolectric's GitHub releases, and Android's Robolectric page.
+- **Compose UI testing**: the Testing section of the Compose docs on developer.android.com, the `androidx.compose.ui.test` API reference, and the Compose UI release notes for the current stable and newer releases.
+- **Robolectric**: robolectric.org guides and javadoc, the latest Robolectric release notes, and Android's Robolectric page. Blog posts are excluded, because they are dated or describe themselves as unofficial.
 
 Every paragraph, list item, table row, and code block in the reference files has an entry in [`verification/`](verification) that quotes the official page supporting it. A script checks that each quote appears word for word in the current text of that page.
 
@@ -42,7 +42,7 @@ The skill triggers when the AI infers you need help with things like:
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
-| Test structure | `test-suite-structure.md` | Test anatomy, rules, where tests live, shared JVM/device tests |
+| Test structure | `test-suite-structure.md` | Test anatomy, rules, v2 APIs, running on Robolectric |
 | Configuration | `configuration.md` | Dependencies, `@Config`, `robolectric.properties`, JDK, system properties |
 | Semantics & finders | `semantics-finders.md` | Finders, matchers, merged vs unmerged trees, test tags |
 | Assertions & actions | `assertions-actions.md` | Assertions, actions, touch, key, and text input, scrolling |
@@ -79,8 +79,8 @@ The skill triggers when the AI infers you need help with things like:
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
-| Test architecture | `test-architecture.md` | Robolectric or device tests, shared source sets |
-| Test doubles | `test-doubles.md` | Fakes, shadows, not mocking Android classes |
+| Test architecture | `test-architecture.md` | Robolectric or device tests, source sets |
+| Test doubles | `test-doubles.md` | Shadows, mocking and spying on Android classes |
 
 ### Infrastructure (`infrastructure-ci-cd/`)
 
@@ -109,7 +109,7 @@ python3 scripts/fetch_sources.py    # download the current text of every cited p
 python3 scripts/verify_claims.py    # every unit has quotes found word for word on those pages
 ```
 
-`verify_claims.py` also checks that every API name in the code examples appears on an official page or is declared in the same example. It can't judge whether a quote fully supports its unit. That part was reviewed by hand.
+`verify_claims.py` also checks that every API name in the code examples appears on an official page or is declared in the same example, and that advice (should, avoid, prefer, ...) is quoted from a page that gives that advice. It can't judge whether a quote fully supports its unit. That part was reviewed by hand.
 
 ## License
 
