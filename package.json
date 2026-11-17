@@ -1,5 +1,5 @@
 {
-  "name": "compose-ui-testing-robolectric-best-practices-skill",
+  "name": "@justjoshn/compose-ui-testing-robolectric-best-practices-skill",
   "version": "1.0.0",
   "description": "Opinionated agent skill workflow for Jetpack Compose UI tests that run on Robolectric",
   "keywords": [
