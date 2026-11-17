@@ -2,258 +2,181 @@
 
 ## Table of Contents
 
-1. [Setup & Configuration](#setup--configuration)
-2. [Showing a Composable in Isolation](#showing-a-composable-in-isolation)
-3. [Inputs: State and Callbacks](#inputs-state-and-callbacks)
-4. [Events & Interactions](#events--interactions)
-5. [Accessing Resources and the Activity](#accessing-resources-and-the-activity)
-6. [Custom Semantics for Tests](#custom-semantics-for-tests)
-7. [What to Test, Including Edge Cases](#what-to-test-including-edge-cases)
-8. [Isolating Dependencies](#isolating-dependencies)
-9. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
-10. [Related References](#related-references)
-11. [Sources](#sources)
+1. [Setup](#setup)
+2. [Test in Isolation](#test-in-isolation)
+3. [Access the Activity and Resources After Setting Your Own Content](#access-the-activity-and-resources-after-setting-your-own-content)
+4. [Custom Semantics Properties](#custom-semantics-properties)
+5. [Running Compose Tests on Robolectric](#running-compose-tests-on-robolectric)
+6. [Best Practices](#best-practices)
+7. [Related References](#related-references)
+8. [Sources](#sources)
 
-## Setup & Configuration
+## Setup
 
-Component tests are Compose UI tests that scope the rule to one screen or one small element. On Robolectric they live in `src/test` and run with `AndroidJUnit4`.
+### Add the Dependencies
 
-```kotlin
-// build.gradle.kts
-android {
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
-    }
-}
+First, add the following dependencies to the `build.gradle` file of the module containing your UI tests:
 
-dependencies {
-    testImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
-    testImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.18")
-}
+```groovy
+// Test rules and transitive dependencies:
+androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
+// Needed for createComposeRule(), but not for createAndroidComposeRule<YourActivity>():
+debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
 ```
 
-Gradle coordinates, `@Config`, and JDK requirements are covered in [configuration.md](../core/configuration.md). The `ui-test-manifest` dependency is needed for `createComposeRule()`, but not for `createAndroidComposeRule<YourActivity>()`; it also adds `ComponentActivity` to the manifest for the empty-activity pattern below.
+This module includes a `ComposeTestRule` and an implementation for Android called `AndroidComposeTestRule`. Through this rule you can set Compose content or access the activity.
 
-```
-src/test/java/com/example/
-├── ui/
-│   ├── CartRowTest.kt          # one small element
-│   └── CheckoutScreenTest.kt   # one screen
-```
+### Write a Test
 
-One test class per screen is a good starting point for screen UI tests.
-
-## Showing a Composable in Isolation
-
-`ComposeTestRule` can display any composable: the whole app, a single screen, or a small element. Checking that a composable works independently also checks that it is correctly encapsulated.
-
-```kotlin
-@RunWith(AndroidJUnit4::class)
-class CartRowTest {
-    @get:Rule
-    val composeTestRule = createAndroidComposeRule<ComponentActivity>()
-
-    @Test
-    fun showsItemName() {
-        composeTestRule.setContent {
-            AppTheme {
-                CartRow(item = CartItem(name = "Tea", quantity = 2), onRemove = {})
-            }
-        }
-
-        composeTestRule.onNodeWithText("Tea").assertIsDisplayed()
-    }
-}
-```
-
-```kotlin
-// Good: a rule that shows only what you set via setContent
-createAndroidComposeRule<ComponentActivity>()
-
-// Bad: an app activity that already calls setContent; you cannot call setContent again
-createAndroidComposeRule<MainActivity>()
-```
-
-Isolation does not mean unit UI tests only. Tests that scope larger parts of the UI are also very important; see [test-architecture.md](../architecture/test-architecture.md).
-
-## Inputs: State and Callbacks
-
-Give the composable the values it renders and callbacks it invokes, rather than its real dependencies. The Android docs' example passes a ready-made `exampleUiState`; the navigation guide likewise says to pass navigation callbacks (lambdas), not a `NavController`, and to test screens with mock values and callbacks.
-
-```kotlin
-@Test
-fun clickingRemove_invokesCallback() {
-    var removed: CartItem? = null
-    val item = CartItem(name = "Tea", quantity = 2)
-
-    composeTestRule.setContent {
-        CartRow(item = item, onRemove = { removed = it })
-    }
-
-    composeTestRule.onNodeWithContentDescription("Remove Tea").performClick()
-
-    composeTestRule.runOnIdle { assertEquals(item, removed) }
-}
-```
-
-### Testing State Changes
-
-Mutate observable state from the test, then assert through the rule, which syncs first.
-
-```kotlin
-@Test
-fun reflectsStateChange() {
-    var enabled by mutableStateOf(false)
-    composeTestRule.setContent { StatusBadge(online = enabled) }
-
-    composeTestRule.onNodeWithText("Offline").assertExists()
-
-    enabled = true
-
-    composeTestRule.onNodeWithText("Online").assertExists()
-}
-```
-
-Without a sync call "no recomposition will occur and the UI will appear to be paused"; any assertion, action, or `waitForIdle()` triggers it. See [synchronization.md](../core/synchronization.md).
-
-## Events & Interactions
-
-```kotlin
-// Click, then assert the resulting UI
-composeTestRule.onNodeWithText("Continue").performClick()
-composeTestRule.onNodeWithText("Welcome").assertIsDisplayed()
-
-// Text input and scrolling
-composeTestRule.onNodeWithTag("email").performTextInput("a@example.com")
-composeTestRule.onNodeWithTag("footer").performScrollTo()
-
-// performGesture is deprecated in favor of performTouchInput; make one perform call per action
-composeTestRule.onNodeWithTag("list").performTouchInput { swipeLeft() }
-```
-
-Finders, assertions, and the full action list are in [semantics-finders.md](../core/semantics-finders.md) and [assertions-actions.md](../core/assertions-actions.md).
-
-## Accessing Resources and the Activity
-
-Use an `AndroidComposeTestRule` with `ComponentActivity` when you need both your own content and activity resources, for example to assert text against a string resource.
+You construct the rules using factory functions, either `createComposeRule` or, if you need access to an activity, `createAndroidComposeRule`. A typical UI test for Compose looks like this:
 
 ```kotlin
 class MyComposeTest {
+
+    @get:Rule val composeTestRule = createComposeRule()
+    // use createAndroidComposeRule<YourActivity>() if you need access to
+    // an activity
+
+    @Test
+    fun myTest() {
+        // Start the app
+        composeTestRule.setContent {
+            MyAppTheme {
+                MainScreen(uiState = fakeUiState, /*...*/)
+            }
+        }
+
+        composeTestRule.onNodeWithText("Continue").performClick()
+
+        composeTestRule.onNodeWithText("Welcome").assertIsDisplayed()
+    }
+}
+```
+
+## Test in Isolation
+
+`ComposeTestRule` lets you start an activity displaying any composable: your full application, a single screen, or a small element.
+
+It's also a good practice to check that your composables are correctly encapsulated and they work independently, allowing for easier and more focused UI testing.
+
+This doesn't mean you should *only* create unit UI tests. UI tests scoping larger parts of your UI are also very important.
+
+## Access the Activity and Resources After Setting Your Own Content
+
+Oftentimes you need to set the content under test using `composeTestRule.setContent` and you also need to access activity resources, for example to assert that a displayed text matches a string resource. However, you can't call `setContent` on a rule created with `createAndroidComposeRule()` if the activity already calls it.
+
+A common pattern to achieve this is to create an `AndroidComposeTestRule` using an empty activity such as `ComponentActivity`.
+
+```kotlin
+class MyComposeTest {
+
     @get:Rule
     val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
     fun myTest() {
+        // Start the app
         composeTestRule.setContent {
             MyAppTheme {
-                MainScreen(uiState = exampleUiState)
+                MainScreen(uiState = exampleUiState, /*...*/)
             }
         }
-
         val continueLabel = composeTestRule.activity.getString(R.string.next)
         composeTestRule.onNodeWithText(continueLabel).performClick()
     }
 }
 ```
 
-```kotlin
-// Good: derive expected text from the resource
-composeTestRule.onNodeWithText(composeTestRule.activity.getString(R.string.next))
+`ComponentActivity` needs to be added to your app's `AndroidManifest.xml` file. Enable that by adding this dependency to your module:
 
-// Bad: hardcoded string that breaks when copy or locale changes
-composeTestRule.onNodeWithText("Next")
+```kotlin
+debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
 ```
 
-On Robolectric, resources require `isIncludeAndroidResources = true`.
+## Custom Semantics Properties
 
-## Custom Semantics for Tests
+### Define the Property
 
-When a finder or matcher cannot single out an item, expose a value through a custom semantics property and match it with `SemanticsMatcher.expectValue`.
+You can create custom semantics properties to expose information to tests. To do this, define a new `SemanticsPropertyKey` and make it available using the `SemanticsPropertyReceiver`.
 
 ```kotlin
-// Production code
+// Creates a semantics property of type Long.
 val PickedDateKey = SemanticsPropertyKey<Long>("PickedDate")
 var SemanticsPropertyReceiver.pickedDate by PickedDateKey
+```
 
+### Set the Property in the Modifier
+
+Now use that property in the `semantics` modifier:
+
+```kotlin
 val datePickerValue by remember { mutableStateOf(0L) }
 MyCustomDatePicker(
     modifier = Modifier.semantics { pickedDate = datePickerValue }
 )
+```
 
-// Test
+### Assert the Property in a Test
+
+From tests, use `SemanticsMatcher.expectValue` to assert the value of the property:
+
+```kotlin
 composeTestRule
     .onNode(SemanticsMatcher.expectValue(PickedDateKey, 1445378400)) // 2015-10-21
     .assertExists()
 ```
 
-Use this only when it is hard to match the item with the standard finders. Do not expose visual properties such as colors, font size, or corner radius: it can pollute production code and wrong implementations lead to bugs that are hard to find.
+### When to Use Custom Semantics Properties
 
-## What to Test, Including Edge Cases
+You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers.
 
-For a screen UI test, check critical interactions on a single screen: clicking buttons, typing in forms, and checking visible states. Cover normal paths and the edge cases that larger tests and human testers rarely hit, expressed as inputs to the composable:
+Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.
 
-| Case                                         | How to drive it in a component test                          |
-| -------------------------------------------- | ------------------------------------------------------------ |
-| Empty, loading, and error UI states          | Pass each state value in `setContent`                        |
-| Corrupted or unexpected data                 | Pass the data the model would produce; assert fallback UI    |
-| Object recreated mid-process (rotation)      | `StateRestorationTester`, see [state-restoration.md](state-restoration.md) |
-| Different fonts, themes, locales, sizes      | `DeviceConfigurationOverride`, see [device-configuration.md](../advanced/device-configuration.md) |
-| Focus order for keyboard and D-pad users     | See [accessibility.md](accessibility.md)                     |
-| Animation intermediate states                | See [animations.md](animations.md)                           |
+## Running Compose Tests on Robolectric
 
-Behavior tests like "the UI changed after clicking a button" are well within Robolectric's fidelity. Do not test the framework or a library; test your composable's logic.
+### Convert an Instrumented Test
 
-## Isolating Dependencies
-
-Replace dependencies with fakes injected at a seam, so the composable (or its state holder) receives deterministic data. Android's guidance prefers fakes over mocks and stubs because they are lightweight and need no mocking framework.
+Robolectric can also run UI tests such as Espresso or Compose tests. You can convert an instrumented test to Robolectric by moving it to the `test` source set and setting up the Robolectric dependencies.
 
 ```kotlin
-// Good: a fake behind an interface
-class FakeCartRepository(private val items: List<CartItem>) : CartRepository {
-    override fun items(): List<CartItem> = items
+android {
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+    }
+  }
 }
-
-// Bad: mocking Android classes that other Android code acts on
-val context = mock<Context>()
 ```
 
-Do not mock or spy on Android classes that Android code will act on, such as `Context` or `SharedPreferences`; stubbing is brittle. See [test-doubles.md](../architecture/test-doubles.md) and [coroutines-viewmodels.md](coroutines-viewmodels.md).
+Any UI test present in the `test` source set runs with Robolectric.
 
-## Anti-Patterns to Avoid
+### Robolectric Versus Device Tests
 
-| Anti-Pattern                                    | Problem                                    | Solution                                                 |
-| ----------------------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
-| Only unit-scoped UI tests                       | Misses integration of larger UI parts      | Add tests scoped to bigger parts of the UI              |
-| Calling `setContent` on a rule whose activity already does | Not allowed                       | `createAndroidComposeRule<ComponentActivity>()`          |
-| Hardcoded strings from resources                | Breaks on copy or locale change            | `composeTestRule.activity.getString(R.string.x)`         |
-| Exposing colors or font sizes via custom semantics | Pollutes production code                | Test visuals with screenshot tests                       |
-| Mocking `Context` or `SharedPreferences`        | Brittle                                    | Real Robolectric environment or fakes                    |
-| Asserting right after mutating state outside the rule | No recomposition yet                 | Assert via the rule, or `waitForIdle()`                  |
-| Testing library or framework behavior           | No value for your code                     | Test your composable's logic                             |
+You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button.
+
+You must decide whether Robolectric's implementation is good enough for each use case, but here are some recommendations:
+
+- Use Robolectric for isolated UI behavior tests for components, feature or application tests. In general these tests check the state management and behavior of the UIs and don't interact with external dependencies.
+
+In summary, Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like `WebView`.
+
+## Best Practices
+
+DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. `Context`, `SharedPreferences`, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades. The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners.
 
 ## Related References
 
 - **Setup**: See [test-suite-structure.md](../core/test-suite-structure.md) for rules and test anatomy
 - **Selectors**: See [semantics-finders.md](../core/semantics-finders.md) for finders and custom semantics keys
 - **Assertions**: See [assertions-actions.md](../core/assertions-actions.md) for assertions and actions
-- **State restoration**: See [state-restoration.md](state-restoration.md) for `rememberSaveable` checks
-- **Accessibility**: See [accessibility.md](accessibility.md) for focus and a11y checks
-- **Test doubles**: See [test-doubles.md](../architecture/test-doubles.md) for fakes over mocks
+- **State restoration**: See [state-restoration.md](state-restoration.md) for `StateRestorationTester`
+- **Accessibility**: See [accessibility.md](accessibility.md) for focus and accessibility checks
+- **Device configuration**: See [device-configuration.md](../advanced/device-configuration.md) for `DeviceConfigurationOverride`
 
 ## Sources
 
-- https://developer.android.com/develop/ui/compose/testing/common-patterns
 - https://developer.android.com/develop/ui/compose/testing
-- https://developer.android.com/develop/ui/compose/testing/apis
-- https://developer.android.com/develop/ui/compose/testing/synchronization
-- https://developer.android.com/guide/navigation/testing/compose
-- https://developer.android.com/training/testing/fundamentals/what-to-test
-- https://developer.android.com/training/testing/fundamentals/test-doubles
+- https://developer.android.com/develop/ui/compose/testing/common-patterns
 - https://developer.android.com/training/testing/local-tests/robolectric
-- https://robolectric.org/best-practices/
-- https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/
+- https://robolectric.org/getting-started
+- https://robolectric.org/best-practices

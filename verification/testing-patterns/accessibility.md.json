@@ -1,0 +1,457 @@
+{
+  "units": [
+    {
+      "text": "An essential way of testing accessibility is a form of manual testing: by turning accessibility services, like TalkBack or Switch Access, on, and checking if everything works as expected.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "An essential way of testing accessibility is a form of manual testing: by turning accessibility services, like TalkBack or Switch Access, on, and checking if everything works as expected."
+        }
+      ]
+    },
+    {
+      "text": "In conjunction with manual verification, you should also use automated testing to flag any potential issues that could impact user experience as you make continual changes to your app.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "In conjunction with manual verification, you should also use automated testing to flag any potential issues that could impact user experience as you make continual changes to your app."
+        }
+      ]
+    },
+    {
+      "text": "Existing Compose testing APIs allow you to write automated tests that interact with semantic elements and to assert the properties defined in your UI.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "Existing Compose testing APIs allow you to write automated tests that interact with semantic elements and to assert the properties defined in your UI."
+        }
+      ]
+    },
+    {
+      "text": "The semantics framework is primarily used for accessibility, so tests take advantage of the information exposed by semantics about the UI hierarchy. Developers decide what and how much to expose.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "The semantics framework is primarily used for accessibility, so tests take advantage of the information exposed by semantics about the UI hierarchy. Developers decide what and how much to expose."
+        }
+      ]
+    },
+    {
+      "text": "For example, given a button like this that consists of an icon and a text element, the default semantics tree only contains the text label \"Like\". This is because some composables, such as `Text`, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a `Modifier`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "For example, given a button like this that consists of an icon and a text element, the default semantics tree only contains the text label \"Like\". This is because some composables, such as Text, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a Modifier."
+        }
+      ]
+    },
+    {
+      "text": "MyButton(\n    modifier = Modifier.semantics { contentDescription = \"Add to favorites\" }\n)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "MyButton(\n    modifier = Modifier.semantics { contentDescription = \"Add to favorites\" }\n)"
+        }
+      ]
+    },
+    {
+      "text": "For automated accessibility testing, you can also use the Accessibility Test Framework—the same underlying framework that powers Accessibility Scanner and accessibility checks in Espresso—to perform some accessibility-related checks automatically, starting with Compose 1.8.0.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "you can also use the Accessibility Test Framework"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "the same underlying framework that powers Accessibility Scanner and accessibility checks in Espresso"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "to perform some accessibility-related checks automatically, starting with Compose 1.8.0."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "For automated accessibility testing, you can also use the Accessibility Test Framework—the same underlying framework that powers Accessibility Scanner and accessibility checks in Espresso—to perform some accessibility-related checks automatically, starting with Compose 1.8.0"
+        }
+      ]
+    },
+    {
+      "text": "To enable the checks, add the `ui-test-junit4-accessibility` dependency, call `enableAccessibilityChecks()` in the `AndroidComposeTestRule`, and trigger an action or `tryPerformAccessibilityChecks`:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "To enable the checks, add the ui-test-junit4-accessibility dependency, call enableAccessibilityChecks()"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "in the AndroidComposeTestRule, and trigger an action or tryPerformAccessibilityChecks:"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "To enable the checks, add the ui-test-junit4-accessibility dependency, call enableAccessibilityChecks() in the AndroidComposeTestRule, and trigger an action or tryPerformAccessibilityChecks"
+        }
+      ]
+    },
+    {
+      "text": "@Rule\n@JvmField\nval composeTestRule = createAndroidComposeRule<ComponentActivity>()\n\n@Test\nfun noAccessibilityLabel() {\n    composeTestRule.setContent {\n        Box(\n            modifier = Modifier\n                .size(50.dp, 50.dp)\n                .background(color = Color.Gray)\n                .clickable { }\n                .semantics {\n                    contentDescription = \"\"\n                }\n        )\n    }\n\n    composeTestRule.enableAccessibilityChecks()\n\n    // Any action (such as performClick) will perform accessibility checks too:\n    composeTestRule.onRoot().tryPerformAccessibilityChecks()\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "@Rule\n@JvmField\nval composeTestRule = createAndroidComposeRule<ComponentActivity>()\n\n@Test\nfun noAccessibilityLabel() {\n    composeTestRule.setContent {\n        Box(\n            modifier = Modifier\n                .size(50.dp, 50.dp)\n                .background(color = Color.Gray)\n                .clickable { }\n                .semantics {\n                    contentDescription = \"\"\n                }\n        )\n    }\n\n    composeTestRule.enableAccessibilityChecks()\n\n    // Any action (such as performClick) will perform accessibility checks too:\n    composeTestRule.onRoot().tryPerformAccessibilityChecks()\n}"
+        }
+      ]
+    },
+    {
+      "text": "This specific test fails with an exception and a message that the item may not have a label readable by accessibility services.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "This specific test fails with an exception and a message that the item may not have a label readable by accessibility services."
+        }
+      ]
+    },
+    {
+      "text": "Other available checks look for accessibility issues with color contrast, small touch target size, or elements' traversal order.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "Other available checks look for accessibility issues with color contrast, small touch target size, or elements' traversal order."
+        }
+      ]
+    },
+    {
+      "text": "`enableAccessibilityChecks`: Enables accessibility checks that will be run before every action that is expected to change the UI. This requires API 34+ (Android U), and currently does not work on Robolectric. Enabling accessibility checks is currently only supported for `AndroidComposeTestRule`. If you have a custom `ComposeTestRule` implementation that delegates to `AndroidComposeTestRule`, make sure to call this function on the `AndroidComposeTestRule` instead.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "Enabling accessibility checks is currently only supported for AndroidComposeTestRule. If you have a custom ComposeTestRule implementation that delegates to AndroidComposeTestRule, make sure to call this function on the AndroidComposeTestRule instead."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "enableAccessibilityChecks"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "Enables accessibility checks that will be run before every action that is expected to change the UI"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "This requires API 34+ (Android U), and currently does not work on Robolectric"
+        }
+      ]
+    },
+    {
+      "text": "Accessibility checks are run automatically when performing an action.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "// Accessibility checks are run automatically when performing an action:"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "// When disabling accessibility checks..\ncomposeTestRule.disableAccessibilityChecks()\n\n// .. they no longer run when performing an action:"
+        }
+      ]
+    },
+    {
+      "text": "// Enable accessibility checks with default configuration:\ncomposeTestRule.enableAccessibilityChecks()\n\n// Accessibility checks are run automatically when performing an action:\ncomposeTestRule.onNodeWithText(\"Submit\").performClick()\n\n// You can also manually run accessibility checks:\ncomposeTestRule.onRoot().tryPerformAccessibilityChecks()\n\n// When disabling accessibility checks..\ncomposeTestRule.disableAccessibilityChecks()\n\n// .. they no longer run when performing an action:\ncomposeTestRule.onNodeWithTag(\"list\").performScrollToIndex(15)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "// Enable accessibility checks with default configuration:\ncomposeTestRule.enableAccessibilityChecks()\n\n// Accessibility checks are run automatically when performing an action:\ncomposeTestRule.onNodeWithText(\"Submit\").performClick()\n\n// You can also manually run accessibility checks:\ncomposeTestRule.onRoot().tryPerformAccessibilityChecks()\n\n// When disabling accessibility checks..\ncomposeTestRule.disableAccessibilityChecks()\n\n// .. they no longer run when performing an action:\ncomposeTestRule.onNodeWithTag(\"list\").performScrollToIndex(15)"
+        }
+      ]
+    },
+    {
+      "text": "If you're mixing Views with Compose and you're already using an `AccessibilityValidator`, or you need to configure one, you can set it in the rule:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "If you're mixing Views with Compose and you're already using an AccessibilityValidator, or you need to configure one, you can set it in the rule:"
+        }
+      ]
+    },
+    {
+      "text": "// Optionally, set AccessibilityValidator manually\nval accessibilityValidator = AccessibilityValidator()\n    .setThrowExceptionFor(\n        AccessibilityCheckResult.AccessibilityCheckResultType.WARNING\n    )\n\ncomposeTestRule.enableAccessibilityChecks(accessibilityValidator)\n\ncomposeTestRule.onRoot().tryPerformAccessibilityChecks()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "// Optionally, set AccessibilityValidator manually\nval accessibilityValidator = AccessibilityValidator()\n    .setThrowExceptionFor(\n        AccessibilityCheckResult.AccessibilityCheckResultType.WARNING\n    )\n\ncomposeTestRule.enableAccessibilityChecks(accessibilityValidator)\n\ncomposeTestRule.onRoot().tryPerformAccessibilityChecks()"
+        }
+      ]
+    },
+    {
+      "text": "`accessibilityValidator: com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator = AccessibilityValidator().setRunChecksFromRootView(true)`",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "accessibilityValidator: com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator = AccessibilityValidator().setRunChecksFromRootView(true)"
+        }
+      ]
+    },
+    {
+      "text": "If you have a hybrid application with both Compose and Views, and you use both Compose Test and Espresso, then you should set up accessibility checks in both frameworks and share the configuration in the following way:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/AndroidComposeTestRule",
+          "quote": "If you have a hybrid application with both Compose and Views, and you use both Compose Test and Espresso, then you should set up accessibility checks in both frameworks and share the configuration in the following way:"
+        }
+      ]
+    },
+    {
+      "text": "// Enable accessibility checks in both Espresso and Compose, and share the configuration\nval accessibilityValidator = AccessibilityChecks.enable()\nandroidComposeTestRule.enableAccessibilityChecks(accessibilityValidator)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/AndroidComposeTestRule",
+          "quote": "// Enable accessibility checks in both Espresso and Compose, and share the configuration\nval accessibilityValidator = AccessibilityChecks.enable()\nandroidComposeTestRule.enableAccessibilityChecks(accessibilityValidator)"
+        }
+      ]
+    },
+    {
+      "text": "In combination with manual testing, automated tests using both Compose APIs as well as the Accessibility Test Framework can help you detect possible problems early on in the development process.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "In combination with manual testing, automated tests using both Compose APIs as well as the Accessibility Test Framework can help you detect possible problems early on in the development process."
+        }
+      ]
+    },
+    {
+      "text": "Automating focus navigation tests ensures your app delivers a consistent and predictable user experience across hardware keyboards, D-pads, and accessibility tools. Compose provides built-in testing APIs to simulate key input and verify focus states.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Automating focus navigation tests ensures your app delivers a consistent and predictable user experience across hardware keyboards, D-pads, and accessibility tools. Compose provides built-in testing APIs to simulate key input and verify focus states."
+        }
+      ]
+    },
+    {
+      "text": "To write focus tests, use `createComposeRule()` from the Compose testing library:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "To write focus tests, use createComposeRule() from the Compose testing library:"
+        }
+      ]
+    },
+    {
+      "text": "@RunWith(AndroidJUnit4::class)\nclass FocusNavigationTest {\n    @get:Rule\n    val composeTestRule = createComposeRule()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "@RunWith(AndroidJUnit4::class)\nclass FocusNavigationTest {\n    @get:Rule\n    val composeTestRule = createComposeRule()"
+        }
+      ]
+    },
+    {
+      "text": "By default, Compose testing environments initialize in touch mode. To configure whether your test environment starts in touch mode or keyboard mode, see the [default input mode configuration](#input-mode).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "By default, Compose testing environments initialize in touch mode. To configure whether your test environment starts in touch mode or keyboard mode, see the default input mode configuration"
+        }
+      ]
+    },
+    {
+      "text": "You can verify whether a UI element can receive focus by performing a click or requesting focus, and then asserting its state using `assertIsFocused()` and `assertIsNotFocused()`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "You can verify whether a UI element can receive focus by performing a click or requesting focus, and then asserting its state using assertIsFocused()"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "and assertIsNotFocused()"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "You can verify whether a UI element can receive focus by performing a click or requesting focus, and then asserting its state using assertIsFocused() and assertIsNotFocused()"
+        }
+      ]
+    },
+    {
+      "text": "@Test\nfun interactiveElement_isFocusTarget() {\n    composeTestRule.setContent {\n        AppTheme {\n            CardListScreen()\n        }\n    }\n\n    val firstCard = composeTestRule.onNodeWithTag(\"card_1\")\n    val secondCard = composeTestRule.onNodeWithTag(\"card_2\")\n\n    // Focus the first element\n    firstCard.performClick()\n    firstCard.assertIsFocused()\n    secondCard.assertIsNotFocused()\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "@Test\nfun interactiveElement_isFocusTarget() {\n    composeTestRule.setContent {\n        AppTheme {\n            CardListScreen()\n        }\n    }\n\n    val firstCard = composeTestRule.onNodeWithTag(\"card_1\")\n    val secondCard = composeTestRule.onNodeWithTag(\"card_2\")\n\n    // Focus the first element\n    firstCard.performClick()\n    firstCard.assertIsFocused()\n    secondCard.assertIsNotFocused()\n}"
+        }
+      ]
+    },
+    {
+      "text": "Simulate Tab and Shift+Tab key presses using `performKeyInput` to verify that focus advances through the UI in appearance order. As a best practice, verify both forward navigation (`Key.Tab`) and reverse navigation (`Key.Tab` with `Key.ShiftLeft` held down) to ensure two-way traversal integrity:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Simulate <kbd>Tab</kbd> and <kbd>Shift+Tab</kbd> key presses using performKeyInput"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "to verify that focus advances through the UI in appearance order. As a best practice, verify both forward navigation (Key.Tab) and reverse navigation (Key.Tab with Key.ShiftLeft held down) to ensure two-way traversal integrity:"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Simulate Tab and Shift+Tab key presses using performKeyInput to verify that focus advances through the UI in appearance order"
+        }
+      ]
+    },
+    {
+      "text": "@Test\nfun tabKey_navigatesInAppearanceOrder() {\n    composeTestRule.setContent {\n        AppTheme {\n            CardListScreen()\n        }\n    }\n\n    val firstCard = composeTestRule.onNodeWithTag(\"card_1\")\n    val secondCard = composeTestRule.onNodeWithTag(\"card_2\")\n    val thirdCard = composeTestRule.onNodeWithTag(\"card_3\")\n\n    firstCard.performClick()\n    firstCard.assertIsFocused()\n\n    // Press Tab -> Moves to second card\n    firstCard.performKeyInput {\n        pressKey(Key.Tab)\n    }\n    secondCard.assertIsFocused()\n    firstCard.assertIsNotFocused()\n\n    // Press Tab -> Moves to third card\n    secondCard.performKeyInput {\n        pressKey(Key.Tab)\n    }\n    thirdCard.assertIsFocused()\n\n    // Press Shift + Tab -> Moves backward to second card\n    thirdCard.performKeyInput {\n        withKeyDown(Key.ShiftLeft) {\n            pressKey(Key.Tab)\n        }\n    }\n    secondCard.assertIsFocused()\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "@Test\nfun tabKey_navigatesInAppearanceOrder() {\n    composeTestRule.setContent {\n        AppTheme {\n            CardListScreen()\n        }\n    }\n\n    val firstCard = composeTestRule.onNodeWithTag(\"card_1\")\n    val secondCard = composeTestRule.onNodeWithTag(\"card_2\")\n    val thirdCard = composeTestRule.onNodeWithTag(\"card_3\")\n\n    firstCard.performClick()\n    firstCard.assertIsFocused()\n\n    // Press Tab -> Moves to second card\n    firstCard.performKeyInput {\n        pressKey(Key.Tab)\n    }\n    secondCard.assertIsFocused()\n    firstCard.assertIsNotFocused()\n\n    // Press Tab -> Moves to third card\n    secondCard.performKeyInput {\n        pressKey(Key.Tab)\n    }\n    thirdCard.assertIsFocused()\n\n    // Press Shift + Tab -> Moves backward to second card\n    thirdCard.performKeyInput {\n        withKeyDown(Key.ShiftLeft) {\n            pressKey(Key.Tab)\n        }\n    }\n    secondCard.assertIsFocused()\n}"
+        }
+      ]
+    },
+    {
+      "text": "Simulate arrow keys or D-pad directional keys using `Key.DirectionDown`, `Key.DirectionUp`, `Key.DirectionRight`, and `Key.DirectionLeft`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Simulate arrow keys or D-pad directional keys using Key.DirectionDown"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Key.DirectionUp"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Key.DirectionRight"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "and Key.DirectionLeft"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Simulate arrow keys or D-pad directional keys using Key.DirectionDown, Key.DirectionUp, Key.DirectionRight, and Key.DirectionLeft"
+        }
+      ]
+    },
+    {
+      "text": "@Test\nfun arrowKeys_moveFocusTwoDimensionallyWithoutWrap() {\n    composeTestRule.setContent {\n        AppTheme {\n            GridLayoutScreen()\n        }\n    }\n\n    val topLeftButton = composeTestRule.onNodeWithTag(\"btn_top_left\")\n    val bottomLeftButton = composeTestRule.onNodeWithTag(\"btn_bottom_left\")\n\n    topLeftButton.performClick()\n    topLeftButton.assertIsFocused()\n\n    // Down arrow moves focus downward to bottom-left button\n    topLeftButton.performKeyInput {\n        pressKey(Key.DirectionDown)\n    }\n    bottomLeftButton.assertIsFocused()\n\n    // Directional keys do not wrap around: pressing Down on bottom element stays focused\n    bottomLeftButton.performKeyInput {\n        pressKey(Key.DirectionDown)\n    }\n    bottomLeftButton.assertIsFocused()\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "@Test\nfun arrowKeys_moveFocusTwoDimensionallyWithoutWrap() {\n    composeTestRule.setContent {\n        AppTheme {\n            GridLayoutScreen()\n        }\n    }\n\n    val topLeftButton = composeTestRule.onNodeWithTag(\"btn_top_left\")\n    val bottomLeftButton = composeTestRule.onNodeWithTag(\"btn_bottom_left\")\n\n    topLeftButton.performClick()\n    topLeftButton.assertIsFocused()\n\n    // Down arrow moves focus downward to bottom-left button\n    topLeftButton.performKeyInput {\n        pressKey(Key.DirectionDown)\n    }\n    bottomLeftButton.assertIsFocused()\n\n    // Directional keys do not wrap around: pressing Down on bottom element stays focused\n    bottomLeftButton.performKeyInput {\n        pressKey(Key.DirectionDown)\n    }\n    bottomLeftButton.assertIsFocused()\n}"
+        }
+      ]
+    },
+    {
+      "text": "Verify that single-line text fields advance focus on Tab, while multi-line text fields retain focus:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Verify that single-line text fields advance focus on <kbd>Tab</kbd>, while multi-line text fields retain focus:"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Verify that single-line text fields advance focus on Tab, while multi-line text fields retain focus"
+        }
+      ]
+    },
+    {
+      "text": "@Test\nfun textField_handlesTabAccordingToLineLimits() {\n    composeTestRule.setContent {\n        AppTheme {\n            FormScreen()\n        }\n    }\n\n    val singleLineNode = composeTestRule.onNodeWithTag(\"single_line_field\")\n    val multiLineNode = composeTestRule.onNodeWithTag(\"multi_line_field\")\n    val submitButtonNode = composeTestRule.onNodeWithTag(\"submit_button\")\n\n    // Single-line field advances focus on Tab\n    singleLineNode.performClick()\n    singleLineNode.assertIsFocused()\n    singleLineNode.performKeyInput { pressKey(Key.Tab) }\n    multiLineNode.assertIsFocused()\n\n    // Multi-line field keeps focus and inserts '\\t'\n    multiLineNode.performKeyInput { pressKey(Key.Tab) }\n    multiLineNode.assertIsFocused()\n    submitButtonNode.assertIsNotFocused()\n\n    // Shift + Tab escapes multi-line field to previous target\n    multiLineNode.performKeyInput {\n        withKeyDown(Key.ShiftLeft) { pressKey(Key.Tab) }\n    }\n    singleLineNode.assertIsFocused()\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "@Test\nfun textField_handlesTabAccordingToLineLimits() {\n    composeTestRule.setContent {\n        AppTheme {\n            FormScreen()\n        }\n    }\n\n    val singleLineNode = composeTestRule.onNodeWithTag(\"single_line_field\")\n    val multiLineNode = composeTestRule.onNodeWithTag(\"multi_line_field\")\n    val submitButtonNode = composeTestRule.onNodeWithTag(\"submit_button\")\n\n    // Single-line field advances focus on Tab\n    singleLineNode.performClick()\n    singleLineNode.assertIsFocused()\n    singleLineNode.performKeyInput { pressKey(Key.Tab) }\n    multiLineNode.assertIsFocused()\n\n    // Multi-line field keeps focus and inserts '\\t'\n    multiLineNode.performKeyInput { pressKey(Key.Tab) }\n    multiLineNode.assertIsFocused()\n    submitButtonNode.assertIsNotFocused()\n\n    // Shift + Tab escapes multi-line field to previous target\n    multiLineNode.performKeyInput {\n        withKeyDown(Key.ShiftLeft) { pressKey(Key.Tab) }\n    }\n    singleLineNode.assertIsFocused()\n}"
+        }
+      ]
+    },
+    {
+      "text": "The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
+          "quote": "Artifact: androidx.compose.ui:ui-test"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "class is included, starting in version 1.13, in the junit4 and ui-test parts of the androidx.compose.ui AndroidX artifact"
+        }
+      ]
+    },
+    {
+      "text": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Within the setup functions for tests, the system enforces InputMode.Touch by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup."
+        }
+      ]
+    },
+    {
+      "text": "To resolve this, specify the required input mode in `ComposeUiTestConfig`:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "To resolve this, specify the required input mode in ComposeUiTestConfig:"
+        }
+      ]
+    },
+    {
+      "text": "class FocusTest {\n    @get:Rule\n    val rule = createComposeRule(\n        config = ComposeUiTestConfig(inputMode = InputMode.Keyboard)\n    )\n\n    @Test\n    fun testFocus() {}\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "class FocusTest {\n    @get:Rule\n    val rule = createComposeRule(\n        config = ComposeUiTestConfig(inputMode = InputMode.Keyboard)\n    )\n\n    @Test\n    fun testFocus() {}\n}"
+        }
+      ]
+    },
+    {
+      "text": "To configure the input mode for individual test cases instead of the entire test class, pass `ComposeUiTestConfig` to `runComposeUiTest`:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "To configure the input mode for individual test cases instead of the entire test class, pass ComposeUiTestConfig to runComposeUiTest:"
+        }
+      ]
+    },
+    {
+      "text": "class FocusTest {\n    @Test\n    fun testTouchMode() = runComposeUiTest {\n        // Runs with the default InputMode.Touch\n    }\n\n    @Test\n    fun testKeyboardMode() = runComposeUiTest(\n        ComposeUiTestConfig(inputMode = InputMode.Keyboard)\n    ) {\n        // Runs with InputMode.Keyboard\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "class FocusTest {\n    @Test\n    fun testTouchMode() = runComposeUiTest {\n        // Runs with the default InputMode.Touch\n    }\n\n    @Test\n    fun testKeyboardMode() = runComposeUiTest(\n        ComposeUiTestConfig(inputMode = InputMode.Keyboard)\n    ) {\n        // Runs with InputMode.Keyboard\n    }\n}"
+        }
+      ]
+    },
+    {
+      "text": "- In conjunction with manual verification, you should also use automated testing to flag any potential issues that could impact user experience as you make continual changes to your app.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "In conjunction with manual verification, you should also use automated testing to flag any potential issues that could impact user experience as you make continual changes to your app."
+        }
+      ]
+    },
+    {
+      "text": "- As a best practice, verify both forward navigation (`Key.Tab`) and reverse navigation (`Key.Tab` with `Key.ShiftLeft` held down) to ensure two-way traversal integrity.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "As a best practice, verify both forward navigation (Key.Tab) and reverse navigation (Key.Tab with Key.ShiftLeft held down) to ensure two-way traversal integrity:"
+        }
+      ]
+    },
+    {
+      "text": "- `enableAccessibilityChecks`: If you have a custom `ComposeTestRule` implementation that delegates to `AndroidComposeTestRule`, make sure to call this function on the `AndroidComposeTestRule` instead.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "Enabling accessibility checks is currently only supported for AndroidComposeTestRule. If you have a custom ComposeTestRule implementation that delegates to AndroidComposeTestRule, make sure to call this function on the AndroidComposeTestRule instead."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/accessibility/testing",
+          "quote": "enableAccessibilityChecks"
+        }
+      ]
+    }
+  ]
+}

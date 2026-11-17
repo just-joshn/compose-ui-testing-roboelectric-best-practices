@@ -1,0 +1,800 @@
+{
+  "units": [
+    {
+      "text": "UI tests in Compose use *semantics* to interact with the UI hierarchy. The *semantics tree* is generated alongside the UI hierarchy and describes the hierarchy.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "UI tests in Compose use *semantics* to interact with the UI hierarchy."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "The *semantics tree* is generated alongside the UI hierarchy and describes the hierarchy."
+        }
+      ]
+    },
+    {
+      "text": "The semantics framework is primarily used for accessibility, so tests take advantage of the information exposed by semantics about the UI hierarchy. Developers decide what and how much to expose.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "The semantics framework is primarily used for accessibility, so tests take advantage of the information exposed by semantics about the UI hierarchy. Developers decide what and how much to expose."
+        }
+      ]
+    },
+    {
+      "text": "Testing a Compose UI is different from testing a view-based UI. In Compose, because only some composables *emit* UI into the UI hierarchy, you need a different approach to matching UI elements.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Testing a Compose UI is different from testing a view-based UI."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "In Compose, because only some composables *emit* UI into the UI hierarchy, you need a different approach to matching UI elements."
+        }
+      ]
+    },
+    {
+      "text": "For example, given a button like this that consists of an icon and a text element, the default semantics tree only contains the text label \"Like\". This is because some composables, such as `Text`, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a `Modifier`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "given a button like this that consists of an icon and a text element, the default semantics tree only contains the text label \"Like\"."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "This is because some composables, such as Text, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a Modifier."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "For example, given a button like this that consists of an icon and a text element, the default semantics tree only contains the text label \"Like\""
+        }
+      ]
+    },
+    {
+      "text": "MyButton(\n    modifier = Modifier.semantics { contentDescription = \"Add to favorites\" }\n)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "MyButton( modifier = Modifier.semantics { contentDescription = \"Add to favorites\" } )"
+        }
+      ]
+    },
+    {
+      "text": "Finders let you select one or multiple elements (or *nodes* in the semantics tree) to make assertions or perform actions on them.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Finders let you select one or multiple elements (or *nodes* in the semantics tree) to make assertions or perform actions on them."
+        }
+      ]
+    },
+    {
+      "text": "Some of these APIs accept a `SemanticsMatcher` to refer to one or more *nodes* in the semantics tree.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Some of these APIs accept a SemanticsMatcher to refer to one or more *nodes* in the semantics tree."
+        }
+      ]
+    },
+    {
+      "text": "You can use `onNode` and `onAllNodes` to select one or multiple nodes respectively, but you can also use convenience finders for the most common searches, such as `onNodeWithText`, and `onNodeWithContentDescription`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "You can use onNode) and onAllNodes) to select one or multiple nodes respectively, but you can also use convenience finders for the most common searches, such as onNodeWithText.onNodeWithText(kotlin.String,kotlin.Boolean,kotlin.Boolean,kotlin.Boolean)), and onNodeWithContentDescription.onNodeWithContentDescription(kotlin.String,kotlin.Boolean,kotlin.Boolean,kotlin.Boolean))."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "You can use onNode and onAllNodes to select one or multiple nodes respectively, but you can also use convenience finders for the most common searches, such as onNodeWithText, and onNodeWithContentDescription"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.onNode(<<SemanticsMatcher>>, useUnmergedTree = false): SemanticsNodeInteraction",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule.onNode(<<SemanticsMatcher>>, useUnmergedTree = false): SemanticsNodeInteraction"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule\n    .onNode(hasText(\"Button\")) // Equivalent to onNodeWithText(\"Button\")",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule .onNode(hasText(\"Button\")) // Equivalent to onNodeWithText(\"Button\")"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule\n    .onAllNodes(<<SemanticsMatcher>>): SemanticsNodeInteractionCollection",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule .onAllNodes(<<SemanticsMatcher>>): SemanticsNodeInteractionCollection"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule\n    .onAllNodes(hasText(\"Button\")) // Equivalent to onAllNodesWithText(\"Button\")",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule .onAllNodes(hasText(\"Button\")) // Equivalent to onAllNodesWithText(\"Button\")"
+        }
+      ]
+    },
+    {
+      "text": "| `onNodeWithTag` | Finds a semantics node identified by the given tag. Looks for an exact match only. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Finds a semantics node identified by the given tag."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "The tag to search for. Looks for an exact match only."
+        }
+      ]
+    },
+    {
+      "text": "| `onRoot`        | Finds the root semantics node of the Compose tree.                                |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Finds the root semantics node of the Compose tree."
+        }
+      ]
+    },
+    {
+      "text": "| `filter`       | Returns all the nodes matching the given matcher.                                                                                                                                                             |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "fun SemanticsNodeInteractionCollection.filter(matcher: SemanticsMatcher): SemanticsNodeInteractionCollection Returns all the nodes matching the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns all the nodes matching the given matcher"
+        }
+      ]
+    },
+    {
+      "text": "| `filterToOne`  | Expects to return exactly one node matching the given matcher.                                                                                                                                               |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "fun SemanticsNodeInteractionCollection.filterToOne( matcher: SemanticsMatcher ): SemanticsNodeInteraction Expects to return exactly one node matching the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Expects to return exactly one node matching the given matcher"
+        }
+      ]
+    },
+    {
+      "text": "| `onFirst`      | Returns the first node in this collection.                                                                                                                                                                   |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
+          "quote": "Returns the first node in this collection."
+        }
+      ]
+    },
+    {
+      "text": "| `onLast`       | Returns the last node in this collection.                                                                                                                                                                    |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
+          "quote": "Returns the last node in this collection."
+        }
+      ]
+    },
+    {
+      "text": "| `get(index)`   | Retrieve node at the given index of this collection. Any subsequent operation on its result will expect exactly one element found (unless `SemanticsNodeInteraction.assertDoesNotExist` is used) and will throw `AssertionError` if none or more than one element is found. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
+          "quote": "Retrieve node at the given index of this collection. Any subsequent operation on its result will expect exactly one element found (unless https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction#assertDoesNotExist() is used) and will throw https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-assertion-error/index.html if none or more than one element is found."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Any subsequent operation on its result will expect exactly one element found (unless SemanticsNodeInteraction.assertDoesNotExist is used) and will throw AssertionError if none or more than one element is found"
+        }
+      ]
+    },
+    {
+      "text": "Hierarchical matchers let you go up or down the semantics tree and perform matching.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Hierarchical matchers let you go up or down the semantics tree and perform matching."
+        }
+      ]
+    },
+    {
+      "text": "fun hasParent(matcher: SemanticsMatcher): SemanticsMatcher\nfun hasAnySibling(matcher: SemanticsMatcher): SemanticsMatcher\nfun hasAnyAncestor(matcher: SemanticsMatcher): SemanticsMatcher\nfun hasAnyDescendant(matcher: SemanticsMatcher):  SemanticsMatcher",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "fun hasParent(matcher: SemanticsMatcher): SemanticsMatcher fun hasAnySibling(matcher: SemanticsMatcher): SemanticsMatcher fun hasAnyAncestor(matcher: SemanticsMatcher): SemanticsMatcher fun hasAnyDescendant(matcher: SemanticsMatcher): SemanticsMatcher"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.onNode(hasParent(hasText(\"Button\")))\n    .assertIsDisplayed()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule.onNode(hasParent(hasText(\"Button\"))) .assertIsDisplayed()"
+        }
+      ]
+    },
+    {
+      "text": "| `hasText`               | Returns whether the node's text contains the given text. Note that in merged semantics tree there can be a list of text items that got merged from the child nodes. `text`: Value to match as one of the items in the list of text values. `substring`: Whether to use substring matching. `ignoreCase`: Whether case should be ignored. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "fun hasText(text: String, substring: Boolean = false, ignoreCase: Boolean = false): SemanticsMatcher Returns whether the node's text contains the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Note that in merged semantics tree there can be a list of text items that got merged from the child nodes."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Value to match as one of the items in the list of text values."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Whether to use substring matching."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Whether case should be ignored."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns whether the node's text contains the given text"
+        }
+      ]
+    },
+    {
+      "text": "| `hasTextExactly`        | Returns whether the node's text contains exactly the given `textValues` and nothing else.                                                                                                            |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns whether the node's text contains exactly the given https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary#hasTextExactly(kotlin.Array,kotlin.Boolean,kotlin.Boolean) and nothing else."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "List of values to match (the order does not matter)."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns whether the node's text contains exactly the given textValues and nothing else"
+        }
+      ]
+    },
+    {
+      "text": "| `hasContentDescription` | Returns whether the node's content description contains the given value.                                                                                                                                                  |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "fun hasContentDescription( value: String, substring: Boolean = false, ignoreCase: Boolean = false ): SemanticsMatcher Returns whether the node's content description contains the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns whether the node's content description contains the given value"
+        }
+      ]
+    },
+    {
+      "text": "| `hasTestTag`            | Returns whether the node is annotated by the given test tag.                                                                                                                                                              |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns whether the node is annotated by the given test tag."
+        }
+      ]
+    },
+    {
+      "text": "| `hasClickAction`        | Return whether the node has a semantics click action defined.                                                                                                                                                            |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Return whether the node has a semantics click action defined."
+        }
+      ]
+    },
+    {
+      "text": "`SemanticsMatcher`: Wrapper for semantics matcher lambdas that allows to build string explaining to the developer what conditions were being tested.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "Wrapper for semantics matcher lambdas that allows to build string explaining to the developer what conditions were being tested."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "SemanticsMatcher"
+        }
+      ]
+    },
+    {
+      "text": "SemanticsMatcher(description: String, matcher: (SemanticsNode) -> Boolean)\ninfix fun and(other: SemanticsMatcher): SemanticsMatcher\noperator fun not(): SemanticsMatcher\ninfix fun or(other: SemanticsMatcher): SemanticsMatcher",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "SemanticsMatcher(description: String, matcher: (SemanticsNode) -> Boolean)"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "infix fun and(other: SemanticsMatcher): SemanticsMatcher"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "infix fun or(other: SemanticsMatcher): SemanticsMatcher"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "operator fun not(): SemanticsMatcher"
+        }
+      ]
+    },
+    {
+      "text": "| `expectValue`                     | Builds a predicate that tests whether the value of the given key is equal to `expectedValue`. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "expectValue(key: SemanticsPropertyKey<T>, expectedValue: T): SemanticsMatcher Builds a predicate that tests whether the value of the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "Builds a predicate that tests whether the value of the given key is equal to expectedValue"
+        }
+      ]
+    },
+    {
+      "text": "| `keyIsDefined`                    | Builds a predicate that tests whether the given key is defined in semantics.      |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "keyIsDefined(key: SemanticsPropertyKey<T>): SemanticsMatcher Builds a predicate that tests whether the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "Builds a predicate that tests whether the given key is defined in semantics"
+        }
+      ]
+    },
+    {
+      "text": "| `keyNotDefined`                   | Builds a predicate that tests whether the given key is NOT defined in semantics.  |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "keyNotDefined(key: SemanticsPropertyKey<T>): SemanticsMatcher Builds a predicate that tests whether the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher",
+          "quote": "Builds a predicate that tests whether the given key is NOT defined in semantics"
+        }
+      ]
+    },
+    {
+      "text": "Some nodes merge the semantics information of their children. For example, a button with two text elements merges the text element labels:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Some nodes merge the semantics information of their children. For example, a button with two text elements merges the text element labels:"
+        }
+      ]
+    },
+    {
+      "text": "MyButton {\n    Text(\"Hello\")\n    Text(\"World\")\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "MyButton { Text(\"Hello\") Text(\"World\") }"
+        }
+      ]
+    },
+    {
+      "text": "From a test, use `printToLog()` to show the semantics tree:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "From a test, use printToLog().printToLog(kotlin.String,kotlin.Int)) to show the semantics tree:"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "From a test, use printToLog() to show the semantics tree"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.onRoot().printToLog(\"TAG\")",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule.onRoot().printToLog(\"TAG\")"
+        }
+      ]
+    },
+    {
+      "text": "This code prints the following output:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "This code prints the following output:"
+        }
+      ]
+    },
+    {
+      "text": "Node #1 at (...)px\n |-Node #2 at (...)px\n   Role = 'Button'\n   Text = '[Hello, World]'\n   Actions = [OnClick, GetTextLayoutResult]\n   MergeDescendants = 'true'",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Role = 'Button' Text = '[Hello, World]' Actions = [OnClick, GetTextLayoutResult] MergeDescendants = 'true'"
+        }
+      ]
+    },
+    {
+      "text": "If you need to match a node of what would be the *unmerged* tree, you can set `useUnmergedTree` to `true`:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "If you need to match a node of what would be the *unmerged* tree, you can set useUnmergedTree to true:"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.onRoot(useUnmergedTree = true).printToLog(\"TAG\")",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule.onRoot(useUnmergedTree = true).printToLog(\"TAG\")"
+        }
+      ]
+    },
+    {
+      "text": "This code prints the following output:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "This code prints the following output:"
+        }
+      ]
+    },
+    {
+      "text": "Node #1 at (...)px\n |-Node #2 at (...)px\n   OnClick = '...'\n   MergeDescendants = 'true'\n    |-Node #3 at (...)px\n    | Text = '[Hello]'\n    |-Node #5 at (83.0, 86.0, 191.0, 135.0)px\n      Text = '[World]'",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "OnClick = '...' MergeDescendants = 'true' |-Node #3 at (...)px | Text = '[Hello]' |-Node #5 at (83.0, 86.0, 191.0, 135.0)px Text = '[World]'"
+        }
+      ]
+    },
+    {
+      "text": "The `useUnmergedTree` parameter is available in all finders. For example, here it's used in an `onNodeWithText` finder.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "The useUnmergedTree parameter is available in all finders. For example, here it's used in an onNodeWithText finder."
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule\n    .onNodeWithText(\"World\", useUnmergedTree = true).assertIsDisplayed()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule .onNodeWithText(\"World\", useUnmergedTree = true).assertIsDisplayed()"
+        }
+      ]
+    },
+    {
+      "text": "`useUnmergedTree` is for tests with a special need to inspect implementation detail within children.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "SemanticsNodeInteraction#useUnmergedTree() is for tests with a special need to inspect implementation detail within children."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "useUnmergedTree is for tests with a special need to inspect implementation detail within children"
+        }
+      ]
+    },
+    {
+      "text": "An alternative way to create tests is to use *selectors* which can make some tests more readable.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "An alternative way to create tests is to use *selectors* which can make some tests more readable."
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.onNode(hasTestTag(\"Players\"))\n    .onChildren()\n    .filter(hasClickAction())\n    .assertCountEquals(4)\n    .onFirst()\n    .assert(hasText(\"John\"))",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule.onNode(hasTestTag(\"Players\")) .onChildren() .filter(hasClickAction()) .assertCountEquals(4) .onFirst() .assert(hasText(\"John\"))"
+        }
+      ]
+    },
+    {
+      "text": "| `onChildren`    | Returns children of this node at the moment of invocation, it only captures nodes that are currently present in the semantic tree. This is especially relevant for lazy layouts like 'LazyColumn' or 'LazyRow' where only a subset of items are currently composed and exist in the tree. Therefore, this function will only return those currently composed items, not all the items in the backing data set. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns children of this node at the moment of invocation, it only captures nodes that are currently present in the semantic tree. This is especially relevant for lazy layouts like 'LazyColumn' or 'LazyRow' where only a subset of items are currently composed and exist in the tree. Therefore, this function will only return those currently composed items, not all the items in the backing data set."
+        }
+      ]
+    },
+    {
+      "text": "| `onChild`       | Returns exactly one child of this node. Use this only if this node has exactly one child.                                                                                                                                                                                                                                                                                                       |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns exactly one child of this node. Use this only if this node has exactly one child."
+        }
+      ]
+    },
+    {
+      "text": "| `onChildAt`     | Returns child of this node at the given index.                                                                                                                                                                                                                                                                                                                                                  |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns child of this node at the given index."
+        }
+      ]
+    },
+    {
+      "text": "| `onParent`      | Returns a parent of this node.                                                                                                                                                                                                                                                                                                                                                                  |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns a parent of this node."
+        }
+      ]
+    },
+    {
+      "text": "| `onSibling`     | Returns exactly one sibling of this node. Use this only if this node has exactly one sibling.                                                                                                                                                                                                                                                                                                   |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns exactly one sibling of this node. Use this only if this node has exactly one sibling."
+        }
+      ]
+    },
+    {
+      "text": "| `onSiblings`    | Returns all siblings of this node.                                                                                                                                                                                                                                                                                                                                                              |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns all siblings of this node."
+        }
+      ]
+    },
+    {
+      "text": "| `onAncestors`   | Returns all the ancestors of this node.                                                                                                                                                                                                                                                                                                                                                         |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns all the ancestors of this node."
+        }
+      ]
+    },
+    {
+      "text": "| `onDescendants` | Returns all the descendants of this node in Depth-First Search order. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns all the descendants of this node in Depth-First Search order."
+        }
+      ]
+    },
+    {
+      "text": "You can create custom semantics properties to expose information to tests. To do this, define a new `SemanticsPropertyKey` and make it available using the `SemanticsPropertyReceiver`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "You can create custom semantics properties to expose information to tests. To do this, define a new SemanticsPropertyKey and make it available using the SemanticsPropertyReceiver."
+        }
+      ]
+    },
+    {
+      "text": "// Creates a semantics property of type Long.\nval PickedDateKey = SemanticsPropertyKey<Long>(\"PickedDate\")\nvar SemanticsPropertyReceiver.pickedDate by PickedDateKey",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "// Creates a semantics property of type Long. val PickedDateKey = SemanticsPropertyKey<Long>(\"PickedDate\") var SemanticsPropertyReceiver.pickedDate by PickedDateKey"
+        }
+      ]
+    },
+    {
+      "text": "Now use that property in the `semantics` modifier:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Now use that property in the semantics modifier:"
+        }
+      ]
+    },
+    {
+      "text": "val datePickerValue by remember { mutableStateOf(0L) }\nMyCustomDatePicker(\n    modifier = Modifier.semantics { pickedDate = datePickerValue }\n)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "val datePickerValue by remember { mutableStateOf(0L) } MyCustomDatePicker( modifier = Modifier.semantics { pickedDate = datePickerValue } )"
+        }
+      ]
+    },
+    {
+      "text": "From tests, use `SemanticsMatcher.expectValue` to assert the value of the property:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "From tests, use SemanticsMatcher.expectValue to assert the value of the property:"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule\n    .onNode(SemanticsMatcher.expectValue(PickedDateKey, 1445378400)) // 2015-10-21\n    .assertExists()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "composeTestRule .onNode(SemanticsMatcher.expectValue(PickedDateKey, 1445378400)) // 2015-10-21 .assertExists()"
+        }
+      ]
+    },
+    {
+      "text": "You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers."
+        }
+      ]
+    },
+    {
+      "text": "By default, composables are accessible from UiAutomator only by their convenient descriptors (displayed text, content description, etc.). If you want to access any composable that uses `Modifier.testTag`, you need to enable the semantic property `testTagsAsResourceId` for the particular composable's subtree.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "By default, composables are accessible from UiAutomator only by their convenient descriptors (displayed text, content description, etc.). If you want to access any composable that uses Modifier.testTag.testTag(kotlin.String)), you need to enable the semantic property testTagsAsResourceId for the particular composable's subtree."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "If you want to access any composable that uses Modifier.testTag, you need to enable the semantic property testTagsAsResourceId for the particular composable's subtree"
+        }
+      ]
+    },
+    {
+      "text": "Enable the semantic property only once high in your composables hierarchy to ensure all nested composables with `Modifier.testTag` are accessible from UiAutomator.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Enable the semantic property only once high in your composables hierarchy to ensure all nested composables with Modifier.testTag are accessible from UiAutomator."
+        }
+      ]
+    },
+    {
+      "text": "Scaffold(\n    // Enables for all composables in the hierarchy.\n    modifier = Modifier.semantics {\n        testTagsAsResourceId = true\n    }\n){\n    // Modifier.testTag is accessible from UiAutomator for composables nested here.\n    LazyColumn(\n        modifier = Modifier.testTag(\"myLazyColumn\")\n    ){\n        // Content\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Scaffold( // Enables for all composables in the hierarchy. modifier = Modifier.semantics { testTagsAsResourceId = true } ){ // Modifier.testTag is accessible from UiAutomator for composables nested here. LazyColumn( modifier = Modifier.testTag(\"myLazyColumn\") ){ // Content } }"
+        }
+      ]
+    },
+    {
+      "text": "This feature is available in Jetpack Compose version 1.2.0-alpha08 and higher.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "This feature is available in Jetpack Compose version 1.2.0-alpha08 and higher."
+        }
+      ]
+    },
+    {
+      "text": "Any composable with the `Modifier.testTag(tag)` can be accessible with the use of `By.res(resourceName)` using the same `tag` as the `resourceName`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Any composable with the Modifier.testTag(tag) can be accessible with the use of By.res(resourceName) using the same tag as the resourceName."
+        }
+      ]
+    },
+    {
+      "text": "The `onRootWithViewInteraction` API is included in `androidx.compose.ui:ui-test-junit4:1.12.0-alpha01+` and `androidx.compose.ui:ui-test:1.12.0-alpha01+`. This API is experimental and subject to change.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "The onRootWithViewInteraction API is included in androidx.compose.ui:ui-test-junit4:1.12.0-alpha01+ and androidx.compose.ui:ui-test:1.12.0-alpha01+. This API is experimental and subject to change."
+        }
+      ]
+    },
+    {
+      "text": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views---such as within a `RecyclerView` or a `ViewPager`. In these scenarios, a standard Compose search like `onNodeWithText(\"Save\")` might fail with a \"Multiple nodes found\" error.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views---such as within a RecyclerView or a ViewPager. In these scenarios, a standard Compose search like onNodeWithText(\"Save\") might fail with a \"Multiple nodes found\" error."
+        }
+      ]
+    },
+    {
+      "text": "Use the `onRootWithViewInteraction` API on your test rule. This function accepts an Espresso `ViewInteraction`, allowing you to leverage Espresso to isolate a specific container View and perform Compose interactions exclusively within that scoped hierarchy.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Use the onRootWithViewInteraction API on your test rule. This function accepts an Espresso ViewInteraction, allowing you to leverage Espresso to isolate a specific container View and perform Compose interactions exclusively within that scoped hierarchy."
+        }
+      ]
+    },
+    {
+      "text": "This API is specifically designed for testing Compose components nested inside Views. To test Views nested inside Compose, continue using standard Espresso interactions.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "This API is specifically designed for testing Compose components nested inside Views. To test Views nested inside Compose, continue using standard Espresso interactions."
+        }
+      ]
+    },
+    {
+      "text": "// Select the \"Header\" View container\nval headerInteraction = onView(withId(header_id))\n\n// Scope the Compose interaction to only the Header\ncomposeTestRule\n    .onRootWithViewInteraction(headerInteraction)\n    .onNodeWithContentDescription(\"Settings\")\n    .performClick()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "// Select the \"Header\" View container val headerInteraction = onView(withId(header_id)) // Scope the Compose interaction to only the Header composeTestRule .onRootWithViewInteraction(headerInteraction) .onNodeWithContentDescription(\"Settings\") .performClick()"
+        }
+      ]
+    },
+    {
+      "text": "- Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers. Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find."
+        }
+      ]
+    },
+    {
+      "text": "- `onChild`: Use this only if this node has exactly one child.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns exactly one child of this node. Use this only if this node has exactly one child."
+        }
+      ]
+    },
+    {
+      "text": "- `onSibling`: Use this only if this node has exactly one sibling.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns exactly one sibling of this node. Use this only if this node has exactly one sibling."
+        }
+      ]
+    },
+    {
+      "text": "- Caution: Make sure you don't use `By.res(resourcePackage, resourceId)` as this formats the argument as `$resourcePackage:id/$resourceId`, which is different from `Modifier.testTag`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Make sure you don't use By.res(resourcePackage, resourceId) as this formats the argument as $resourcePackage:id/$resourceId, which is different from Modifier.testTag."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Any composable with the Modifier.testTag(tag) can be accessible with the use of By.res(resourceName) using the same tag as the resourceName."
+        }
+      ]
+    }
+  ]
+}

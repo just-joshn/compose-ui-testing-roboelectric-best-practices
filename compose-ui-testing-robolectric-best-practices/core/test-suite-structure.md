@@ -2,40 +2,34 @@
 
 ## Table of Contents
 
-1. [Test Anatomy](#test-anatomy)
-2. [Choosing a Rule](#choosing-a-rule)
-3. [Setting Content](#setting-content)
-4. [Where Tests Live](#where-tests-live)
-5. [Shared JVM and Device Tests](#shared-jvm-and-device-tests)
-6. [Test Scope](#test-scope)
-7. [Common Issues & Solutions](#common-issues--solutions)
-8. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+1. [Quick Reference](#quick-reference)
+2. [Test Anatomy](#test-anatomy)
+3. [Rule and Test Functions (v2)](#rule-and-test-functions-v2)
+4. [v2 APIs](#v2-apis)
+5. [Setting Content](#setting-content)
+6. [Running on Robolectric](#running-on-robolectric)
+7. [Test Scope](#test-scope)
+8. [Cautions](#cautions)
 9. [Related References](#related-references)
 10. [Sources](#sources)
 
-## Test Anatomy
-
-A Compose UI test sets content, finds a node, acts on it, and asserts. Local Robolectric tests live in `src/test` and use the AndroidX runner.
+## Quick Reference
 
 ```kotlin
-// app/src/test/java/com/example/WelcomeScreenTest.kt
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
+class MyComposeTest {
 
-@RunWith(AndroidJUnit4::class)
-class WelcomeScreenTest {
-    @get:Rule
-    val composeTestRule = createComposeRule()
+    @get:Rule val composeTestRule = createComposeRule()
+    // use createAndroidComposeRule<YourActivity>() if you need access to
+    // an activity
 
     @Test
-    fun continueButton_showsWelcome() {
-        composeTestRule.setContent { WelcomeScreen() }
+    fun myTest() {
+        // Start the app
+        composeTestRule.setContent {
+            MyAppTheme {
+                MainScreen(uiState = fakeUiState, /*...*/)
+            }
+        }
 
         composeTestRule.onNodeWithText("Continue").performClick()
 
@@ -44,176 +38,154 @@ class WelcomeScreenTest {
 }
 ```
 
-The Android testing docs show this `onNodeWithText("Continue").performClick()` / `onNodeWithText("Welcome").assertIsDisplayed()` pair under `androidTest`. Moving the same test to `src/test` with Robolectric is the documented conversion path for UI tests (see [Where Tests Live](#where-tests-live)).
+## Test Anatomy
 
-`createComposeRule` is imported from the `v2` package above. The v1 factories are deprecated; see [synchronization.md](synchronization.md) for what v2 changes.
+Compose provides a set of testing APIs to find elements, verify their attributes, and perform user actions.
 
-## Choosing a Rule
+`ui-test-junit4`: This module includes a `ComposeTestRule` and an implementation for Android called `AndroidComposeTestRule`. Through this rule you can set Compose content or access the activity. You construct the rules using factory functions, either `createComposeRule` or, if you need access to an activity, `createAndroidComposeRule`.
 
-| Need                                                        | Use                                            |
-| ----------------------------------------------------------- | ---------------------------------------------- |
-| Show any composable, no specific activity                   | `createComposeRule()`                          |
-| A specific activity, or access to `activity` and resources  | `createAndroidComposeRule<ComponentActivity>()` |
-| No host started for you (you create the host)               | `createEmptyComposeRule()`                     |
-| Coroutine-heavy test, one clock for Compose and the test    | `runComposeUiTest { }`                         |
-| Specific activity inside `runComposeUiTest` style           | `runAndroidComposeUiTest<A> { }`               |
+## Rule and Test Functions (v2)
 
-All rule factories exist in `androidx.compose.ui.test.junit4.v2`; all `run*ComposeUiTest` functions in `androidx.compose.ui.test.v2`.
+| API | Description |
+| --- | --- |
+| `createComposeRule()` | This method is useful for tests in compose libraries where it is irrelevant where the compose content is hosted (e.g. an Activity on Android). For Android this will use the default Activity (`android.app.Activity`). |
+| `createAndroidComposeRule()` | This method is useful for tests that require a custom Activity. This is usually the case for tests where the compose content is set by that Activity, instead of via the test rule's `setContent`. |
+| `createEmptyComposeRule()` | This method is useful for tests that need to create their own compose host during the test. The returned test rule will not create a host, and consequently does not provide a `setContent` method. |
+| `runComposeUiTest` | Sets up the test environment, runs the given test and then tears down the test environment. Implementations of this method will launch a Compose host (such as an Activity on Android) for you. |
+| `runAndroidComposeUiTest` | Variant of `runComposeUiTest` that allows you to specify which Activity should be launched. |
+| `runEmptyComposeUiTest` | Variant of `runComposeUiTest` that does not launch an Activity to host Compose content in and thus acts as an "empty shell". |
+
+## v2 APIs
+
+v2 versions of the Compose testing APIs (`createComposeRule`, `createAndroidComposeRule`, `runComposeUiTest`, `runAndroidComposeUiTest`, etc) are now available to improve control over coroutine execution. This update does not duplicate the entire API surface; only the APIs that establish the test environment have been updated.
+
+The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs.
+
+While the v1 APIs relied on the `UnconfinedTestDispatcher`, the v2 APIs use the `StandardTestDispatcher` by default for the running composition.
+
+### API Mappings
+
+| Deprecated (v1) | Replacement (v2) |
+| --- | --- |
+| `androidx.compose.ui.test.junit4.createComposeRule` | `androidx.compose.ui.test.junit4.v2.createComposeRule` |
+| `androidx.compose.ui.test.junit4.createAndroidComposeRule` | `androidx.compose.ui.test.junit4.v2.createAndroidComposeRule` |
+| `androidx.compose.ui.test.junit4.createEmptyComposeRule` | `androidx.compose.ui.test.junit4.v2.createEmptyComposeRule` |
+| `androidx.compose.ui.test.junit4.AndroidComposeTestRule` | `androidx.compose.ui.test.junit4.v2.AndroidComposeTestRule` |
+| `androidx.compose.ui.test.runComposeUiTest` | `androidx.compose.ui.test.v2.runComposeUiTest` |
+| `androidx.compose.ui.test.runAndroidComposeUiTest` | `androidx.compose.ui.test.v2.runAndroidComposeUiTest` |
+| `androidx.compose.ui.test.runEmptyComposeUiTest` | `androidx.compose.ui.test.v2.runEmptyComposeUiTest` |
+| `androidx.compose.ui.test.AndroidComposeUiTestEnvironment` | `androidx.compose.ui.test.v2.AndroidComposeUiTestEnvironment` |
+
+### runComposeUiTest
+
+The `runComposeUiTest` API automatically executes your test block within its own `runTest` scope. The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually.
 
 ```kotlin
-// Rule style: the rule is a JUnit @Rule, call it as composeTestRule.xxx
-@get:Rule
-val composeTestRule = createComposeRule()
-
-// Function style: the receiver is ComposeUiTest, no rule field
 @Test
-fun greeting_isShown() = runComposeUiTest {
-    setContent { Greeting("Ada") }
-    onNodeWithText("Hello, Ada").assertIsDisplayed()
+fun testWithCoroutines() = runComposeUiTest {
+    setContent {
+        var status by remember { mutableStateOf("Loading...") }
+        LaunchedEffect(Unit) {
+            delay(1000)
+            status = "Done!"
+        }
+        Text(text = status)
+    }
+
+    onNodeWithText("Loading...").assertIsDisplayed()
+    mainClock.advanceTimeBy(1000 + 16 /* Frame buffer */)
+    onNodeWithText("Done!").assertIsDisplayed()
 }
 ```
-
-`runComposeUiTest` runs your block in its own `runTest` scope with the Compose clock synchronized to it. The API reference examples for these APIs use `@OptIn(ExperimentalTestApi::class)`; the release notes list `ComposeUiTest` and related testing APIs (including `ComposeTestRule` and `waitUntil` variants) as promoted from Experimental to stable in 1.13.0-alpha01.
-
-```kotlin
-// Bad: two APIs that each manage their own test environment
-@get:Rule val rule = createComposeRule()
-
-@Test
-fun mixed() = runComposeUiTest { /* rule inside run*ComposeUiTest */ }
-```
-
-The API docs say to avoid using a `ComposeTestRule` (for example from `createComposeRule`) inside `runAndroidComposeUiTest` or its variants: mixing them "may lead to unexpected behavior".
 
 ## Setting Content
 
-```kotlin
-@Test
-fun myTest() {
-    composeTestRule.setContent {
-        MyAppTheme {
-            MainScreen(uiState = exampleUiState)
-        }
-    }
-    composeTestRule.onNodeWithText("Continue").performClick()
-}
-```
+Oftentimes you need to set the content under test using `composeTestRule.setContent` and you also need to access activity resources, for example to assert that a displayed text matches a string resource. However, you can't call `setContent` on a rule created with `createAndroidComposeRule()` if the activity already calls it.
 
-### Access activity and resources
-
-You cannot call `setContent` on a rule from `createAndroidComposeRule<MyActivity>()` when `MyActivity` already sets content. Use an empty activity:
+A common pattern to achieve this is to create an `AndroidComposeTestRule` using an empty activity such as `ComponentActivity`.
 
 ```kotlin
 class MyComposeTest {
+
     @get:Rule
     val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test
     fun myTest() {
-        composeTestRule.setContent { MyAppTheme { MainScreen(uiState = exampleUiState) } }
-
-        // Good: assert against the string resource, not a hard-coded copy
+        // Start the app
+        composeTestRule.setContent {
+            MyAppTheme {
+                MainScreen(uiState = exampleUiState, /*...*/)
+            }
+        }
         val continueLabel = composeTestRule.activity.getString(R.string.next)
         composeTestRule.onNodeWithText(continueLabel).performClick()
     }
 }
 ```
 
-`ComponentActivity` must be in the merged `AndroidManifest.xml`. The docs enable that with `debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")`. `createComposeRule()` also needs it; `createAndroidComposeRule<YourActivity>()` does not. Dependency setup lives in [configuration.md](configuration.md).
-
-## Where Tests Live
-
-| Source set          | Runs on                 | Command                            |
-| ------------------- | ----------------------- | ---------------------------------- |
-| `src/test`          | Local JVM (Robolectric) | `./gradlew test`                   |
-| `src/androidTest`   | Device or emulator      | `./gradlew connectedCheck`         |
-
-- To convert an instrumented UI test, "move it to the `test` source set and set up the Robolectric dependencies." Any UI test in `test` runs with Robolectric.
-- Use `@RunWith(AndroidJUnit4::class)` (`androidx.test.ext.junit.runners.AndroidJUnit4`) rather than `RobolectricTestRunner`. Robolectric recommends the AndroidX Test APIs; the same runner runs on a device.
-- Behavior tests suit Robolectric: the docs name "a Compose test verifies that the UI has changed after clicking a button" as an example where its fidelity is "more than enough".
-- Robolectric is not an emulator. System UI such as edge-to-edge, picture-in-picture, and `WebView` still need device tests.
-
-One test class per screen is a good starting point for screen UI tests.
+`ComponentActivity` needs to be added to your app's `AndroidManifest.xml` file. Enable that by adding this dependency to your module:
 
 ```kotlin
-// Good: one class per screen, named for the screen
-class SignInScreenTest { /* ... */ }
-class ProfileScreenTest { /* ... */ }
-
-// Good: test names describe state and outcome
-@Test
-fun emptyEmail_disablesSubmit() { /* ... */ }
+debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
 ```
 
-## Shared JVM and Device Tests
+## Running on Robolectric
 
-Because `AndroidJUnit4` delegates to `RobolectricTestRunner` when Robolectric is on the classpath (JVM) and to the device runner otherwise, one body can run in both places. The Robolectric `sharedTest` pattern adds one directory to both source sets:
+Robolectric can also run UI tests such as Espresso or Compose tests. You can convert an instrumented test to Robolectric by moving it to the `test` source set and setting up the Robolectric dependencies.
+
+Any UI test present in the `test` source set runs with Robolectric.
+
+### AndroidX Test
+
+It is now possible to use the AndroidX test runner in Robolectric tests.
 
 ```kotlin
-// build.gradle.kts (android block)
-sourceSets {
-    getByName("test").java.srcDir("src/sharedTest/java")
-    getByName("androidTest").java.srcDir("src/sharedTest/java")
-}
+import androidx.test.ext.junit.runners.AndroidJUnit4
+
+@RunWith(AndroidJUnit4::class)
+class SandwichTest
 ```
 
-```bash
-./gradlew test            # local, Robolectric
-./gradlew connectedCheck  # instrumented, emulator or device
-```
+- Robolectric is intended to be fully compatible with Android's official testing libraries since version 4.0.
+- Using the AndroidX Test APIs reduces the cognitive load for you as a developer, with just one set of APIs to learn for the same Android concept, no matter if you are writing an Robolectric test or an instrumentation test.
 
-The Robolectric 2026 blog describes Compose's own tests the same way: the same `createAndroidComposeRule<ComponentActivity>()` / `runComposeUiTest { }` code runs on a device and on the JVM from one binary, with no Robolectric-specific source set. The `sharedTest` blog shows Groovy `sourceSets` syntax; the Kotlin DSL above is the equivalent form.
+### Robolectric versus device tests
+
+- You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button.
+- Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like `WebView`.
+- Most UI tests don't interact with the framework and you can run them on Robolectric.
+- Robolectric is not a complete replacement for an emulator because it doesn't support all the features and APIs.
 
 ## Test Scope
 
-`ComposeTestRule` can host your full app, one screen, or one small element. Test composables in isolation to check they are correctly encapsulated, but do not stop there: "UI tests scoping larger parts of your UI are also very important."
+`ComposeTestRule` lets you start an activity displaying any composable: your full application, a single screen, or a small element. It's also a good practice to check that your composables are correctly encapsulated and they work independently, allowing for easier and more focused UI testing.
 
-| Scope                       | What to assert                              |
-| --------------------------- | ------------------------------------------- |
-| Component                   | Composable works independently, correctly encapsulated |
-| Screen                      | Critical user interactions: clicks, typing in forms, visible states |
-| User flow / navigation      | Run-time crashes in initialization          |
+This doesn't mean you should *only* create unit UI tests. UI tests scoping larger parts of your UI are also very important.
 
-Replace dependencies with fakes through dependency injection so tests are hermetic; see [test-doubles.md](../architecture/test-doubles.md).
+## Cautions
 
-## Common Issues & Solutions
-
-| Issue                                                        | Solution                                                                  |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `setContent` fails or overrides content                      | Use `createAndroidComposeRule<ComponentActivity>()` with an empty activity |
-| Activity not found / not declared                            | Add `ui-test-manifest` as `debugImplementation`                           |
-| Assertion sees a "Loading" state after a coroutine launch    | v2 queues coroutines; call `waitForIdle()` or `runOnIdle { }`             |
-| Test uses `runTest` and `createComposeRule` and times differ | Switch to `runComposeUiTest` (one clock)                                  |
-| Same test needed on device and JVM                           | Target `AndroidJUnit4` and share a `sharedTest` directory                 |
-
-## Anti-Patterns to Avoid
-
-| Anti-Pattern                                         | Problem                                       | Solution                                          |
-| ---------------------------------------------------- | --------------------------------------------- | ------------------------------------------------- |
-| `RuntimeEnvironment.application` in new tests        | Robolectric-only API, less portable           | `ApplicationProvider.getApplicationContext()`     |
-| Robolectric-only runner for Compose tests            | Not runnable on a device                      | `@RunWith(AndroidJUnit4::class)`                  |
-| Unit tests for activities with little logic          | "Little value" per the Android testing docs   | Test composables and ViewModels                   |
-| Only tiny isolated composable tests                  | Misses integration problems                   | Add screen and flow tests too                     |
-| Mixing a rule with `runComposeUiTest`                | Two test environments                         | Pick one style per test                           |
+- Using `createComposeRule` in conjunction with `runTest` creates two separate clocks: one for Compose, and one for the test coroutine scope. This configuration can force you to manually synchronize the test scheduler. If you're using Compose test APIs alongside the Kotlin `runTest` API, it's strongly recommended to switch to `runComposeUiTest`.
+- Avoid using `androidx.compose.ui.test.junit4.ComposeTestRule` (e.g., `createComposeRule`) inside `runAndroidComposeUiTest` or any of their respective variants. Since these APIs independently manage the test environment, mixing them may lead to unexpected behavior.
+- Avoid using `androidx.compose.ui.test.junit4.ComposeTestRule` (e.g., `createComposeRule`) inside `runEmptyComposeUiTest` or any of their respective variants. Since these APIs independently manage the test environment, mixing them may lead to unexpected behavior.
+- v1 APIs (`UnconfinedTestDispatcher`): When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran. Unlike production behavior, this immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application.
+- In most cases, only use Robolectric for unit testing as a last resort: with legacy code or when using APIs that depend on Android classes. When possible, refactor your code so that it's testable without Robolectric shadows, or test the feature using a different type of test, such as a UI test.
 
 ## Related References
 
 - **Dependencies and `@Config`**: See [configuration.md](configuration.md)
 - **Finding nodes**: See [semantics-finders.md](semantics-finders.md)
 - **Waiting and the test clock**: See [synchronization.md](synchronization.md)
-- **Fakes instead of mocks**: See [test-doubles.md](../architecture/test-doubles.md)
+- **Robolectric runtime modes**: See [runtime-modes.md](runtime-modes.md)
 
 ## Sources
 
 - https://developer.android.com/develop/ui/compose/testing
 - https://developer.android.com/develop/ui/compose/testing/common-patterns
 - https://developer.android.com/develop/ui/compose/testing/migrate-v2
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/AndroidComposeTestRule
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/v2/package-summary
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/v2/package-summary
 - https://developer.android.com/training/testing/local-tests/robolectric
-- https://developer.android.com/training/testing/fundamentals/what-to-test
-- https://developer.android.com/training/testing/continuous-integration
-- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeContentTestRule
-- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary
-- https://developer.android.com/jetpack/androidx/releases/compose-ui
 - https://robolectric.org/androidx_test/
-- https://robolectric.org/blog/2021/10/06/sharedTest/
-- https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/

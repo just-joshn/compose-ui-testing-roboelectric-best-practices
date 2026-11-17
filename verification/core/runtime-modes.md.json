@@ -1,0 +1,525 @@
+{
+  "units": [
+    {
+      "text": "| `LooperMode` | A Configurer annotation for controlling Robolectric's Looper behavior. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.html",
+          "quote": "public @interface LooperMode A Configurer annotation for controlling Robolectric's Looper behavior."
+        }
+      ]
+    },
+    {
+      "text": "| `GraphicsMode` | A Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.html",
+          "quote": "public @interface GraphicsMode A Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package."
+        }
+      ]
+    },
+    {
+      "text": "| `SQLiteMode` | Deprecated. This annotation will be deleted in a forthcoming Robolectric release. A Configurer annotation for controlling which SQLite shadow implementation is used for the android.database package. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/SQLiteMode.html",
+          "quote": "This annotation will be deleted in a forthcoming Robolectric release"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/SQLiteMode.html",
+          "quote": "A Configurer annotation for controlling which SQLite shadow implementation is used for the android.database package"
+        }
+      ]
+    },
+    {
+      "text": "Currently Robolectric will default to `LooperMode.Mode.PAUSED` behavior, but this can be overridden by applying a `@LooperMode(NewMode)` annotation to a test package, test class, or test method, or via the 'robolectric.looperMode' system property.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.html",
+          "quote": "Currently Robolectric will default to LooperMode.Mode.PAUSED behavior, but this can be overridden by applying a @LooperMode(NewMode) annotation to a test package, test class, or test method, or via the 'robolectric.looperMode' system property"
+        }
+      ]
+    },
+    {
+      "text": "| `PAUSED` | A mode that more accurately models real Android's Looper behavior. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "A mode that more accurately models real Android's Looper behavior."
+        }
+      ]
+    },
+    {
+      "text": "| `INSTRUMENTATION_TEST` | A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread."
+        }
+      ]
+    },
+    {
+      "text": "| `LEGACY` | Deprecated. use `LooperMode.PAUSED`. `LEGACY` mode is not supported on Android SDKs > Baklava. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Deprecated. use LooperMode.PAUSED"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "LEGACY mode is not supported on Android SDKs > Baklava"
+        }
+      ]
+    },
+    {
+      "text": "- Tests run on the main looper thread.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Conceptually LooperMode.PAUSED is similar to the LEGACY Scheduler.IdleState.PAUSED in the following ways: Tests run on the main looper thread"
+        }
+      ]
+    },
+    {
+      "text": "- Tasks posted to the main Looper are not executed automatically, and must be explicitly executed via `ShadowLooper` APIs like `ShadowLooper.idle()`. This guarantees execution order correctness.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Tasks posted to the main Looper are not executed automatically, and must be explicitly executed via ShadowLooper APIs like ShadowLooper.idle(). This guarantees execution order correctness"
+        }
+      ]
+    },
+    {
+      "text": "- `SystemClock` time is frozen, and can be manually advanced via Robolectric APIs.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "SystemClock time is frozen, and can be manually advanced via Robolectric APIs."
+        }
+      ]
+    },
+    {
+      "text": "- Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue"
+        }
+      ]
+    },
+    {
+      "text": "- Robolectric test APIs, like `ActivityController.setup()`, will automatically idle the main Looper.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Robolectric test APIs, like ActivityController.setup(), will automatically idle the main Looper"
+        }
+      ]
+    },
+    {
+      "text": "- Each Looper has its own thread. Tasks posted to background loopers are executed asynchronously in separate threads.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Each Looper has its own thread. Tasks posted to background loopers are executed asynchronously in separate threads."
+        }
+      ]
+    },
+    {
+      "text": "- Looper use the real `MessageQueue` to store their queue of pending tasks.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Looper use the real MessageQueue to store their queue of pending tasks"
+        }
+      ]
+    },
+    {
+      "text": "- There is only a single clock value, managed via `ShadowSystemClock`. This can be explictly incremented via `ShadowSystemClock.advanceBy(Duration)`, or `ShadowLooper.idleFor(Duration)`.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "There is only a single clock value, managed via ShadowSystemClock"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "This can be explictly incremented via ShadowSystemClock.advanceBy(Duration), or ShadowLooper.idleFor(Duration)"
+        }
+      ]
+    },
+    {
+      "text": "A subset of the `Scheduler` APIs for the 'foreground' scheduler are currently supported in this mode as well, although it is recommended to switch to use `ShadowLooper` APIs directly.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "A subset of the Scheduler APIs for the 'foreground' scheduler are currently supported in this mode as well, although it is recommended to switch to use ShadowLooper APIs directly."
+        }
+      ]
+    },
+    {
+      "text": "A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread. Otherwise it is quite similar to `PAUSED` mode. The clock time is still fixed, and you can use `shadowLooper` methods to pause, unpause, and wait for any looper to be idle.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Otherwise it is quite similar to PAUSED mode"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "The clock time is still fixed, and you can use shadowLooper methods to pause, unpause, and wait for any looper to be idle"
+        }
+      ]
+    },
+    {
+      "text": "It is recommended to use this mode in tests that mostly use `androidx.test` APIs, which will support being called directly on the main thread or on the test thread. Most `org.robolectric` APIs that interact with the android UI (e.g. `ActivityController`) will raise an exception if called off the main thread.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "It is recommended to use this mode in tests that mostly use androidx.test APIs, which will support being called directly on the main thread or on the test thread. Most org.robolectric APIs that interact with the android UI (e.g. ActivityController) will raise an exception if called off the main thread."
+        }
+      ]
+    },
+    {
+      "text": "1. Apply the `LooperMode(PAUSED)` annotation to your test package/class/method (or remove a `LooperMode(LEGACY)` annotation).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Apply the LooperMode(PAUSED) annotation to your test package/class/method (or remove a LooperMode(LEGACY) annotation)"
+        }
+      ]
+    },
+    {
+      "text": "2. Convert any background `Scheduler` for controlling Loopers to `shadowOf(looper)`.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Convert any background Scheduler for controlling Loopers to shadowOf(looper)"
+        }
+      ]
+    },
+    {
+      "text": "3. Convert any `RoboExecutorService` usages to `PausedExecutorService` or `InlineExecutorService`.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Convert any RoboExecutorService usages to PausedExecutorService or InlineExecutorService"
+        }
+      ]
+    },
+    {
+      "text": "4. Run your tests. If you see an test failures like 'Main looper has queued unexecuted runnables.', you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "If you see an test failures like 'Main looper has queued unexecuted runnables.', you may need to insert shadowOf(getMainLooper()).idle() calls to your test to drain the main Looper"
+        }
+      ]
+    },
+    {
+      "text": "| `idle()` | Executes all posted tasks scheduled before or at the current time. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "abstract void idle() Executes all posted tasks scheduled before or at the current time."
+        }
+      ]
+    },
+    {
+      "text": "| `idleFor(long, TimeUnit)` | Advances the system clock by the given time, then executes all posted tasks scheduled before or at the given time. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "Advances the system clock by the given time, then executes all posted tasks scheduled before or at the given time."
+        }
+      ]
+    },
+    {
+      "text": "| `idleFor(Duration)` | A variant of `idleFor(long, TimeUnit)` that accepts a `Duration`. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "A variant of idleFor(long, TimeUnit) that accepts a Duration."
+        }
+      ]
+    },
+    {
+      "text": "| `isIdle()` | Returns true if there are no pending tasks scheduled to be executed before current time. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "Returns true if there are no pending tasks scheduled to be executed before current time."
+        }
+      ]
+    },
+    {
+      "text": "| `runOneTask()` | Causes only one of the next Runnables that have been scheduled to run while advancing the clock to its start time. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "Causes only one of the next Runnables that have been scheduled to run while advancing the clock to its start time."
+        }
+      ]
+    },
+    {
+      "text": "| `runToNextTask()` | Causes the next Runnable(s) that have been scheduled to run while advancing the clock to its start time. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "Causes the next Runnable(s) that have been scheduled to run while advancing the clock to its start time."
+        }
+      ]
+    },
+    {
+      "text": "| `runToEndOfTasks()` | Causes all of the Runnables that have been scheduled to run while advancing the clock to the start time of the last scheduled Runnable. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "Causes all of the Runnables that have been scheduled to run while advancing the clock to the start time of the last scheduled Runnable."
+        }
+      ]
+    },
+    {
+      "text": "| `runUntilEmpty()` | Continuously run all Messages on this Looper until its queue is empty. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "Continuously run all Messages on this Looper until its queue is empty."
+        }
+      ]
+    },
+    {
+      "text": "`GraphicsMode`: A Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.html",
+          "quote": "A Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package"
+        }
+      ]
+    },
+    {
+      "text": "| `NATIVE` | Use graphics shadows libraries backed by native Android graphics code. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.Mode.html",
+          "quote": "Use graphics shadows libraries backed by native Android graphics code."
+        }
+      ]
+    },
+    {
+      "text": "| `LEGACY` | Use legacy graphics shadows that are no-ops and fakes. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.Mode.html",
+          "quote": "Use legacy graphics shadows that are no-ops and fakes."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric's native runtime now includes Linux arm64 (aarch64) native libraries, so tests that use native SQLite (the default) and native graphics (`@GraphicsMode(NATIVE)`) can run on Linux arm64 environments, such as GitHub's ubuntu-24.04-arm runners, AWS Graviton machines, and arm64 Docker containers on Apple silicon. No configuration is needed.",
+      "quotes": [
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "Robolectric's native runtime now includes Linux arm64 (aarch64) native libraries, so tests that use native SQLite (the default) and native graphics (@GraphicsMode(NATIVE)) can run on Linux arm64 environments, such as GitHub's ubuntu-24.04-arm runners, AWS Graviton machines, and arm64 Docker containers on Apple silicon"
+        },
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "No configuration is needed"
+        }
+      ]
+    },
+    {
+      "text": "Deprecated. This annotation will be deleted in a forthcoming Robolectric release.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/SQLiteMode.html",
+          "quote": "This annotation will be deleted in a forthcoming Robolectric release"
+        }
+      ]
+    },
+    {
+      "text": "- `SQLiteMode.Mode.NATIVE`: NATIVE is the default mode and does not need to be stated explicitly.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "SQLiteMode.Mode.NATIVE"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/SQLiteMode.Mode.html",
+          "quote": "NATIVE is the default mode and does not need to be stated explicitly"
+        }
+      ]
+    },
+    {
+      "text": "- `SQLiteMode.Mode.LEGACY`: This mode is obsolete and will be removed soon.",
+      "quotes": [
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "SQLiteMode.Mode.LEGACY"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/SQLiteMode.Mode.html",
+          "quote": "This mode is obsolete and will be removed soon"
+        }
+      ]
+    },
+    {
+      "text": "- As on Apple silicon, the legacy SQLite mode (`SQLiteMode.Mode.LEGACY`) isn't supported on Linux arm64.",
+      "quotes": [
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "As on Apple silicon, the legacy SQLite mode (SQLiteMode.Mode.LEGACY) isn't supported on Linux arm64."
+        }
+      ]
+    },
+    {
+      "text": "- `@TextLayoutMode` has been removed. Realistic text layout, the default since 2019, is now always used.",
+      "quotes": [
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "@TextLayoutMode has been removed. Realistic text layout, the default since 2019, is now always used"
+        }
+      ]
+    },
+    {
+      "text": "- Native resources (`ResourcesMode.NATIVE`) now work on SDK 36 and above, not only SDK 36.",
+      "quotes": [
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "Native resources (ResourcesMode.NATIVE) now work on SDK 36 and above, not only SDK 36"
+        }
+      ]
+    },
+    {
+      "text": "| `ComposeTestRule.enableAccessibilityChecks` | This requires API 34+ (Android U), and currently does not work on Robolectric. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "This requires API 34+ (Android U), and currently does not work on Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "| `ComposeUiTest.enableAccessibilityChecks` | Requires API 34+ (Android U) and is not supported on Robolectric. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTest",
+          "quote": "Requires API 34+ (Android U) and is not supported on Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "- `LooperMode.Mode.LEGACY`: The default `UNPAUSED` state will execute tasks posted to a Looper inline synchronously. This differs from real Android behaviour, and can cause issues with code that expects/enforces that posted tasks execute in the correct order, such as RecyclerViews.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/shadows/ShadowLooper.html",
+          "quote": "LooperMode.Mode.LEGACY"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "The default UNPAUSED state will execute tasks posted to a Looper inline synchronously"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "This differs from real Android behaviour, and can cause issues with code that expects/enforces that posted tasks execute in the correct order, such as RecyclerViews"
+        }
+      ]
+    },
+    {
+      "text": "- `Robolectric#getBackgroundThreadScheduler()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "Robolectric#getBackgroundThreadScheduler()"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "This is only needed in the LEGACY looper mode"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "We strongly encourage you to use the PAUSED looper mode (which is the default)"
+        }
+      ]
+    },
+    {
+      "text": "- `Robolectric#getForegroundThreadScheduler()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "Robolectric#getForegroundThreadScheduler()"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "This is only needed in the LEGACY looper mode"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "We strongly encourage you to use the PAUSED looper mode (which is the default)"
+        }
+      ]
+    },
+    {
+      "text": "- `RuntimeEnvironment#getMasterScheduler()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "RuntimeEnvironment#getMasterScheduler()"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "This is only needed in the LEGACY looper mode"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "We strongly encourage you to use the PAUSED looper mode (which is the default)"
+        }
+      ]
+    },
+    {
+      "text": "- `RuntimeEnvironment#setMasterScheduler()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "RuntimeEnvironment#setMasterScheduler()"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "This is only needed in the LEGACY looper mode"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "We strongly encourage you to use the PAUSED looper mode (which is the default)"
+        }
+      ]
+    },
+    {
+      "text": "- `ShadowApplication#runBackgroundTasks()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "ShadowApplication#runBackgroundTasks()"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "This is only needed in the LEGACY looper mode"
+        },
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "We strongly encourage you to use the PAUSED looper mode (which is the default)"
+        }
+      ]
+    },
+    {
+      "text": "- `SQLiteMode`: `SQLiteMode.Mode.NATIVE` is now the default, and usages of these APIs can be removed",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "SQLiteMode.Mode.NATIVE is now the default, and usages of these APIs can be removed"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "units": [
+    {
+      "text": "You must decide whether Robolectric's implementation is good enough for each use case, but here are some recommendations:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You must decide whether Robolectric's implementation is good enough for each use case, but here are some recommendations:"
+        }
+      ]
+    },
+    {
+      "text": "- Use Robolectric for isolated UI behavior tests for components, feature or application tests. In general these tests check the state management and behavior of the UIs and don't interact with external dependencies.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Use Robolectric for isolated UI behavior tests for components, feature or application tests. In general these tests check the state management and behavior of the UIs and don't interact with external dependencies."
+        }
+      ]
+    },
+    {
+      "text": "- Use Robolectric to take screenshots when the pixel accuracy is not critical. For example, to test how a component reacts to different font sizes or themes.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Use Robolectric to take screenshots when the pixel accuracy is not critical. For example, to test how a component reacts to different font sizes or themes."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric can also run UI tests such as Espresso or Compose tests.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric can also run UI tests such as Espresso or Compose tests."
+        }
+      ]
+    },
+    {
+      "text": "Most UI tests don't interact with the framework and you can run them on Robolectric.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Most UI tests don't interact with the framework and you can run them on Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button."
+        }
+      ]
+    },
+    {
+      "text": "You can run other UI tests with Robolectric, such as screenshot tests. However the fidelity is lower as different devices render screens slightly differently.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You can run other UI tests with Robolectric, such as screenshot tests. However the fidelity is lower as different devices render screens slightly differently."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric can take screenshots natively, but you need a third-party library to perform screenshot testing with it.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric can take screenshots natively, but you need a third-party library to perform screenshot testing with it."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric is not a complete replacement for an emulator because it doesn't support all the features and APIs.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric is not a complete replacement for an emulator because it doesn't support all the features and APIs."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric doesn't have a screen like an emulator does, and some APIs are only partially supported.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "For example, Robolectric doesn't have a screen like an emulator does, and some APIs are only partially supported."
+        }
+      ]
+    },
+    {
+      "text": "However, it emulates enough parts of Android to run unit tests and most UI tests reliably.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "However, it emulates enough parts of Android to run unit tests and most UI tests reliably"
+        }
+      ]
+    },
+    {
+      "text": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like `WebView`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like WebView."
+        }
+      ]
+    },
+    {
+      "text": "`ComposeTestRule.enableAccessibilityChecks`: This requires API 34+ (Android U), and currently does not work on Robolectric.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "ComposeTestRule.enableAccessibilityChecks"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "This requires API 34+ (Android U), and currently does not work on Robolectric"
+        }
+      ]
+    },
+    {
+      "text": "Instrumented tests: It is good practice to also run instrumented tests. That is, tests that run directly on-device.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "Instrumented tests"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "It is good practice to also run instrumented tests"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "That is, tests that run directly on-device"
+        }
+      ]
+    },
+    {
+      "text": "Robolectric was conceived as a way to enable \"unit testing\" in Android apps. For example, you can simulate the launch of an Activity and test the logic inside it, calling all the lifecycle methods.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric was conceived as a way to enable \"unit testing\" in Android apps. For example, you can simulate the launch of an Activity and test the logic inside it, calling all the lifecycle methods."
+        }
+      ]
+    },
+    {
+      "text": "In most cases, only use Robolectric for unit testing as a last resort: with legacy code or when using APIs that depend on Android classes. When possible, refactor your code so that it's testable without Robolectric shadows, or test the feature using a different type of test, such as a UI test.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "In most cases, only use Robolectric for unit testing as a last resort: with legacy code or when using APIs that depend on Android classes. When possible, refactor your code so that it's testable without Robolectric shadows, or test the feature using a different type of test, such as a UI test."
+        }
+      ]
+    },
+    {
+      "text": "In general, if you implement a testable architecture you shouldn't need to use Robolectric for unit testing as your code should be testable in isolation, with no dependencies on the Android framework.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "In general, if you implement a testable architecture you shouldn't need to use Robolectric for unit testing as your code should be testable in isolation, with no dependencies on the Android framework."
+        }
+      ]
+    },
+    {
+      "text": "You can convert an instrumented test to Robolectric by moving it to the `test` source set and setting up the Robolectric dependencies.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You can convert an instrumented test to Robolectric by moving it to the test source set and setting up the Robolectric dependencies."
+        }
+      ]
+    },
+    {
+      "text": "android {\n  testOptions {\n    unitTests {\n      isIncludeAndroidResources = true\n    }\n  }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "android { testOptions { unitTests { isIncludeAndroidResources = true } } }"
+        }
+      ]
+    },
+    {
+      "text": "Any UI test present in the `test` source set runs with Robolectric.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Any UI test present in the test source set runs with Robolectric."
+        }
+      ]
+    }
+  ]
+}

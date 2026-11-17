@@ -1,0 +1,425 @@
+{
+  "units": [
+    {
+      "text": "Robolectric lets you run your tests on your workstation, or on your continuous integration environment, in a regular JVM, without an emulator. Because of this, the dexing, packaging, and installing steps aren't necessary, reducing test cycles from minutes to seconds so you can iterate quickly and refactor your code with confidence.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org",
+          "quote": "Robolectric lets you run your tests on your workstation, or on your continuous integration environment, in a regular JVM, without an emulator. Because of this, the dexing, packaging, and installing steps aren't necessary, reducing test cycles from minutes to seconds so you can iterate quickly and refactor your code with confidence."
+        }
+      ]
+    },
+    {
+      "text": "Any UI test present in the `test` source set runs with Robolectric.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Any UI test present in the test source set runs with Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric works with various build systems. If you are starting a new project, we recommend Gradle as a first choice, since it is the default build system for Android.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/getting-started",
+          "quote": "Robolectric works with various build systems, which are documented on this page. If you are starting a new project, we recommend Gradle as a first choice, since it is the default build system for Android."
+        }
+      ]
+    },
+    {
+      "text": "This table shows the minimum Java version required to run Robolectric tests against a specific version of Android.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "This table shows the minimum Java version required to run Robolectric tests against a specific version of Android."
+        }
+      ]
+    },
+    {
+      "text": "| Android 17 | 37 | 21 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 17 37 21 Android 16 36 21"
+        }
+      ]
+    },
+    {
+      "text": "| Android 16 | 36 | 21 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 17 37 21 Android 16 36 21 Android 15 35 17"
+        }
+      ]
+    },
+    {
+      "text": "| Android 15 | 35 | 17 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 16 36 21 Android 15 35 17 Android 14 34 17"
+        }
+      ]
+    },
+    {
+      "text": "| Android 14 | 34 | 17 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 15 35 17 Android 14 34 17 Android 13 33 9"
+        }
+      ]
+    },
+    {
+      "text": "| Android 13 | 33 | 9 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 14 34 17 Android 13 33 9 Android 12.1 32 9"
+        }
+      ]
+    },
+    {
+      "text": "| Android 12.1 | 32 | 9 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 13 33 9 Android 12.1 32 9 Android 12 31 9"
+        }
+      ]
+    },
+    {
+      "text": "| Android 12 | 31 | 9 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 12.1 32 9 Android 12 31 9 Android 11 30 9"
+        }
+      ]
+    },
+    {
+      "text": "| Android 11 | 30 | 9 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 12 31 9 Android 11 30 9 Android 10 29 9"
+        }
+      ]
+    },
+    {
+      "text": "| Android 10 | 29 | 9 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 11 30 9 Android 10 29 9 Android 9 28 8"
+        }
+      ]
+    },
+    {
+      "text": "| Android 9 | 28 | 8 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 10 29 9 Android 9 28 8 Android 8.1 27 8"
+        }
+      ]
+    },
+    {
+      "text": "| Android 8.1 | 27 | 8 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 9 28 8 Android 8.1 27 8 Android 8.0 26 8"
+        }
+      ]
+    },
+    {
+      "text": "| Android 8.0 | 26 | 8 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 8.1 27 8 Android 8.0 26 8 Android 7.1 25 8"
+        }
+      ]
+    },
+    {
+      "text": "| Android 7.1 | 25 | 8 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 8.0 26 8 Android 7.1 25 8 Android 7.0 24 8"
+        }
+      ]
+    },
+    {
+      "text": "| Android 7.0 | 24 | 8 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "Android 7.1 25 8 Android 7.0 24 8 Android 6.0 23 8"
+        }
+      ]
+    },
+    {
+      "text": "Robolectric now supports API 24 (N) up to 37 (Cinnamon Bun), matching AndroidX's minimum SDK.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4",
+          "quote": "Robolectric now supports API 24 (N) up to 37 (Cinnamon Bun), matching AndroidX's minimum SDK"
+        }
+      ]
+    },
+    {
+      "text": "When running tests on Java 17 or higher, the JVM requires --add-opens flags so that Robolectric can access internal OpenJDK classes and APIs (java.lang, java.io, jdk.internal.access, etc.). Add the following jvmArgs to your unit test configuration in build.gradle / build.gradle.kts:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/getting-started",
+          "quote": "When running tests on Java 17 or higher, the JVM requires --add-opens flags so that Robolectric can access internal OpenJDK classes and APIs (java.lang, java.io, jdk.internal.access, etc.). Add the following jvmArgs to your unit test configuration in build.gradle / build.gradle.kts:"
+        }
+      ]
+    },
+    {
+      "text": "android {\n  testOptions {\n    unitTests.all {\n      it.jvmArgs(\n        \"--add-opens=java.base/java.lang=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.util=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.io=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.net=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.security=ALL-UNNAMED\",\n        \"--add-opens=java.base/java.text=ALL-UNNAMED\",\n        \"--add-opens=java.base/jdk.internal.access=ALL-UNNAMED\",\n        \"--add-opens=java.desktop/java.awt.font=ALL-UNNAMED\",\n        \"--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED\",\n      )\n    }\n  }\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/getting-started",
+          "quote": "android { testOptions { unitTests.all { it.jvmArgs( \"--add-opens=java.base/java.lang=ALL-UNNAMED\", \"--add-opens=java.base/java.util=ALL-UNNAMED\", \"--add-opens=java.base/java.io=ALL-UNNAMED\", \"--add-opens=java.base/java.net=ALL-UNNAMED\", \"--add-opens=java.base/java.security=ALL-UNNAMED\", \"--add-opens=java.base/java.text=ALL-UNNAMED\", \"--add-opens=java.base/jdk.internal.access=ALL-UNNAMED\", \"--add-opens=java.desktop/java.awt.font=ALL-UNNAMED\", \"--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED\", ) } } }"
+        }
+      ]
+    },
+    {
+      "text": "A new android-all jar is uploaded to MavenCentral for each Android release.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/architecture",
+          "quote": "A new android-all jar is uploaded to MavenCentral for each Android release."
+        }
+      ]
+    },
+    {
+      "text": "These pre-instrumented Android-all jars are published on MavenCentral. They are lazily downloaded and during tests runtime using `MavenArtifactFetcher`.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/architecture",
+          "quote": "These pre-instrumented Android-all jars are published on MavenCentral"
+        },
+        {
+          "url": "https://robolectric.org/architecture",
+          "quote": "They are lazily downloaded and during tests runtime using MavenArtifactFetcher"
+        }
+      ]
+    },
+    {
+      "text": "Some additional options can be configured globally by setting these system properties:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "Some additional options can be configured globally by setting these system properties:"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.enabledSdks` | Comma-separated list of SDK levels or names (e.g. 33, 34 or TIRAMISU, UPSIDE_DOWN_CAKE) which are enabled for this process. Only tests targeting a listed SDKs will be run. | All SDKs |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.enabledSdks Comma-separated list of SDK levels or names (e.g. 33, 34 or TIRAMISU, UPSIDE_DOWN_CAKE) which are enabled for this process. Only tests targeting a listed SDKs will be run. All SDKs"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.offline` | Set to true to disable runtime fetching of jars. | false |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.offline Set to true to disable runtime fetching of jars. false"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.dependency.dir` | Specifies a folder containing runtime dependencies. | null |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.dependency.dir Specifies a folder containing runtime dependencies. null"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.dependency.repo.id` | Set the ID of the Maven repository to use for the runtime dependencies. | mavenCentral |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.dependency.repo.id Set the ID of the Maven repository to use for the runtime dependencies. mavenCentral"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.dependency.repo.url` | Set the URL of the Maven repository to use for the runtime dependencies. | `https://repo1.maven.org/maven2` |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.dependency.repo.url Set the URL of the Maven repository to use for the runtime dependencies. https://repo1.maven.org/maven2"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.dependency.repo.username` | Username of the repository that you defined in robolectric.dependency.repo.url. | null |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.dependency.repo.username Username of the repository that you defined in robolectric.dependency.repo.url. null"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.dependency.repo.password` | Password of the repository that you defined in robolectric.dependency.repo.url. | null |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.dependency.repo.password Password of the repository that you defined in robolectric.dependency.repo.url. null"
+        }
+      ]
+    },
+    {
+      "text": "Since Robolectric 4.9.1, you can now add these parameters:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "Since Robolectric 4.9.1, you can now add these parameters:"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.dependency.proxy.host` | Set the host of the proxy to use for the runtime dependencies. | null |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.dependency.proxy.host Set the host of the proxy to use for the runtime dependencies. null"
+        }
+      ]
+    },
+    {
+      "text": "| `robolectric.dependency.proxy.port` | Set the port number of the proxy to use for the runtime dependencies. | 0 |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "robolectric.dependency.proxy.port Set the port number of the proxy to use for the runtime dependencies. 0"
+        }
+      ]
+    },
+    {
+      "text": "When using Gradle, you can configure the System Properties for unit tests with the `android.testOptions.unitTests.all` block. For example, to override the Maven repository URL and ID to download the runtime dependencies from a repository other than Maven Central:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "When using Gradle, you can configure the System Properties for unit tests with the android.testOptions.unitTests.all block (see here). For example, to override the Maven repository URL and ID to download the runtime dependencies from a repository other than Maven Central:"
+        }
+      ]
+    },
+    {
+      "text": "android {\n  testOptions {\n    unitTests.all {\n      it.systemProperty(\"robolectric.dependency.repo.url\", \"https://local-mirror/repo\")\n      it.systemProperty(\"robolectric.dependency.repo.id\", \"local\")\n\n      // Username and password only needed when the local repository needs account information.\n      it.systemProperty(\"robolectric.dependency.repo.username\", \"username\")\n      it.systemProperty(\"robolectric.dependency.repo.password\", \"password\")\n\n      // Since Robolectric 4.9.1, these are available\n      it.systemProperty(\"robolectric.dependency.proxy.host\", project.findProperty(\"systemProp.https.proxyHost\") ?: System.getenv(\"ROBOLECTRIC_PROXY_HOST\"))\n      it.systemProperty(\"robolectric.dependency.proxy.port\", project.findProperty(\"systemProp.https.proxyPort\") ?: System.getenv(\"ROBOLECTRIC_PROXY_PORT\"))\n    }\n  }\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "android { testOptions { unitTests.all { it.systemProperty(\"robolectric.dependency.repo.url\", \"https://local-mirror/repo\") it.systemProperty(\"robolectric.dependency.repo.id\", \"local\") // Username and password only needed when the local repository needs account information. it.systemProperty(\"robolectric.dependency.repo.username\", \"username\") it.systemProperty(\"robolectric.dependency.repo.password\", \"password\") // Since Robolectric 4.9.1, these are available it.systemProperty(\"robolectric.dependency.proxy.host\", project.findProperty(\"systemProp.https.proxyHost\") ?: System.getenv(\"ROBOLECTRIC_PROXY_HOST\")) it.systemProperty(\"robolectric.dependency.proxy.port\", project.findProperty(\"systemProp.https.proxyPort\") ?: System.getenv(\"ROBOLECTRIC_PROXY_PORT\")) } } }"
+        }
+      ]
+    },
+    {
+      "text": "Robolectric's native runtime now includes Linux arm64 (aarch64) native libraries, so tests that use native SQLite (the default) and native graphics (`@GraphicsMode(NATIVE)`) can run on Linux arm64 environments, such as GitHub's `ubuntu-24.04-arm` runners, AWS Graviton machines, and arm64 Docker containers on Apple silicon. No configuration is needed.",
+      "quotes": [
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "Robolectric's native runtime now includes Linux arm64 (aarch64) native libraries, so tests that use native SQLite (the default) and native graphics (@GraphicsMode(NATIVE)) can run on Linux arm64 environments, such as GitHub's ubuntu-24.04-arm runners, AWS Graviton machines, and arm64 Docker containers on Apple silicon"
+        },
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "No configuration is needed"
+        }
+      ]
+    },
+    {
+      "text": "As on Apple silicon, the legacy SQLite mode (`SQLiteMode.Mode.LEGACY`) isn't supported on Linux arm64.",
+      "quotes": [
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "As on Apple silicon, the legacy SQLite mode (`SQLiteMode.Mode.LEGACY`) isn't supported on Linux arm64."
+        }
+      ]
+    },
+    {
+      "text": "Android libcore and OpenJDK have different implementations. Because of that, you may notice different behaviours when running your app on a device or emulator, and running your tests on the JVM with Robolectric.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Android libcore and OpenJDK have different implementations"
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Because of that, you may notice different behaviours when running your app on a device or emulator, and running your tests on the JVM with Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "Below is an incomplete list of differences you may encounter.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Below is an incomplete list of differences you may encounter:"
+        }
+      ]
+    },
+    {
+      "text": "When using `SimpleDateFormat#parse()` to parse a timezone using the `Z` marker, Android supports time zones with a colon (i.e. 08:00), while OpenJDK doesn't (i.e. 0800). To work around this:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "When using SimpleDateFormat#parse() to parse a timezone using the Z marker, Android supports time zones with a colon (i.e. 08:00), while OpenJDK doesn't (i.e. 0800)."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "To work around this:"
+        }
+      ]
+    },
+    {
+      "text": "- If your min SDK version is 24 or higher, you can use the `X` marker instead.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "If your min SDK version is 24 or higher, you can use the X marker instead."
+        }
+      ]
+    },
+    {
+      "text": "- Use the `java.time` API, with library desugaring enabled.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Use the java.time API, with library desugaring enabled."
+        }
+      ]
+    },
+    {
+      "text": "- Run the corresponding tests using regular Android tests.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Run the corresponding tests using regular Android tests."
+        }
+      ]
+    },
+    {
+      "text": "When using `DateTimeFormatter.ofPattern(String)` to create a formatter displaying a short month name (using the `MMM` pattern), Android will use three-characters names (i.e. Jan), while OpenJDK will use three-characters names followed by a period (i.e. Jan.). In this case, we recommend running the corresponding tests as regular Android tests.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "When using DateTimeFormatter.ofPattern(String) to create a formatter displaying a short month name (using the MMM pattern), Android will use three-characters names (i.e. Jan), while OpenJDK will use three-characters names followed by a period (i.e. Jan.). In this case, we recommend running the corresponding tests as regular Android tests."
+        }
+      ]
+    }
+  ]
+}

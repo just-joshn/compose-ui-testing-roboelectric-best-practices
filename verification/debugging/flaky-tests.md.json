@@ -1,0 +1,676 @@
+{
+ "units": [
+  {
+   "text": "Compose tests are synchronized by default with your UI. When you call an assertion or an action with the `ComposeTestRule`, the test is synchronized beforehand, waiting until the UI tree is idle.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "Compose tests are synchronized by default with your UI. When you call an assertion or an action with the ComposeTestRule, the test is synchronized beforehand, waiting until the UI tree is idle."
+    }
+   ]
+  },
+  {
+   "text": "When a test is synchronized, your Compose app is advanced in time using a virtual clock. This means Compose tests don't run in real time, so they can pass as fast as possible.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "When a test is synchronized, your Compose app is advanced in time using a virtual clock. This means Compose tests don't run in real time, so they can pass as fast as possible."
+    }
+   ]
+  },
+  {
+   "text": "However, if you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "However, if you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused."
+    }
+   ]
+  },
+  {
+   "text": "@Test\nfun counterTest() {\n    val myCounter = mutableStateOf(0) // State that can cause recompositions.\n    var lastSeenValue = 0 // Used to track recompositions.\n    composeTestRule.setContent {\n        Text(myCounter.value.toString())\n        lastSeenValue = myCounter.value\n    }\n    myCounter.value = 1 // The state changes, but there is no recomposition.\n\n    // Fails because nothing triggered a recomposition.\n    assertTrue(lastSeenValue == 1)\n\n    // Passes because the assertion triggers recomposition.\n    composeTestRule.onNodeWithText(\"1\").assertExists()\n}",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "@Test fun counterTest() { val myCounter = mutableStateOf(0) // State that can cause recompositions. var lastSeenValue = 0 // Used to track recompositions. composeTestRule.setContent { Text(myCounter.value.toString()) lastSeenValue = myCounter.value } myCounter.value = 1 // The state changes, but there is no recomposition. // Fails because nothing triggered a recomposition. assertTrue(lastSeenValue == 1) // Passes because the assertion triggers recomposition. composeTestRule.onNodeWithText(\"1\").assertExists() }"
+    }
+   ]
+  },
+  {
+   "text": "Note that this requirement only applies to Compose hierarchies and not to the rest of the app.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "Note that this requirement only applies to Compose hierarchies and not to the rest of the app."
+    }
+   ]
+  },
+  {
+   "text": "Compose can synchronize tests and the UI so that every action and assertion is done in an idle state, waiting or advancing the clock as needed. However, some asynchronous operations whose results affect the UI state can be run in the background while the test is unaware of them.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "Compose can synchronize tests and the UI so that every action and assertion is done in an idle state, waiting or advancing the clock as needed. However, some asynchronous operations whose results affect the UI state can be run in the background while the test is unaware of them."
+    }
+   ]
+  },
+  {
+   "text": "Create and register these *idling resources* in your test so that they're taken into account when deciding whether the app under test is busy or idle. You don't have to take action unless you need to register additional idling resources, for example, if you run a background job that is not synchronized with Espresso or Compose.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "Create and register these *idling resources* in your test so that they're taken into account when deciding whether the app under test is busy or idle."
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "You don't have to take action unless you need to register additional idling resources, for example, if you run a background job that is not synchronized with Espresso or Compose."
+    }
+   ]
+  },
+  {
+   "text": "composeTestRule.registerIdlingResource(idlingResource)\ncomposeTestRule.unregisterIdlingResource(idlingResource)",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "composeTestRule.registerIdlingResource(idlingResource) composeTestRule.unregisterIdlingResource(idlingResource)"
+    }
+   ]
+  },
+  {
+   "text": "The `waitForIdle()` function waits for Compose to be idle, but the function depends on the `autoAdvance` property:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "function waits for Compose to be idle, but the function depends on the autoAdvance property:"
+    }
+   ]
+  },
+  {
+   "text": "composeTestRule.mainClock.autoAdvance = true // Default\ncomposeTestRule.waitForIdle() // Advances the clock until Compose is idle.\n\ncomposeTestRule.mainClock.autoAdvance = false\ncomposeTestRule.waitForIdle() // Only waits for idling resources to become idle.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "composeTestRule.mainClock.autoAdvance = true // Default composeTestRule.waitForIdle() // Advances the clock until Compose is idle. composeTestRule.mainClock.autoAdvance = false composeTestRule.waitForIdle() // Only waits for idling resources to become idle."
+    }
+   ]
+  },
+  {
+   "text": "Note that in both cases, `waitForIdle()` also waits for pending draw and layout passes.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "Note that in both cases, waitForIdle() also waits for pending draw and layout passes."
+    }
+   ]
+  },
+  {
+   "text": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as `waitUntil()`:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as"
+    }
+   ]
+  },
+  {
+   "text": "composeTestRule.waitUntil(timeoutMs) { condition }",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "composeTestRule.waitUntil(timeoutMs) { condition }"
+    }
+   ]
+  },
+  {
+   "text": "You can also use any of the `waitUntil` helpers:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "You can also use any of the"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "composeTestRule.waitUntilAtLeastOneExists(matcher, timeoutMs)"
+    }
+   ]
+  },
+  {
+   "text": "composeTestRule.waitUntilAtLeastOneExists(matcher, timeoutMs)\n\ncomposeTestRule.waitUntilDoesNotExist(matcher, timeoutMs)\n\ncomposeTestRule.waitUntilExactlyOneExists(matcher, timeoutMs)\n\ncomposeTestRule.waitUntilNodeCount(matcher, count, timeoutMs)",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "composeTestRule.waitUntilAtLeastOneExists(matcher, timeoutMs) composeTestRule.waitUntilDoesNotExist(matcher, timeoutMs) composeTestRule.waitUntilExactlyOneExists(matcher, timeoutMs) composeTestRule.waitUntilNodeCount(matcher, count, timeoutMs)"
+    }
+   ]
+  },
+  {
+   "text": "Warning: In some cases, using mechanisms in a test like an external `CountDownLatch` instead of the `waitUntil` APIs could behave unexpectedly, since the test clock won't be advanced.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "In some cases, using mechanisms in a test like an external CountDownLatch instead of the waitUntil APIs could behave unexpectedly, since the test clock won't be advanced"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "In some cases, using mechanisms in a test like an external CountDownLatch instead of the waitUntil APIs could behave unexpectedly, since the test clock won't be advanced."
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+     "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+    }
+   ]
+  },
+  {
+   "text": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs."
+    }
+   ]
+  },
+  {
+   "text": "While the v1 APIs relied on the `UnconfinedTestDispatcher`, the v2 APIs use the `StandardTestDispatcher` by default for the running composition. This change aligns Compose test behavior with the standard `runTest` APIs and provides explicit control over coroutine execution order.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "While the v1 APIs relied on the UnconfinedTestDispatcher, the v2 APIs use the StandardTestDispatcher by default for the running composition. This change aligns Compose test behavior with the standard runTest APIs and provides explicit control over coroutine execution order."
+    }
+   ]
+  },
+  {
+   "text": "The v2 testing API changes are included in `androidx.compose.ui:ui-test-junit4:1.11.0-alpha03+` and `androidx.compose.ui:ui-test:1.11.0-alpha03+`.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The v2 testing API changes are included in androidx.compose.ui:ui-test-junit4:1.11.0-alpha03+ and androidx.compose.ui:ui-test:1.11.0-alpha03+."
+    }
+   ]
+  },
+  {
+   "text": "The primary difference between v1 and v2 of the APIs is how coroutines are dispatched:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The primary difference between v1 and v2 of the APIs is how coroutines are dispatched:"
+    }
+   ]
+  },
+  {
+   "text": "- v1 APIs (`UnconfinedTestDispatcher`): When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran. Unlike production behavior, this immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "v1 APIs (UnconfinedTestDispatcher)"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Unlike production behavior, this immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "v1 APIs (UnconfinedTestDispatcher): When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran."
+    }
+   ]
+  },
+  {
+   "text": "- v2 APIs (`StandardTestDispatcher`): When a coroutine is launched, it is queued and does not execute until the test explicitly advances the virtual clock. Standard Compose test APIs (such as `waitForIdle()`) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "v2 APIs (StandardTestDispatcher)"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "When a coroutine is launched, it is queued and does not execute until the test explicitly advances the virtual clock"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Standard Compose test APIs (such as waitForIdle()) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Standard Compose test APIs (such as waitForIdle()) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes."
+    }
+   ]
+  },
+  {
+   "text": "If your tests fail after upgrading to v2, they likely exhibit the following pattern:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "If your tests fail after upgrading to v2, they likely exhibit the following pattern:"
+    }
+   ]
+  },
+  {
+   "text": "- Failure: You launch a task (for example, a ViewModel loads data), but your assertion fails immediately because the data is still in a \"Loading\" state.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Failure: You launch a task (for example, a ViewModel loads data), but your assertion fails immediately because the data is still in a \"Loading\" state."
+    }
+   ]
+  },
+  {
+   "text": "- Cause: With the v2 APIs, coroutines are queued rather than executed immediately. The task was queued but never actually ran before the result was checked.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Cause: With the v2 APIs, coroutines are queued rather than executed immediately. The task was queued but never actually ran before the result was checked."
+    }
+   ]
+  },
+  {
+   "text": "- Fix: Explicitly advance time. You must explicitly tell the v2 dispatcher when to execute work.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Fix: Explicitly advance time. You must explicitly tell the v2 dispatcher when to execute work."
+    }
+   ]
+  },
+  {
+   "text": "In v1, the task launched and finished immediately. In v2, the following code fails because `loadData()` hasn't actually run yet.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "In v1, the task launched and finished immediately. In v2, the following code fails because loadData() hasn't actually run yet."
+    }
+   ]
+  },
+  {
+   "text": "// In v1, this launched and finished immediately.\nviewModel.loadData()\n\n// In v2, this fails because loadData() hasn't actually run yet!\nassertEquals(Success, viewModel.state.value)",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "// In v1, this launched and finished immediately. viewModel.loadData() // In v2, this fails because loadData() hasn't actually run yet! assertEquals(Success, viewModel.state.value)"
+    }
+   ]
+  },
+  {
+   "text": "Use `waitForIdle` or `runOnIdle` to execute queued tasks before asserting. Using `waitForIdle` advances the clock until the UI is idle, verifying the coroutine has run.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Use waitForIdle) or runOnIdle) to execute queued tasks before asserting."
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Using waitForIdle advances the clock until the UI is idle, verifying the coroutine has run."
+    }
+   ]
+  },
+  {
+   "text": "viewModel.loadData()\n\n// Explicitly run all queued tasks\ncomposeTestRule.waitForIdle()\n\nassertEquals(Success, viewModel.state.value)",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "viewModel.loadData() // Explicitly run all queued tasks composeTestRule.waitForIdle() assertEquals(Success, viewModel.state.value)"
+    }
+   ]
+  },
+  {
+   "text": "Using `runOnIdle` executes the code block on the UI thread after the UI has become idle.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Using runOnIdle executes the code block on the UI thread after the UI has become idle."
+    }
+   ]
+  },
+  {
+   "text": "viewModel.loadData()\n\n// Run the assertion after the UI is idle\ncomposeTestRule.runOnIdle {\n    assertEquals(Success, viewModel.state.value)\n}",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "viewModel.loadData() // Run the assertion after the UI is idle composeTestRule.runOnIdle { assertEquals(Success, viewModel.state.value) }"
+    }
+   ]
+  },
+  {
+   "text": "In scenarios involving manual synchronization, such as when auto-advancing is disabled, launching a coroutine does not result in immediate execution because the test clock is paused. To execute coroutines in the queue without advancing the virtual clock, use the `runCurrent()` API. This runs tasks scheduled for the current virtual time.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "In scenarios involving manual synchronization, such as when auto-advancing is disabled, launching a coroutine does not result in immediate execution because the test clock is paused. To execute coroutines in the queue without advancing the virtual clock, use the"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "API. This runs tasks scheduled for the current virtual time."
+    }
+   ]
+  },
+  {
+   "text": "composeTestRule.mainClock.scheduler.runCurrent()",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "composeTestRule.mainClock.scheduler.runCurrent()"
+    }
+   ]
+  },
+  {
+   "text": "In contrast to `waitForIdle()`, which advances the test clock until the UI stabilizes, `runCurrent()` executes pending tasks while maintaining the current virtual time.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "In contrast to waitForIdle(), which advances the test clock until the UI stabilizes, runCurrent() executes pending tasks while maintaining the current virtual time."
+    }
+   ]
+  },
+  {
+   "text": "If you're using Compose test APIs alongside the Kotlin `runTest` API, it's strongly recommended to switch to `runComposeUiTest`. Using `createComposeRule` in conjunction with `runTest` creates two separate clocks: one for Compose, and one for the test coroutine scope. This configuration can force you to manually synchronize the test scheduler. The `runComposeUiTest` API automatically executes your test block within its own `runTest` scope. The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "If you're using Compose test APIs alongside the Kotlin runTest API, it's strongly recommended to switch to runComposeUiTest"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Using createComposeRule in conjunction with runTest creates two separate clocks: one for Compose, and one for the test coroutine scope"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "This configuration can force you to manually synchronize the test scheduler"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The runComposeUiTest API automatically executes your test block within its own runTest scope"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "If you're using Compose test APIs alongside the Kotlin runTest API, it's strongly recommended to switch to"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The runComposeUiTest API automatically executes your test block within its own runTest scope. The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually."
+    }
+   ]
+  },
+  {
+   "text": "@Test\nfun testWithCoroutines() = runComposeUiTest {\n    setContent {\n        var status by remember { mutableStateOf(\"Loading...\") }\n        LaunchedEffect(Unit) {\n            delay(1000)\n            status = \"Done!\"\n        }\n        Text(text = status)\n    }\n\n    onNodeWithText(\"Loading...\").assertIsDisplayed()\n    mainClock.advanceTimeBy(1000 + 16 /* Frame buffer */)\n    onNodeWithText(\"Done!\").assertIsDisplayed()\n}",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "@Test fun testWithCoroutines() = runComposeUiTest { setContent { var status by remember { mutableStateOf(\"Loading...\") } LaunchedEffect(Unit) { delay(1000) status = \"Done!\" } Text(text = status) } onNodeWithText(\"Loading...\").assertIsDisplayed() mainClock.advanceTimeBy(1000 + 16 /* Frame buffer */) onNodeWithText(\"Done!\").assertIsDisplayed() }"
+    }
+   ]
+  },
+  {
+   "text": "- `Robolectric#getForegroundThreadScheduler()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "Robolectric#getForegroundThreadScheduler()"
+    },
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "This is only needed in the LEGACY looper mode"
+    },
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "We strongly encourage you to use the PAUSED looper mode (which is the default)"
+    },
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "Robolectric#getBackgroundThreadScheduler() This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)"
+    },
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "Robolectric#getForegroundThreadScheduler() This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)"
+    }
+   ]
+  },
+  {
+   "text": "- `Robolectric#getBackgroundThreadScheduler()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "Robolectric#getBackgroundThreadScheduler()"
+    },
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "This is only needed in the LEGACY looper mode"
+    },
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "We strongly encourage you to use the PAUSED looper mode (which is the default)"
+    },
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "Robolectric#getBackgroundThreadScheduler() This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)"
+    },
+    {
+     "url": "https://robolectric.org/upgrade_to_version_4",
+     "quote": "Robolectric#getForegroundThreadScheduler() This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)"
+    }
+   ]
+  },
+  {
+   "text": "A mode that more accurately models real Android's Looper behavior. Conceptually `LooperMode.PAUSED` is similar to the `LEGACY` `Scheduler.IdleState.PAUSED` in the following ways:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "A mode that more accurately models real Android's Looper behavior"
+    },
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "Conceptually LooperMode.PAUSED is similar to the LEGACY Scheduler.IdleState.PAUSED in the following ways"
+    },
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "A mode that more accurately models real Android's Looper behavior."
+    }
+   ]
+  },
+  {
+   "text": "- Tests run on the main looper thread",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "Tests run on the main looper thread"
+    }
+   ]
+  },
+  {
+   "text": "- Tasks posted to the main Looper are not executed automatically, and must be explicitly executed via `ShadowLooper` APIs like `ShadowLooper.idle()`. This guarantees execution order correctness",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "Tasks posted to the main Looper are not executed automatically, and must be explicitly executed via ShadowLooper APIs like ShadowLooper.idle()"
+    },
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "This guarantees execution order correctness"
+    },
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "Tasks posted to the main Looper are not executed automatically, and must be explicitly executed via ShadowLooper APIs like ShadowLooper.idle()."
+    }
+   ]
+  },
+  {
+   "text": "- `SystemClock` time is frozen, and can be manually advanced via Robolectric APIs.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "SystemClock time is frozen, and can be manually advanced via Robolectric APIs."
+    }
+   ]
+  },
+  {
+   "text": "However, it has the following improvements:",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "However, it has the following improvements"
+    }
+   ]
+  },
+  {
+   "text": "- Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue"
+    }
+   ]
+  },
+  {
+   "text": "- Robolectric test APIs, like `ActivityController.setup()`, will automatically idle the main Looper.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "Robolectric test APIs, like ActivityController.setup(), will automatically idle the main Looper"
+    }
+   ]
+  },
+  {
+   "text": "- Each Looper has its own thread. Tasks posted to background loopers are executed asynchronously in separate threads.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "Each Looper has its own thread. Tasks posted to background loopers are executed asynchronously in separate threads."
+    }
+   ]
+  },
+  {
+   "text": "A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread"
+    },
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread."
+    }
+   ]
+  },
+  {
+   "text": "Deprecated. use `LooperMode.PAUSED`. LEGACY mode is not supported on Android SDKs > Baklava",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "Deprecated. use LooperMode.PAUSED"
+    },
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "LEGACY mode is not supported on Android SDKs > Baklava"
+    },
+    {
+     "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+     "quote": "A mode that more accurately models real Android's Looper behavior."
+    }
+   ]
+  },
+  {
+   "text": "DO limit the number of threads that are running during each test. Rogue threads often cause test pollution because they are not automatically cleaned up between tests. Oftentimes threads are inadvertently spawned when using third-party libraries (e.g., for networking) or background processing components. One of the main sources of additional threads during tests are `ExecutorServices` that maintain thread pools. If possible, mock dependent components that spawn threads, or use `MoreExecutors.directExecutor()`. If it's necessary to run multiple threads during a test, make sure to explicitly stop all threads and `ExecutorServices` to avoid test pollution.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "DO limit the number of threads that are running during each test"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "Rogue threads often cause test pollution because they are not automatically cleaned up between tests"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "Oftentimes threads are inadvertently spawned when using third-party libraries (e.g., for networking) or background processing components"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "One of the main sources of additional threads during tests are ExecutorServices that maintain thread pools"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "If possible, mock dependent components that spawn threads, or use MoreExecutors.directExecutor()"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "If it's necessary to run multiple threads during a test, make sure to explicitly stop all threads and ExecutorServices to avoid test pollution"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "DO limit the number of threads that are running during each test. Rogue threads often cause test pollution because they are not automatically cleaned up between tests. Oftentimes threads are inadvertently spawned when using third-party libraries (e.g., for networking) or background processing components. One of the main sources of additional threads during tests are ExecutorServices that maintain thread pools. If possible, mock dependent components that spawn threads, or use MoreExecutors.directExecutor(). If it's necessary to run multiple threads during a test, make sure to explicitly stop all threads and ExecutorServices to avoid test pollution."
+    }
+   ]
+  },
+  {
+   "text": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. `Context`, `SharedPreferences`, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades. The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners.",
+   "quotes": [
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "Context, SharedPreferences, and many others)"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades"
+    },
+    {
+     "url": "https://robolectric.org/best-practices",
+     "quote": "The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners"
+    }
+   ]
+  },
+  {
+   "text": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts."
+    }
+   ]
+  },
+  {
+   "text": "Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup. To resolve this, specify the required input mode in `ComposeUiTestConfig`:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Within the setup functions for tests, the system enforces InputMode.Touch by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup. To resolve this, specify the required input mode in ComposeUiTestConfig:"
+    }
+   ]
+  },
+  {
+   "text": "class FocusTest {\n    @get:Rule\n    val rule = createComposeRule(\n        config = ComposeUiTestConfig(inputMode = InputMode.Keyboard)\n    )\n\n    @Test\n    fun testFocus() {}\n}",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "class FocusTest { @get:Rule val rule = createComposeRule( config = ComposeUiTestConfig(inputMode = InputMode.Keyboard) ) @Test fun testFocus() {}"
+    }
+   ]
+  },
+  {
+   "text": "To configure the input mode for individual test cases instead of the entire test class, pass `ComposeUiTestConfig` to `runComposeUiTest`:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "To configure the input mode for individual test cases instead of the entire test class, pass ComposeUiTestConfig to runComposeUiTest:"
+    }
+   ]
+  },
+  {
+   "text": "class FocusTest {\n    @Test\n    fun testTouchMode() = runComposeUiTest {\n        // Runs with the default InputMode.Touch\n    }\n\n    @Test\n    fun testKeyboardMode() = runComposeUiTest(\n        ComposeUiTestConfig(inputMode = InputMode.Keyboard)\n    ) {\n        // Runs with InputMode.Keyboard\n    }\n}",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "class FocusTest { @Test fun testTouchMode() = runComposeUiTest { // Runs with the default InputMode.Touch } @Test fun testKeyboardMode() = runComposeUiTest( ComposeUiTestConfig(inputMode = InputMode.Keyboard) ) { // Runs with InputMode.Keyboard }"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,773 @@
+{
+  "units": [
+    {
+      "text": "The main way to solve problems in your tests is to look at the semantics tree. Print the tree by calling `composeTestRule.onRoot().printToLog()` at any point in your test. This function prints a log like this:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
+          "quote": "The main way to solve problems in your tests is to look at the semantics tree. Print the tree by calling composeTestRule.onRoot().printToLog() at any point in your test."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
+          "quote": "This function prints a log like this:"
+        }
+      ]
+    },
+    {
+      "text": "Node #1 at (...)px\n |-Node #2 at (...)px\n   OnClick = '...'\n   MergeDescendants = 'true'\n    |-Node #3 at (...)px\n    | Text = 'Hi'\n    |-Node #5 at (83.0, 86.0, 191.0, 135.0)px\n      Text = 'There'",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
+          "quote": "Node #1 at (...)px |-Node #2 at (...)px OnClick = '...' MergeDescendants = 'true' |-Node #3 at (...)px | Text = 'Hi' |-Node #5 at (83.0, 86.0, 191.0, 135.0)px Text = 'There'"
+        }
+      ]
+    },
+    {
+      "text": "These logs contain valuable information for tracking bugs down.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
+          "quote": "These logs contain valuable information for tracking bugs down."
+        }
+      ]
+    },
+    {
+      "text": "| `printToLog` | Prints all the semantics nodes information into logs (as debug level). By default this also prints all the sub-hierarchy. This can be changed by setting a custom max depth in maxDepth. Note that this will fetch the latest snapshot of nodes it sees in the hierarchy for the IDs it collected before. So the output can change over time if the tree changes. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Prints all the semantics nodes information into logs (as debug level)"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "By default this also prints all the sub-hierarchy"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This can be changed by setting a custom max depth in maxDepth"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Note that this will fetch the latest snapshot of nodes it sees in the hierarchy for the IDs it collected before"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "So the output can change over time if the tree changes"
+        }
+      ]
+    },
+    {
+      "text": "| `printToString` | Prints all the semantics nodes information it holds into string. By default this also prints all the sub-hierarchy. This can be changed by setting a custom max depth in maxDepth. Note that this will fetch the latest snapshot of nodes it sees in the hierarchy for the IDs it collected before. So the output can change over time if the tree changes. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Note that this will fetch the latest snapshot of nodes it sees in the hierarchy for the IDs it collected before. So the output can change over time if the tree changes."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Prints all the semantics nodes information it holds into string"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "By default this also prints all the sub-hierarchy"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This can be changed by setting a custom max depth in maxDepth"
+        }
+      ]
+    },
+    {
+      "text": "`maxDepth`: Max depth of the nodes in hierarchy to print. Zero will print just this node.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "By default this also prints all the sub-hierarchy. This can be changed by setting a custom max depth in"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Max depth of the nodes in hierarchy to print. Zero will print just this node."
+        }
+      ]
+    },
+    {
+      "text": "Some nodes merge the semantics information of their children. For example, a button with two text elements merges the text element labels:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Some nodes merge the semantics information of their children. For example, a button with two text elements merges the text element labels:"
+        }
+      ]
+    },
+    {
+      "text": "MyButton {\n    Text(\"Hello\")\n    Text(\"World\")\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "MyButton { Text(\"Hello\") Text(\"World\") }"
+        }
+      ]
+    },
+    {
+      "text": "From a test, use `printToLog()` to show the semantics tree:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "From a test, use"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "to show the semantics tree:"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "From a test, use printToLog() to show the semantics tree"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.onRoot().printToLog(\"TAG\")",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule.onRoot().printToLog(\"TAG\")"
+        }
+      ]
+    },
+    {
+      "text": "This code prints the following output:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "This code prints the following output:"
+        }
+      ]
+    },
+    {
+      "text": "Node #1 at (...)px\n |-Node #2 at (...)px\n   Role = 'Button'\n   Text = '[Hello, World]'\n   Actions = [OnClick, GetTextLayoutResult]\n   MergeDescendants = 'true'",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Node #1 at (...)px |-Node #2 at (...)px Role = 'Button' Text = '[Hello, World]' Actions = [OnClick, GetTextLayoutResult] MergeDescendants = 'true'"
+        }
+      ]
+    },
+    {
+      "text": "If you need to match a node of what would be the unmerged tree, you can set `useUnmergedTree` to `true`:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "If you need to match a node of what would be the *unmerged* tree, you can set useUnmergedTree to true:"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.onRoot(useUnmergedTree = true).printToLog(\"TAG\")",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule.onRoot(useUnmergedTree = true).printToLog(\"TAG\")"
+        }
+      ]
+    },
+    {
+      "text": "This code prints the following output:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "This code prints the following output:"
+        }
+      ]
+    },
+    {
+      "text": "Node #1 at (...)px\n |-Node #2 at (...)px\n   OnClick = '...'\n   MergeDescendants = 'true'\n    |-Node #3 at (...)px\n    | Text = '[Hello]'\n    |-Node #5 at (83.0, 86.0, 191.0, 135.0)px\n      Text = '[World]'",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Node #1 at (...)px |-Node #2 at (...)px OnClick = '...' MergeDescendants = 'true' |-Node #3 at (...)px | Text = '[Hello]' |-Node #5 at (83.0, 86.0, 191.0, 135.0)px Text = '[World]'"
+        }
+      ]
+    },
+    {
+      "text": "The `useUnmergedTree` parameter is available in all finders. For example, here it's used in an `onNodeWithText` finder.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "The useUnmergedTree parameter is available in all finders. For example, here it's used in an onNodeWithText finder."
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule\n    .onNodeWithText(\"World\", useUnmergedTree = true).assertIsDisplayed()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "composeTestRule .onNodeWithText(\"World\", useUnmergedTree = true).assertIsDisplayed()"
+        }
+      ]
+    },
+    {
+      "text": "Debugging UI tests often requires inspecting the screen state and composition hierarchy when an assertion fails. Compose provides a native failure handling pipeline to streamline diagnostics. You can automatically capture screenshots and UI hierarchies upon failure, or register custom handlers to forward crash telemetry to external tools.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Debugging UI tests often requires inspecting the screen state and composition hierarchy when an assertion fails."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Compose provides a native failure handling pipeline to streamline diagnostics. You can automatically capture screenshots and UI hierarchies upon failure, or register custom handlers to forward crash telemetry to external tools."
+        }
+      ]
+    },
+    {
+      "text": "To configure failure handling, pass a `TestFailurePolicy` object to `ComposeUiTestConfig`. To capture screenshots and UI hierarchies upon test failure, set the `screenshotCaptureMode` and `uiHierarchyCaptureMode` properties in `TestFailurePolicy`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "To configure failure handling, pass a TestFailurePolicy object to ComposeUiTestConfig."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "To capture screenshots and UI hierarchies upon test failure, set the screenshotCaptureMode) and uiHierarchyCaptureMode) properties in TestFailurePolicy."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "To capture screenshots and UI hierarchies upon test failure, set the screenshotCaptureMode and uiHierarchyCaptureMode properties in TestFailurePolicy"
+        }
+      ]
+    },
+    {
+      "text": "class MyComposeTest {\n    private val customConfig = ComposeUiTestConfig(\n        failurePolicy = TestFailurePolicy(\n            screenshotCaptureMode = TestFailurePolicy.CaptureMode.Enabled,\n            uiHierarchyCaptureMode = TestFailurePolicy.CaptureMode.Enabled\n        )\n    )\n\n    @Test\n    fun myFirstTest() = runComposeUiTest(config = customConfig) {\n        // ...\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "class MyComposeTest { private val customConfig = ComposeUiTestConfig( failurePolicy = TestFailurePolicy( screenshotCaptureMode = TestFailurePolicy.CaptureMode.Enabled, uiHierarchyCaptureMode = TestFailurePolicy.CaptureMode.Enabled ) ) @Test fun myFirstTest() = runComposeUiTest(config = customConfig) {"
+        }
+      ]
+    },
+    {
+      "text": "To define custom behavior for test failures, add a `TestFailureHandler` to the `failureHandlers` list. Each handler receives a `FailureContext` object that contains the original error and a list of artifacts generated by the preceding pipeline handlers.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "To define custom behavior for test failures, add a TestFailureHandler to the failureHandlers list). Each handler receives a FailureContext object that contains the original error and a list of artifacts generated by the preceding pipeline handlers."
+        }
+      ]
+    },
+    {
+      "text": "class MyComposeTestWithHandler {\n    private val customConfig = ComposeUiTestConfig(\n        failurePolicy = TestFailurePolicy(\n            screenshotCaptureMode = TestFailurePolicy.CaptureMode.Enabled,\n            failureHandlers = listOf(\n                TestFailureHandler { context ->\n                    val screenshot = context.artifacts.firstOrNull {\n                        it.type == FailureArtifact.Type.Screenshot\n                    }\n                    // ...\n                }\n            )\n        )\n    )\n\n    @get:Rule\n    val rule = createComposeRule(config = customConfig)\n\n    // ...\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "class MyComposeTestWithHandler { private val customConfig = ComposeUiTestConfig( failurePolicy = TestFailurePolicy( screenshotCaptureMode = TestFailurePolicy.CaptureMode.Enabled, failureHandlers = listOf( TestFailureHandler { context -> val screenshot = context.artifacts.firstOrNull { it.type == FailureArtifact.Type.Screenshot } // ... } ) ) ) @get:Rule val rule = createComposeRule(config = customConfig)"
+        }
+      ]
+    },
+    {
+      "text": "You can enable failure artifact captures for an entire test suite by passing instrumentation runner arguments in your module's `build.gradle` file. This eliminates the need to update individual test files.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "You can enable failure artifact captures for an entire test suite by passing instrumentation runner arguments in your module's build.gradle file. This eliminates the need to update individual test files."
+        }
+      ]
+    },
+    {
+      "text": "// build.gradle.kts\nandroid {\n    defaultConfig {\n        // ...\n        testInstrumentationRunnerArguments[\"androidx.compose.ui.test.failure.isUiHierarchyCaptureEnabled\"] = \"true\"\n        testInstrumentationRunnerArguments[\"androidx.compose.ui.test.failure.isScreenshotCaptureEnabled\"] = \"true\"\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "// build.gradle.kts android { defaultConfig { // ... testInstrumentationRunnerArguments[\"androidx.compose.ui.test.failure.isUiHierarchyCaptureEnabled\"] = \"true\" testInstrumentationRunnerArguments[\"androidx.compose.ui.test.failure.isScreenshotCaptureEnabled\"] = \"true\""
+        }
+      ]
+    },
+    {
+      "text": "The framework evaluates both the local `TestFailurePolicy` and the suite-level runner arguments:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "The framework evaluates both the local TestFailurePolicy and the suite-level runner arguments:"
+        }
+      ]
+    },
+    {
+      "text": "- If you explicitly set a mode to `CaptureMode.Enabled`/`Disabled` in your test `failurePolicy`, this overrides the runner argument.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "If you explicitly set a mode to CaptureMode.Enabled/Disabled in your test failurePolicy, this overrides the runner argument."
+        }
+      ]
+    },
+    {
+      "text": "- If you set a mode to `CaptureMode.Unspecified` (or leave `failurePolicy` as `null`), the framework falls back to the runner argument.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "If you set a mode to CaptureMode.Unspecified (or leave failurePolicy as null), the framework falls back to the runner argument."
+        }
+      ]
+    },
+    {
+      "text": "If you are not sure if resources are being loaded for a particular library, enable debug logging by setting the system property `robolectric.logging.enabled = true` and run your tests. You should see lots of output.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/getting-started",
+          "quote": "If you are not sure if resources are being loaded for a particular library, enable debug logging by setting the system property robolectric.logging.enabled = true and run your tests. You should see lots of output"
+        }
+      ]
+    },
+    {
+      "text": "When using Gradle, you can configure the System Properties for unit tests with the `android.testOptions.unitTests.all` block.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring",
+          "quote": "When using Gradle, you can configure the System Properties for unit tests with the android.testOptions.unitTests.all block"
+        }
+      ]
+    },
+    {
+      "text": "Starting with Robolectric 4.15, it's possible to launch an interactive preview of your app or tests in a Robolectric environment. The Robolectric simulator can be a useful way to preview how your UI would look in a Robolectric environment. This can be helpful, for instance, when debugging failing Robolectric tests.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "Starting with Robolectric 4.15, it's possible to launch an interactive preview of your app or tests in a Robolectric environment."
+        },
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "The Robolectric simulator can be a useful way to preview how your UI would look in a Robolectric environment. This can be helpful, for instance, when debugging failing Robolectric tests."
+        }
+      ]
+    },
+    {
+      "text": "Note that the Robolectric simulator is highly experimental and is still largely in the proof-of-concept stage. UI rendered in the Robolectric simulator may not match an Android emulator or device 100%.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "Note that the Robolectric simulator is highly experimental and is still largely in the proof-of-concept stage."
+        },
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "UI rendered in the Robolectric simulator may not match an Android emulator or device 100%."
+        }
+      ]
+    },
+    {
+      "text": "There are two ways to launch the simulator: with the simulator Gradle plugin or by invoking the simulator APIs from tests.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "There are two ways to launch the simulator: with the simulator Gradle plugin or by invoking the simulator APIs from tests."
+        }
+      ]
+    },
+    {
+      "text": "To enable the Robolectric simulator with the Gradle plugin, add the plugin to the plugins block of your app's `build.gradle`/`build.gradle.kts` file:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "To enable the Robolectric simulator with the Gradle plugin, add the plugin to the plugins block of your app's build.gradle/build.gradle.kts file:"
+        }
+      ]
+    },
+    {
+      "text": "id(\"org.robolectric.simulator\") version \"1.0.3\"",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "id(\"org.robolectric.simulator\") version \"1.0.3\""
+        }
+      ]
+    },
+    {
+      "text": "Then, run `./gradlew simulate<variant>` (for example, `./gradlew simulateDebug` or `./gradlew simulateDemoDebug`) to start the simulator for the `<variant>` build variant. It will run the main Activity that is configured in your manifest.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "Then, run ./gradlew simulate<variant> (for example, ./gradlew simulateDebug or ./gradlew simulateDemoDebug) to start the simulator for the <variant> build variant. It will run the main Activity that is configured in your manifest."
+        }
+      ]
+    },
+    {
+      "text": "To enable the simulator to work with JDK 23 and newer, you must add the following extra jvmArgs to your unit test configuration:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "To enable the simulator to work with JDK 23 and newer, you must add the following extra jvmArgs to your unit test configuration:"
+        }
+      ]
+    },
+    {
+      "text": "testOptions {\n    unitTests {\n        all { test ->\n            test.jvmArgs(\n                \"--add-exports=java.desktop/sun.awt=ALL-UNNAMED\",\n                \"--add-exports=java.base/sun.reflect.misc=ALL-UNNAMED\",\n                \"--add-exports=java.base/sun.security.action=ALL-UNNAMED\",\n                \"--add-exports=java.desktop/sun.swing=ALL-UNNAMED\",\n                \"--add-exports=java.desktop/sun.lwawt.macosx=ALL-UNNAMED\",\n            )\n        }\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "testOptions { unitTests { all { test -> test.jvmArgs( \"--add-exports=java.desktop/sun.awt=ALL-UNNAMED\", \"--add-exports=java.base/sun.reflect.misc=ALL-UNNAMED\", \"--add-exports=java.base/sun.security.action=ALL-UNNAMED\", \"--add-exports=java.desktop/sun.swing=ALL-UNNAMED\", \"--add-exports=java.desktop/sun.lwawt.macosx=ALL-UNNAMED\", ) } } }"
+        }
+      ]
+    },
+    {
+      "text": "Inside a Robolectric test, you can also start the simulator using the standalone API. To do this, first add a dependency to the simulator in your project's `build.gradle`/`build.gradle.kts` file.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "Inside a Robolectric test, you can also start the simulator using the standalone API. To do this, first add a dependency to the simulator in your project's build.gradle/build.gradle.kts file."
+        }
+      ]
+    },
+    {
+      "text": "testImplementation(\"org.robolectric:simulator:4.18\")",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "testImplementation(\"org.robolectric:simulator:4.18\")"
+        }
+      ]
+    },
+    {
+      "text": "Next, you can create a `Simulator` object and start it using:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "Next, you can create a Simulator object and start it using:"
+        }
+      ]
+    },
+    {
+      "text": "import android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM\nimport org.junit.Test\nimport org.junit.runner.RunWith\nimport org.robolectric.Robolectric\nimport org.robolectric.RobolectricTestRunner\nimport org.robolectric.annotation.Config\nimport org.robolectric.annotation.GraphicsMode\nimport org.robolectric.simulator.Simulator\n\n@RunWith(RobolectricTestRunner::class)\n@Config(sdk = [VANILLA_ICE_CREAM])\n@GraphicsMode(GraphicsMode.Mode.NATIVE)\nclass MainActivityTest {\n    @Test\n    fun simulateMainActivity() {\n        Robolectric.setupActivity(MainActivity::class.java)\n        Simulator().start()\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "import android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM import org.junit.Test import org.junit.runner.RunWith import org.robolectric.Robolectric import org.robolectric.RobolectricTestRunner import org.robolectric.annotation.Config import org.robolectric.annotation.GraphicsMode import org.robolectric.simulator.Simulator @RunWith(RobolectricTestRunner::class) @Config(sdk = [VANILLA_ICE_CREAM]) @GraphicsMode(GraphicsMode.Mode.NATIVE) class MainActivityTest { @Test fun simulateMainActivity() { Robolectric.setupActivity(MainActivity::class.java) Simulator().start() } }"
+        }
+      ]
+    },
+    {
+      "text": "`LooperMode.PAUSED`: Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "However, it has the following improvements: Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "LooperMode.PAUSED"
+        }
+      ]
+    },
+    {
+      "text": "`LooperMode.PAUSED`: If you see an test failures like 'Main looper has queued unexecuted runnables.', you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "If you see an test failures like 'Main looper has queued unexecuted runnables.', you may need to insert shadowOf(getMainLooper()).idle() calls to your test to drain the main Looper."
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "LooperMode.PAUSED"
+        }
+      ]
+    },
+    {
+      "text": "If, after any call to `advanceTimeBy`, you want to assert anything related to rendering (e.g. `SemanticsNodeInteraction.captureToImage`), you will need a call to `androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle` or `androidx.compose.ui.test.junit4.ComposeTestRule.runOnIdle` to make sure that any triggered draw pass has been completed.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "you want to assert anything related to rendering (e.g. SemanticsNodeInteraction.captureToImage), you will need a call to androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle or androidx.compose.ui.test.junit4.ComposeTestRule.runOnIdle to make sure that any triggered draw pass has been completed."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "If, after any call to advanceTimeBy, you want to assert anything related to rendering (e.g"
+        }
+      ]
+    },
+    {
+      "text": "If you change a state variable that is read during draw, calling `advanceTimeBy` will not produce the desired update to the UI. Use `androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle` for this case.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "If you change a state variable that is read during draw, calling"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "will not produce the desired update to the UI. Use androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle for this case."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "If you change a state variable that is read during draw, calling advanceTimeBy will not produce the desired update to the UI"
+        }
+      ]
+    },
+    {
+      "text": "`SemanticsNodeInteraction.captureToImage(timeoutMillis: Long)`: The maximum time (in ms) to wait for the drawing to complete. Default is 2000 ms.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "The maximum time (in ms) to wait for the drawing to complete. Default is 2000 ms."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "SemanticsNodeInteraction.captureToImage(timeoutMillis"
+        }
+      ]
+    },
+    {
+      "text": "Robolectric can take screenshots natively, but you need a third-party library to perform screenshot testing with it.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric can take screenshots natively, but you need a third-party library to perform screenshot testing with it."
+        }
+      ]
+    },
+    {
+      "text": "You can run other UI tests with Robolectric, such as screenshot tests. However the fidelity is lower as different devices render screens slightly differently.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You can run other UI tests with Robolectric, such as screenshot tests. However the fidelity is lower as different devices render screens slightly differently."
+        }
+      ]
+    },
+    {
+      "text": "On SDK 33 and 34, the scalar and int[] `RuntimeShader` uniform setters now forward their values to native code. This can change how Material ripples are drawn in screenshot tests. You can temporarily restore the previous behavior by setting the `robolectric.runtimeShaderScalarUniform` system property to false. This property will be removed in a future release.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4",
+          "quote": "On SDK 33 and 34, the scalar and int[] RuntimeShader uniform setters now forward their values to native code. This can change how Material ripples are drawn in screenshot tests. You can temporarily restore the previous behavior by setting the robolectric.runtimeShaderScalarUniform system property to false. This property will be removed in a future release."
+        }
+      ]
+    },
+    {
+      "text": "If your tests fail after upgrading to v2, they likely exhibit the following pattern:",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "If your tests fail after upgrading to v2, they likely exhibit the following pattern:"
+        }
+      ]
+    },
+    {
+      "text": "- Failure: You launch a task (for example, a ViewModel loads data), but your assertion fails immediately because the data is still in a \"Loading\" state.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Failure: You launch a task (for example, a ViewModel loads data), but your assertion fails immediately because the data is still in a \"Loading\" state."
+        }
+      ]
+    },
+    {
+      "text": "- Cause: With the v2 APIs, coroutines are queued rather than executed immediately. The task was queued but never actually ran before the result was checked.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Cause: With the v2 APIs, coroutines are queued rather than executed immediately. The task was queued but never actually ran before the result was checked."
+        }
+      ]
+    },
+    {
+      "text": "- Fix: Explicitly advance time. You must explicitly tell the v2 dispatcher when to execute work.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Fix: Explicitly advance time. You must explicitly tell the v2 dispatcher when to execute work."
+        }
+      ]
+    },
+    {
+      "text": "Use `waitForIdle` or `runOnIdle` to execute queued tasks before asserting.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Use waitForIdle) or runOnIdle) to execute queued tasks before asserting."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Using waitForIdle advances the clock until the UI is idle, verifying the coroutine has run."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Use waitForIdle or runOnIdle to execute queued tasks before asserting"
+        }
+      ]
+    },
+    {
+      "text": "viewModel.loadData()\n\n// Explicitly run all queued tasks\ncomposeTestRule.waitForIdle()\n\nassertEquals(Success, viewModel.state.value)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "viewModel.loadData() // Explicitly run all queued tasks composeTestRule.waitForIdle() assertEquals(Success, viewModel.state.value)"
+        }
+      ]
+    },
+    {
+      "text": "However, if you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "if you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "However, if you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused"
+        }
+      ]
+    },
+    {
+      "text": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views—such as within a `RecyclerView` or a `ViewPager`. In these scenarios, a standard Compose search like `onNodeWithText(\"Save\")` might fail with a \"Multiple nodes found\" error.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "such as within a RecyclerView or a ViewPager. In these scenarios, a standard Compose search like onNodeWithText(\"Save\") might fail with a \"Multiple nodes found\" error."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views—such as within a RecyclerView or a ViewPager"
+        }
+      ]
+    },
+    {
+      "text": "Use the `onRootWithViewInteraction` API on your test rule. This function accepts an Espresso `ViewInteraction`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Use the onRootWithViewInteraction API on your test rule. This function accepts an Espresso ViewInteraction"
+        }
+      ]
+    },
+    {
+      "text": "@Test\nfun testComposeButtonInsideViewPagerItem() = runComposeUiTest {\n    // Swipe to the desired page using Espresso\n    Espresso.onView(withId(viewPagerViewId)).perform(swipeLeft())\n    // Identify the specific container view using Espresso\n    val fragmentB = Espresso.onView(withId(fragmentRootViewId))\n    // The generic text \"Save\" is now unique within this view scope\n    onRootWithViewInteraction(fragmentB)\n        .onNode(hasText(\"Save\"))\n        .assertIsDisplayed()\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "@Test fun testComposeButtonInsideViewPagerItem() = runComposeUiTest { // Swipe to the desired page using Espresso Espresso.onView(withId(viewPagerViewId)).perform(swipeLeft()) // Identify the specific container view using Espresso val fragmentB = Espresso.onView(withId(fragmentRootViewId)) // The generic text \"Save\" is now unique within this view scope onRootWithViewInteraction(fragmentB) .onNode(hasText(\"Save\")) .assertIsDisplayed() }"
+        }
+      ]
+    },
+    {
+      "text": "Note: This API is experimental and subject to change.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "This API is experimental and subject to change."
+        }
+      ]
+    },
+    {
+      "text": "Android libcore and OpenJDK have different implementations. Because of that, you may notice different behaviours when running your app on a device or emulator, and running your tests on the JVM with Robolectric.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Android libcore and OpenJDK have different implementations"
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Because of that, you may notice different behaviours when running your app on a device or emulator, and running your tests on the JVM with Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "Below is an incomplete list of differences you may encounter:",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Below is an incomplete list of differences you may encounter:"
+        }
+      ]
+    },
+    {
+      "text": "| Timezone handling | When using `SimpleDateFormat#parse()` to parse a timezone using the `Z` marker, Android supports time zones with a colon (i.e. 08:00), while OpenJDK doesn't (i.e. 0800). | If your min SDK version is 24 or higher, you can use the `X` marker instead. Use the `java.time` API, with library desugaring enabled. Run the corresponding tests using regular Android tests. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "When using SimpleDateFormat#parse() to parse a timezone using the Z marker, Android supports time zones with a colon (i.e. 08:00), while OpenJDK doesn't (i.e. 0800)."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "If your min SDK version is 24 or higher, you can use the X marker instead."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Use the java.time API, with library desugaring enabled."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Run the corresponding tests using regular Android tests."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Timezone handling"
+        }
+      ]
+    },
+    {
+      "text": "| Month names | When using `DateTimeFormatter.ofPattern(String)` to create a formatter displaying a short month name (using the `MMM` pattern), Android will use three-characters names (i.e. Jan), while OpenJDK will use three-characters names followed by a period (i.e. Jan.). | In this case, we recommend running the corresponding tests as regular Android tests. |",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "When using DateTimeFormatter.ofPattern(String) to create a formatter displaying a short month name (using the MMM pattern), Android will use three-characters names (i.e. Jan), while OpenJDK will use three-characters names followed by a period (i.e. Jan.)."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "we recommend running the corresponding tests as regular Android tests."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "In this case, we recommend running the corresponding tests as regular Android tests"
+        }
+      ]
+    },
+    {
+      "text": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like `WebView`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like WebView."
+        }
+      ]
+    },
+    {
+      "text": "- Warning: In some cases, using mechanisms in a test like an external `CountDownLatch` instead of the `waitUntil` APIs could behave unexpectedly, since the test clock won't be advanced.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "In some cases, using mechanisms in a test like an external CountDownLatch instead of the waitUntil APIs could behave unexpectedly, since the test clock won't be advanced."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+        }
+      ]
+    },
+    {
+      "text": "- Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as `waitUntil()`",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+        }
+      ]
+    },
+    {
+      "text": "- DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. `Context`, `SharedPreferences`, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades. The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. Context, SharedPreferences, and many others)."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners."
+        }
+      ]
+    }
+  ]
+}

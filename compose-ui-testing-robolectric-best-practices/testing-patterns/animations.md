@@ -3,103 +3,101 @@
 ## Table of Contents
 
 1. [Controlling the Clock](#controlling-the-clock)
-2. [Frame Rules to Know](#frame-rules-to-know)
+2. [Frames and the Main Test Clock](#frames-and-the-main-test-clock)
 3. [Asserting Intermediate States](#asserting-intermediate-states)
-4. [Frame-by-Frame Loops](#frame-by-frame-loops)
+4. [Optimize animation tests](#optimize-animation-tests)
 5. [Delays and Launched Effects](#delays-and-launched-effects)
 6. [Visual Checks of Animation Frames](#visual-checks-of-animation-frames)
-7. [Common Issues & Solutions](#common-issues--solutions)
-8. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
-9. [Related References](#related-references)
-10. [Sources](#sources)
+7. [Custom semantics properties](#custom-semantics-properties)
+8. [Related References](#related-references)
+9. [Sources](#sources)
 
 ## Controlling the Clock
 
-Compose tests give you full control of a virtual test clock, so animation tests are deterministic and run faster than the animation's real duration. `ComposeTestRule` exposes the clock as `mainClock`. Set `autoAdvance = false`, start the animation, then advance time yourself.
+Compose offers `ComposeTestRule` that lets you write tests for animations in a deterministic manner with full control over the test clock. This lets you verify intermediate animation values. In addition, a test can run quicker than the actual duration of the animation.
+
+`ComposeTestRule` exposes its test clock as `mainClock`. You can set the `autoAdvance` property to false to control the clock in your test code. After initiating the animation you want to test, the clock can be moved forward with `advanceTimeBy`.
+
+`advanceTimeBy` doesn't move the clock exactly by the specified duration. Rather, it rounds it up to the nearest duration that is a multiple of the frame duration.
 
 ```kotlin
-@RunWith(AndroidJUnit4::class)
-class AnimationTest {
-    @get:Rule
-    val rule = createAndroidComposeRule<ComponentActivity>()
+@get:Rule
+val rule = createComposeRule()
 
-    @Test
-    fun testAnimationWithClock() {
-        // Pause animations
-        rule.mainClock.autoAdvance = false
-
-        var enabled by mutableStateOf(false)
-        rule.setContent {
-            val color by animateColorAsState(
-                targetValue = if (enabled) Color.Red else Color.Green,
-                animationSpec = tween(durationMillis = 250)
-            )
-            Box(Modifier.size(64.dp).background(color))
-        }
-
-        // Initiate the animation
-        enabled = true
-
-        // Let the animation proceed
-        rule.mainClock.advanceTimeBy(50L)
-
-        // Assert here (see Visual Checks of Animation Frames for the image comparison)
+@Test
+fun testAnimationWithClock() {
+    // Pause animations
+    rule.mainClock.autoAdvance = false
+    var enabled by mutableStateOf(false)
+    rule.setContent {
+        val color by animateColorAsState(
+            targetValue = if (enabled) Color.Red else Color.Green,
+            animationSpec = tween(durationMillis = 250)
+        )
+        Box(Modifier.size(64.dp).background(color))
     }
+
+    // Initiate the animation.
+    enabled = true
+
+    // Let the animation proceed.
+    rule.mainClock.advanceTimeBy(50L)
+
+    // Compare the result with the image showing the expected result.
+    // `assertAgainGolden` needs to be implemented in your code.
+    rule.onRoot().captureToImage().assertAgainstGolden()
 }
 ```
 
-The Compose doc's example uses `createComposeRule()`. The 2026-07-03 Robolectric blog confirms `createAndroidComposeRule<ComponentActivity>()` and `runComposeUiTest { }` run on the JVM, so those are used for `src/test` examples.
+### Disable Automatic Synchronization
+
+To disable automatic synchronization, set the `autoAdvance` property in the `mainClock` to `false`. Typically you will then advance the time yourself. You can advance exactly one frame with `advanceTimeByFrame()` or by a specific duration with `advanceTimeBy()`:
 
 ```kotlin
-// Good: stop auto-advance, then drive frames yourself
-rule.mainClock.autoAdvance = false
-rule.mainClock.advanceTimeBy(50L)
-
-// Bad: real-time waiting for the animation to finish
-Thread.sleep(250)
+composeTestRule.mainClock.advanceTimeByFrame()
+composeTestRule.mainClock.advanceTimeBy(milliseconds)
 ```
 
-`advanceTimeBy` does not move the clock by exactly the duration you pass: it rounds up to the nearest multiple of the frame duration.
+`MainTestClock` is responsible for driving all the recompositions, animations, and gestures. The API doesn't control Android's measure and draw passes.
 
-## Frame Rules to Know
+Advances the clock by the given duration. The duration is rounded up to the nearest multiple of the frame duration by default to always produce the same number of frames regardless of the current time of the clock. The frame duration is platform dependent. For example, on a JVM (Android and Desktop) it is 16ms.
 
-From the `MainTestClock` reference, relevant when `autoAdvance` is `false`:
+### MainTestClock API
 
-- Recomposition only happens when a frame is produced by this clock. The one exception is the initial composition in `setContent`, which happens immediately.
-- Animations get their frame time before recomposition. After toggling state to start an animation, `advanceTimeBy(32)` with 16 ms frames leaves the animation's play time at 0 ms: the first frame recomposes and schedules the animation; the next frame gives it its first frame time.
-- Animations request the next frame during the current one, so `advanceTimeBy(160)` with 16 ms frames produces 10 frames of 16 ms, not 1 frame of 160 ms. Measure and layout run after each frame; draw does not run in between.
-- Advancing by one frame (`advanceTimeByFrame()`) commits state changes and runs exactly one recomposition and measure/layout if triggered.
-- After `advanceTimeBy`, anything rendering-related (for example `captureToImage`) needs `waitForIdle()` or `runOnIdle` so any triggered draw pass has completed.
-- A state variable read during draw is not updated by `advanceTimeBy`; use `waitForIdle()`.
-- On Android, only measure and layout run synchronously with this clock; the draw pass is driven by the Choreographer, so measure, layout, and draw can still occur while the clock is paused.
+| API | Behavior |
+|---|---|
+| `advanceTimeBy(milliseconds: Long, ignoreFrameDuration: Boolean)` | Advances the clock by the given duration. The duration is rounded up to the nearest multiple of the frame duration by default. |
+| `advanceTimeByFrame()` | Advances the main clock by the duration of one frame. |
+| `advanceTimeUntil(timeoutMillis: Long, condition: () -> Boolean)` | Advances the clock in increments of a single frame until the given condition is satisfied. Note that the given condition should be checking the state that can be affected by this clock (it only works with Compose state). |
+| `autoAdvance` | Whether the clock should be advanced by the testing framework while awaiting idleness in order to process any pending work that is driven by this clock. By default this is true. |
+| `currentTime` | The current time of this clock in milliseconds. |
+
+## Frames and the Main Test Clock
+
+It is important to realize that if this clock does not tick, recomposition will not happen and animations are frozen.
+
+Measure, layout and draw passes may be driven by this clock, depending on the platform. On Desktop, these are all driven by this clock, but on Android only measure and layout are performed synchronously. The draw pass on Android is driven by the Choreographer and will not happen as a result of forwarding this clock. That means that measure, layout and draw passes can still occur on Android even if this clock is paused.
+
+Therefore, when setting `autoAdvance` to `false` and taking control over this clock, there are several things to realize:
+
+- Recomposition can only happen when a frame is produced by this clock, with one exception: the initial composition when calling setContent happens immediately.
+- Callers of `withFrameNanos` can only get a frame time when a frame is produced by this clock.
+- If there is both a pending recomposition and an animation awaiting a frame time, ticking this clock will *first* send the new frame time to the animation, and *then* perform recomposition. Any state changes made by the animation will be seen by the recomposition.
+- Because animations receive their frame time *before* recomposition, an animation will not get its start time in the first frame after kicking it off by toggling a state variable. For example, with a frame time of 16ms; when you call `advanceTimeBy(32)` after you toggled a state variable to kick off an animation, the animation's play time will still be at 0ms. The first frame is produced when the clock has advanced 16ms and will run a recomposition. During that recomposition the animation will be scheduled to start. When the clock has advanced another 16ms, the animation gets its first frame time and initialize the play time to `t=0`.
+- Because animations request the next frame during the current frame, calling `advanceTimeBy(160)` while an animation is running will produce 10 frames of 16ms rather than 1 frame of 160ms (assuming a frame time of 16ms). Measure and layout happens after each frame, but draw will not happen in between these frames.
+- After modifying a state variable, recomposition needs to happen to reflect the new state in the UI. Advancing the clock by one frame will commit the changes and run exactly one recomposition and measure and layout if triggered.
+- If, after any call to `advanceTimeBy`, you want to assert anything related to rendering (e.g. `SemanticsNodeInteraction.captureToImage`), you will need a call to `androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle` or `androidx.compose.ui.test.junit4.ComposeTestRule.runOnIdle` to make sure that any triggered draw pass has been completed.
+- If you change a state variable that is read during draw, calling `advanceTimeBy` will not produce the desired update to the UI. Use `androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle` for this case.
 
 ## Asserting Intermediate States
 
-Use `hasPendingWork()` to see whether an animation is still running without advancing the clock (it does not drain the main message queue, unlike `waitForIdle`).
+Returns whether the Compose UI has any pending work. This performs a passive check of the `mainClock`, snapshot state, and recomposer to determine if there is any pending work. Unlike `waitForIdle`, calling this method does not advance the clock or drain the main message queue.
 
-```kotlin
-@Test
-fun animationSettles() = runComposeUiTest {
-    setContent { MainScreen() }
-    mainClock.autoAdvance = false
+This is particularly useful when `autoAdvance` is disabled, allowing you to inspect the state of the UI while an animation or other work is still active.
 
-    onNodeWithText("Start Animation").performClick()
+## Optimize animation tests
 
-    mainClock.advanceTimeByFrame()
-    waitForIdle()
-    assertTrue(hasPendingWork()) // still animating
-
-    mainClock.autoAdvance = true
-    waitForIdle()                // advances the clock until idle
-    onNodeWithText("Done").assertIsDisplayed()
-}
-```
-
-Prefer asserting layout or semantics you own over reading visual values. Exposing colors, font sizes, or corner radii through custom semantics is not recommended; compare images instead ([Visual Checks](#visual-checks-of-animation-frames)).
-
-## Frame-by-Frame Loops
-
-For manual stepping, each node query triggers implicit synchronization that is redundant when you control the clock. `runWithoutImplicitWait` skips it. It is in `ui-test` and `ui-test-junit4` 1.12.0-alpha03+, so it is available in the 1.12.1 stable release.
+When testing high-fidelity animations, you often need to disable auto-advance and manually step through frames to assert intermediate UI states. For these specific frame-by-frame loops, use the `runWithoutImplicitWait` method to execute your assertions. Standard node queries (like `onNodeWithTag` or `fetchSemanticsNode`) trigger implicit synchronizations that are redundant when you are manually controlling the clock, so bypassing them significantly speeds up your test runtimes.
 
 ```kotlin
 @Test
@@ -110,18 +108,19 @@ fun runWithoutImplicitWaitSample() = runComposeUiTest {
     // Trigger an animation
     onNodeWithText("Start Animation").performClick()
 
-    // Step through the animation frame by frame
+    // Step through the animation frame-by-frame
     while (hasPendingWork()) {
         mainClock.advanceTimeByFrame()
         waitForIdle()
-
         runOnUiThread {
+            // Suppress implicit synchronization inside this block to avoid redundant
+            // waits on each node query, making the frame assertions execute much faster.
             runWithoutImplicitWait {
                 val box1 = onNodeWithTag("Box1").fetchSemanticsNode()
                 val box2 = onNodeWithTag("Box2").fetchSemanticsNode()
                 val box3 = onNodeWithTag("Box3").fetchSemanticsNode()
 
-                // Assert the intermediate state for this frame
+                // Assert the exact intermediate state of all three properties for this frame
                 assert(box1.boundsInRoot.right <= box2.boundsInRoot.left)
                 assert(box2.boundsInRoot.right <= box3.boundsInRoot.left)
             }
@@ -130,60 +129,48 @@ fun runWithoutImplicitWaitSample() = runComposeUiTest {
 }
 ```
 
-Guidelines from the docs:
+### Usage guidelines
 
-- Use it only when `mainClock.autoAdvance` is `false` and the UI is in a known stable state for the current frame.
-- Call it on the UI thread, for example via `runOnUiThread`. Off the UI thread you risk race conditions and stale reads.
-- Keep the block read-only; do mutating actions outside it.
-- It is a specialized performance optimization for frame-by-frame animation loops, not for general UI tests, and gives no meaningful speedup elsewhere.
+- Manual clock management: Use this API when `mainClock.autoAdvance` is set to `false` and the UI is in a known, stable state for the current frame.
+- UI thread execution: To ensure the stability of the UI tree, call `runWithoutImplicitWait` on the UI thread, such as with `runOnUiThread`. Running it off the UI thread exposes your test to race conditions and stale state reads.
+- Read-only assertions: The block should strictly contain read-only assertions. Any actions that mutate state should be performed outside of this block.
 
 ## Delays and Launched Effects
 
-The test clock also resumes `delay` inside `LaunchedEffect` at the scheduled virtual time, so code like `repeat(2) { delay(1000) }` completes with a single `advanceTimeBy(2000)`.
+`delayed` `LaunchedEffect`s are resumed on their scheduled time. That means that code like `repeat(2) { delay(1000) }` will complete with a single call to `advanceTimeBy(2000)`.
+
+The `runComposeUiTest` API automatically executes your test block within its own `runTest` scope. The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually.
 
 ```kotlin
-// Good: virtual time, instant in real time
-mainClock.advanceTimeBy(2000)
-onNodeWithText("Ready").assertIsDisplayed()
-```
+@Test
+fun testWithCoroutines() = runComposeUiTest {
+    setContent {
+        var status by remember { mutableStateOf("Loading...") }
+        LaunchedEffect(Unit) {
+            delay(1000)
+            status = "Done!"
+        }
+        Text(text = status)
+    }
 
-For how this relates to `runTest` virtual time and the v2 `StandardTestDispatcher`, see [clock-control.md](../advanced/clock-control.md) and [synchronization.md](../core/synchronization.md).
+    onNodeWithText("Loading...").assertIsDisplayed()
+    mainClock.advanceTimeBy(1000 + 16 /* Frame buffer */)
+    onNodeWithText("Done!").assertIsDisplayed()
+}
+```
 
 ## Visual Checks of Animation Frames
 
-The Compose doc compares a mid-animation frame to an expected image:
+Captures the underlying semantics node's surface into an `ImageBitmap`.
 
-```kotlin
-// From the Compose docs. `assertAgainstGolden` is the doc's placeholder:
-// "needs to be implemented in your code"; it is not a library API.
-rule.mainClock.advanceTimeBy(50L)
-rule.waitForIdle()
-rule.onRoot().captureToImage().assertAgainstGolden()
-```
+- `@RequiresApi(value = 26)`
+- `timeoutMillis`: The maximum time (in ms) to wait for the drawing to complete. Default is 2000 ms.
 
-`captureToImage()` returns an `ImageBitmap` and is annotated `@RequiresApi(26)`; since 1.13.0-alpha01 it has a `timeoutMillis` parameter (default 2000 ms). On Robolectric, rendering for screenshots uses native graphics (`@GraphicsMode(GraphicsMode.Mode.NATIVE)`), per the Robolectric blog's note that Compose screenshot tests use the native-graphics `PixelCopy` shadow. No fetched official page names a Robolectric screenshot-comparison library, so the golden comparison is yours to implement or take from a third party. See [visual-regression.md](visual-regression.md) and [runtime-modes.md](../core/runtime-modes.md).
+Robolectric can take screenshots natively, but you need a third-party library to perform screenshot testing with it. Use Robolectric to take screenshots when the pixel accuracy is not critical. For example, to test how a component reacts to different font sizes or themes.
 
-## Common Issues & Solutions
+## Custom semantics properties
 
-| Symptom                                              | Cause                                                       | Fix                                                              |
-| ---------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------- |
-| Animation did not start after `advanceTimeBy(32)`    | Start time is set one frame after recomposition             | Advance by at least one more frame                               |
-| UI does not change after `advanceTimeBy`             | State is read during draw                                   | `waitForIdle()`                                                  |
-| Captured image is stale                              | Draw pass not finished                                      | `waitForIdle()` or `runOnIdle` before `captureToImage()`         |
-| `advanceTimeBy(50)` moved the clock by more than 50  | Rounded up to a frame multiple                              | Assert on frame boundaries                                       |
-| Frame loop is slow                                   | Implicit sync on every query                                | `runWithoutImplicitWait` (frame-by-frame loops only)             |
-
-## Anti-Patterns to Avoid
-
-| Anti-Pattern                                          | Problem                                   | Solution                                                  |
-| ----------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------- |
-| `Thread.sleep()` for animation duration               | Slow and flaky                            | `mainClock.advanceTimeBy`                                 |
-| Leaving `autoAdvance = true` when asserting mid-animation | Clock runs past the state you want    | Set `autoAdvance = false` first                           |
-| Using `runWithoutImplicitWait` in ordinary tests      | No benefit; not intended                  | Only for manual frame-by-frame loops                      |
-| Calling `runWithoutImplicitWait` off the UI thread    | Race conditions, stale reads              | Wrap in `runOnUiThread`                                   |
-| Mutating state inside `runWithoutImplicitWait`        | Block is for read-only assertions         | Act outside the block                                     |
-| Exposing colors via custom semantics for animation asserts | Pollutes production code             | Compare images, or assert on layout bounds                |
-| Inventing an `assertAgainstGolden` and assuming it exists | It is a doc placeholder              | Implement or adopt your own comparison                    |
+Warning: You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers. Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.
 
 ## Related References
 
@@ -197,7 +184,9 @@ rule.onRoot().captureToImage().assertAgainstGolden()
 
 - https://developer.android.com/develop/ui/compose/animation/testing
 - https://developer.android.com/develop/ui/compose/testing/synchronization
-- https://developer.android.com/develop/ui/compose/testing/common-patterns
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTest
+- https://developer.android.com/develop/ui/compose/testing/migrate-v2
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary
-- https://developer.android.com/jetpack/androidx/releases/compose-ui
-- https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/
+- https://developer.android.com/training/testing/local-tests/robolectric
+- https://developer.android.com/develop/ui/compose/testing/common-patterns

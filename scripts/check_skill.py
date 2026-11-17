@@ -4,9 +4,10 @@ import re
 import sys
 from pathlib import Path
 
+from official import is_allowed
+
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "compose-ui-testing-robolectric-best-practices"
-ALLOWED = {u.strip().rstrip("/") for u in (ROOT / "sources.txt").read_text().split() if u.strip()}
 REQUIRED = ["## Table of Contents", "## Related References", "## Sources"]
 
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
@@ -59,8 +60,8 @@ def main():
             elif frag and dest.suffix == ".md" and frag not in anchors(dest):
                 errors.append(f"{rel}: missing anchor {target}")
         for url in URL.findall(re.sub(r"`[^`\n]*`", "", prose)):
-            if url.rstrip("/.,;:").split("#")[0].rstrip("/") not in ALLOWED:
-                errors.append(f"{rel}: URL not in sources.txt: {url}")
+            if not is_allowed(url):
+                errors.append(f"{rel}: URL is not an official source (sources.txt): {url}")
         if md != skill_md and str(rel) not in skill_md.read_text():
             errors.append(f"{rel}: not referenced from SKILL.md")
 

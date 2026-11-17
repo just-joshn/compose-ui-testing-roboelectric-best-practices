@@ -2,202 +2,247 @@
 
 ## Table of Contents
 
-1. [Understanding Flakiness Types](#understanding-flakiness-types)
-2. [Compose Synchronization Causes](#compose-synchronization-causes)
-3. [Coroutine Timing (v1 vs v2 Rules)](#coroutine-timing-v1-vs-v2-rules)
-4. [Looper and Thread Causes](#looper-and-thread-causes)
-5. [Test Environment Leakage](#test-environment-leakage)
-6. [Retries](#retries)
-7. [Prevention Strategies](#prevention-strategies)
-8. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
-9. [Related References](#related-references)
-10. [Sources](#sources)
+1. [Compose Synchronization](#compose-synchronization)
+2. [Coroutine Timing (v1 vs v2)](#coroutine-timing-v1-vs-v2)
+3. [Main Looper and Threads](#main-looper-and-threads)
+4. [Best Practices](#best-practices)
+5. [Input Mode Leakage](#input-mode-leakage)
+6. [Related References](#related-references)
+7. [Sources](#sources)
 
-## Understanding Flakiness Types
+## Compose Synchronization
 
-A test that does not behave deterministically is flaky. In Compose and Robolectric tests the common causes cluster by where the nondeterminism comes from:
+Compose tests are synchronized by default with your UI. When you call an assertion or an action with the `ComposeTestRule`, the test is synchronized beforehand, waiting until the UI tree is idle.
 
-| Category               | Symptoms                                    | Common Causes                                                              |
-| ---------------------- | ------------------------------------------- | -------------------------------------------------------------------------- |
-| **Sync-driven**        | Assertion sees old UI, node not found       | Unknown background work, mutated state with no sync point, queued coroutine |
-| **Clock-driven**       | Animation or delay assertions off by a frame | Auto-advance on when it should be off, assertion before draw pass          |
-| **Looper/thread-driven** | Passes alone, fails in a suite            | Unexecuted main-looper tasks, rogue `ExecutorService` threads              |
-| **State-driven**       | Order-dependent failures                    | Leaked input mode, shared singletons, shared mutable fakes                 |
-| **Environment-driven** | CI-only failures                            | SDK/JDK differences, android-all download problems, platform rendering     |
+When a test is synchronized, your Compose app is advanced in time using a virtual clock. This means Compose tests don't run in real time, so they can pass as fast as possible.
 
-### Flakiness Decision Tree
-
-```
-Test fails intermittently
-├─ Assertion runs before the UI reflects the change?
-│  ├─ Compose-only state → missing sync point → waitForIdle / assert via the rule
-│  ├─ Coroutine launched, v2 rule → queued on StandardTestDispatcher → waitForIdle / runOnIdle
-│  └─ Background work Compose cannot see → idling resource or waitUntil*
-│
-├─ Fails only when run after other tests?
-│  └─ State leak, rogue threads → see Test Environment Leakage
-│
-├─ Fails only on CI?
-│  └─ Environment → see ci-cd.md
-│
-└─ Fails on device but not on Robolectric (or reverse)?
-   └─ Fidelity gap → see test-architecture.md
-```
-
-## Compose Synchronization Causes
-
-Compose tests are synchronized with the UI by default: an assertion or action through the rule first waits until the UI is idle, and the virtual clock lets tests run as fast as possible. Flakiness appears when you step outside that contract.
+However, if you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused.
 
 ```kotlin
-// Bad: state changes, but nothing triggers recomposition before the check
-var lastSeenValue = 0
-composeTestRule.setContent {
-    val value by myCounter.collectAsState()
-    lastSeenValue = value
+@Test
+fun counterTest() {
+    val myCounter = mutableStateOf(0) // State that can cause recompositions.
+    var lastSeenValue = 0 // Used to track recompositions.
+    composeTestRule.setContent {
+        Text(myCounter.value.toString())
+        lastSeenValue = myCounter.value
+    }
+    myCounter.value = 1 // The state changes, but there is no recomposition.
+
+    // Fails because nothing triggered a recomposition.
+    assertTrue(lastSeenValue == 1)
+
+    // Passes because the assertion triggers recomposition.
+    composeTestRule.onNodeWithText("1").assertExists()
 }
-myCounter.value = 1
-assertTrue(lastSeenValue == 1) // fails: no recomposition yet
-
-// Good: the assertion goes through the rule, which syncs first
-myCounter.value = 1
-composeTestRule.onNodeWithText("1").assertExists()
 ```
 
-Sync only covers Compose hierarchies, not the rest of your app. For work Compose cannot see, pick by test size:
+Note that this requirement only applies to Compose hierarchies and not to the rest of the app.
 
-| Situation                                   | Tool                                                    |
-| ------------------------------------------- | ------------------------------------------------------- |
-| Small UI test, known background work        | `registerIdlingResource` / `unregisterIdlingResource`   |
-| Bigger UI test, waiting for an outcome      | `waitUntil*` APIs                                       |
-| Manual frame stepping                       | `mainClock.autoAdvance = false`, `advanceTimeBy(...)`   |
+### Idling Resources
+
+Compose can synchronize tests and the UI so that every action and assertion is done in an idle state, waiting or advancing the clock as needed. However, some asynchronous operations whose results affect the UI state can be run in the background while the test is unaware of them.
+
+Create and register these *idling resources* in your test so that they're taken into account when deciding whether the app under test is busy or idle. You don't have to take action unless you need to register additional idling resources, for example, if you run a background job that is not synchronized with Espresso or Compose.
 
 ```kotlin
-// Good: wait for a condition, not for a duration
-composeTestRule.waitUntilAtLeastOneExists(hasText("Loaded"), 5_000)
-composeTestRule.waitUntilDoesNotExist(hasTestTag("spinner"), 5_000)
-composeTestRule.waitUntilNodeCount(hasTestTag("row"), 10, 5_000)
-
-// Bad: arbitrary pause
-Thread.sleep(2_000)
-
-// Bad: external latch; the test clock is not advanced, so behavior is unpredictable
-latch.await()
+composeTestRule.registerIdlingResource(idlingResource)
+composeTestRule.unregisterIdlingResource(idlingResource)
 ```
 
-Android's stability guide says to avoid pausing tests for an arbitrary period: it makes tests slow or flaky, because the same test can take different time on different machines. Idling resources can be hard to install without polluting the code under test, which is why the wait-until APIs are preferred as tests grow. Full API details live in [synchronization.md](../core/synchronization.md).
+### Manual Synchronization
 
-## Coroutine Timing (v1 vs v2 Rules)
-
-The v1 rules used an `UnconfinedTestDispatcher`: a launched coroutine ran immediately, which could mask real race conditions. The v2 rules (`androidx.compose.ui.test.junit4.v2.*`, `androidx.compose.ui.test.v2.*`; available from 1.11.0-alpha03) use a `StandardTestDispatcher`: launched work is queued until the test advances the virtual clock.
+The `waitForIdle()` function waits for Compose to be idle, but the function depends on the `autoAdvance` property:
 
 ```kotlin
-// After moving to v2, this can fail: the coroutine is queued, UI still shows "Loading"
-composeTestRule.setContent { ProfileScreen(viewModel) }
-assertEquals("Done", viewModel.state.value)
+composeTestRule.mainClock.autoAdvance = true // Default
+composeTestRule.waitForIdle() // Advances the clock until Compose is idle.
 
-// Good
+composeTestRule.mainClock.autoAdvance = false
+composeTestRule.waitForIdle() // Only waits for idling resources to become idle.
+```
+
+Note that in both cases, `waitForIdle()` also waits for pending draw and layout passes.
+
+### Wait for Conditions
+
+Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as `waitUntil()`:
+
+```kotlin
+composeTestRule.waitUntil(timeoutMs) { condition }
+```
+
+You can also use any of the `waitUntil` helpers:
+
+```kotlin
+composeTestRule.waitUntilAtLeastOneExists(matcher, timeoutMs)
+
+composeTestRule.waitUntilDoesNotExist(matcher, timeoutMs)
+
+composeTestRule.waitUntilExactlyOneExists(matcher, timeoutMs)
+
+composeTestRule.waitUntilNodeCount(matcher, count, timeoutMs)
+```
+
+Warning: In some cases, using mechanisms in a test like an external `CountDownLatch` instead of the `waitUntil` APIs could behave unexpectedly, since the test clock won't be advanced.
+
+## Coroutine Timing (v1 vs v2)
+
+The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs.
+
+While the v1 APIs relied on the `UnconfinedTestDispatcher`, the v2 APIs use the `StandardTestDispatcher` by default for the running composition. This change aligns Compose test behavior with the standard `runTest` APIs and provides explicit control over coroutine execution order.
+
+The v2 testing API changes are included in `androidx.compose.ui:ui-test-junit4:1.11.0-alpha03+` and `androidx.compose.ui:ui-test:1.11.0-alpha03+`.
+
+The primary difference between v1 and v2 of the APIs is how coroutines are dispatched:
+
+- v1 APIs (`UnconfinedTestDispatcher`): When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran. Unlike production behavior, this immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application.
+- v2 APIs (`StandardTestDispatcher`): When a coroutine is launched, it is queued and does not execute until the test explicitly advances the virtual clock. Standard Compose test APIs (such as `waitForIdle()`) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes.
+
+### Failures After Upgrading to v2
+
+If your tests fail after upgrading to v2, they likely exhibit the following pattern:
+
+- Failure: You launch a task (for example, a ViewModel loads data), but your assertion fails immediately because the data is still in a "Loading" state.
+- Cause: With the v2 APIs, coroutines are queued rather than executed immediately. The task was queued but never actually ran before the result was checked.
+- Fix: Explicitly advance time. You must explicitly tell the v2 dispatcher when to execute work.
+
+In v1, the task launched and finished immediately. In v2, the following code fails because `loadData()` hasn't actually run yet.
+
+```kotlin
+// In v1, this launched and finished immediately.
+viewModel.loadData()
+
+// In v2, this fails because loadData() hasn't actually run yet!
+assertEquals(Success, viewModel.state.value)
+```
+
+Use `waitForIdle` or `runOnIdle` to execute queued tasks before asserting. Using `waitForIdle` advances the clock until the UI is idle, verifying the coroutine has run.
+
+```kotlin
+viewModel.loadData()
+
+// Explicitly run all queued tasks
 composeTestRule.waitForIdle()
-// or
-composeTestRule.runOnIdle { assertEquals("Done", viewModel.state.value) }
+
+assertEquals(Success, viewModel.state.value)
 ```
 
-If you turn `autoAdvance` off, `composeTestRule.mainClock.scheduler.runCurrent()` runs queued tasks at the current virtual time without advancing the clock; `waitForIdle()` advances until idle.
+Using `runOnIdle` executes the code block on the UI thread after the UI has become idle.
 
 ```kotlin
-// Bad: two separate clocks, not recommended
-@Test
-fun twoClocks() = runTest {
-    composeTestRule.setContent { /* ... */ }
-}
+viewModel.loadData()
 
-// Good: runComposeUiTest runs inside its own runTest scope with a synchronized clock
-@Test
-fun oneClock() = runComposeUiTest {
-    setContent { /* ... */ }
-    mainClock.advanceTimeBy(1000 + 16 /* frame buffer */)
-    onNodeWithText("Done!").assertExists()
+// Run the assertion after the UI is idle
+composeTestRule.runOnIdle {
+    assertEquals(Success, viewModel.state.value)
 }
 ```
 
-See [coroutines-viewmodels.md](../testing-patterns/coroutines-viewmodels.md) for dispatcher injection and [clock-control.md](../advanced/clock-control.md) for clock stepping.
+### Run Queued Coroutines Without Advancing Time
 
-## Looper and Thread Causes
-
-Robolectric runs the test and the UI event loop on the same thread, so classic cross-thread races are rarer than on a device. The remaining causes are about the looper model and stray threads.
-
-- `PAUSED` is the default looper mode and Robolectric strongly encourages it: tasks posted to the main `Looper` are not run inline, so ordering matches a real device. Legacy mode ran posted tasks immediately, earlier than a device would.
-- Tasks posted to the main `Looper` outside Compose or AndroidX Test APIs must be drained explicitly. `ActivityScenario`, `FragmentScenario`, and Espresso idle it for you.
-- Tasks posted to background `Looper`s run on real threads in `PAUSED` mode.
+In scenarios involving manual synchronization, such as when auto-advancing is disabled, launching a coroutine does not result in immediate execution because the test clock is paused. To execute coroutines in the queue without advancing the virtual clock, use the `runCurrent()` API. This runs tasks scheduled for the current virtual time.
 
 ```kotlin
-// Good: drain the main looper at the point your code under test needs it
-Handler(Looper.getMainLooper()).post { events.add("after") }
-events.add("between")
-shadowOf(Looper.getMainLooper()).idle()
-assertThat(events).containsExactly("before", "between", "after").inOrder()
+composeTestRule.mainClock.scheduler.runCurrent()
 ```
 
-If a test fails with `Main looper has queued unexecuted runnables`, the unexecuted behavior probably matters to that test; step through with a watch on `Looper.getMainLooper().getQueue()` to find where the `idle()` call belongs. See [runtime-modes.md](../core/runtime-modes.md).
+In contrast to `waitForIdle()`, which advances the test clock until the UI stabilizes, `runCurrent()` executes pending tasks while maintaining the current virtual time.
 
-### Thread hygiene
+### Migrate to runComposeUiTest
 
-Robolectric's best-practices page: limit the number of threads running during each test. Rogue threads such as `ExecutorService` pools cause test pollution.
+If you're using Compose test APIs alongside the Kotlin `runTest` API, it's strongly recommended to switch to `runComposeUiTest`. Using `createComposeRule` in conjunction with `runTest` creates two separate clocks: one for Compose, and one for the test coroutine scope. This configuration can force you to manually synchronize the test scheduler. The `runComposeUiTest` API automatically executes your test block within its own `runTest` scope. The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually.
 
 ```kotlin
-// Good: run work inline in tests (Guava)
-val executor = MoreExecutors.directExecutor()
+@Test
+fun testWithCoroutines() = runComposeUiTest {
+    setContent {
+        var status by remember { mutableStateOf("Loading...") }
+        LaunchedEffect(Unit) {
+            delay(1000)
+            status = "Done!"
+        }
+        Text(text = status)
+    }
 
-// Bad: a real pool left running after the test
-val pool = Executors.newFixedThreadPool(4) // never shut down
+    onNodeWithText("Loading...").assertIsDisplayed()
+    mainClock.advanceTimeBy(1000 + 16 /* Frame buffer */)
+    onNodeWithText("Done!").assertIsDisplayed()
+}
 ```
 
-Stop threads explicitly in teardown if a test must start them, and inject executors and dispatchers so tests can replace them ([test-doubles.md](../architecture/test-doubles.md)).
+## Main Looper and Threads
 
-## Test Environment Leakage
+### Looper Modes
 
-- v2 rules enforce `InputMode.Touch` at the start of each test so input mode cannot leak. If you need keyboard mode, set it per class or per test via `ComposeUiTestConfig(inputMode = InputMode.Keyboard)` (`ComposeUiTestConfig` is 1.13.0-alpha01+).
-- `@Config(qualifiers = ...)` and `RuntimeEnvironment.setQualifiers(...)` change the simulated device configuration. Scope them to the class or method that needs them.
-- Do not mock or spy on Android classes (`Context`, `SharedPreferences`); stubbing is brittle. Use real Robolectric objects or fakes.
+- `Robolectric#getForegroundThreadScheduler()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)
+- `Robolectric#getBackgroundThreadScheduler()`: This is only needed in the LEGACY looper mode. We strongly encourage you to use the PAUSED looper mode (which is the default)
 
-## Retries
+#### LooperMode.PAUSED
 
-The Android stability guide: you should fix flaky tests, but retries can maintain productivity when the failure condition is too improbable to reproduce. Typical mechanisms:
+A mode that more accurately models real Android's Looper behavior. Conceptually `LooperMode.PAUSED` is similar to the `LEGACY` `Scheduler.IdleState.PAUSED` in the following ways:
 
-- A JUnit rule that retries a test a number of times
-- A retry step in the CI workflow
-- A system to restart an emulator that is unresponsive, such as Gradle-managed devices (device tests only)
+- Tests run on the main looper thread
+- Tasks posted to the main Looper are not executed automatically, and must be explicitly executed via `ShadowLooper` APIs like `ShadowLooper.idle()`. This guarantees execution order correctness
+- `SystemClock` time is frozen, and can be manually advanced via Robolectric APIs.
 
-"Add retrying mechanisms to big tests, but always fix flaky tests." The sources do not name a specific retry library or Gradle setting for local Robolectric runs, so none is shown here.
+However, it has the following improvements:
 
-## Prevention Strategies
+- Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue.
+- Robolectric test APIs, like `ActivityController.setup()`, will automatically idle the main Looper.
+- Each Looper has its own thread. Tasks posted to background loopers are executed asynchronously in separate threads.
 
-### Isolation Checklist
+#### LooperMode.INSTRUMENTATION_TEST
 
-- [ ] Every wait is a condition (`waitUntil*`, `waitForIdle`, idling resource), never a sleep
-- [ ] Assertions go through the rule or follow `waitForIdle()` / `runOnIdle`
-- [ ] Coroutine dispatchers and executors are injected and replaced in tests
-- [ ] No `ExecutorService` pool outlives a test
-- [ ] Data comes from deterministic fakes, not network or shared state
-- [ ] Tests run with the default `PAUSED` looper mode
-- [ ] State changes read during draw are followed by `waitForIdle()`, not `advanceTimeBy`
-- [ ] Tests do not depend on another test having run first
+A mode that simulates an android instrumentation test threading model, which has a separate test thread distinct from the main looper thread.
 
-### Keep Tests Small and Scoped
+#### LooperMode.LEGACY
 
-As a test grows in scope, its chances of becoming flaky increase. Test one component or feature with fakes on Robolectric, and leave true end-to-end flows to device tests. See [test-architecture.md](../architecture/test-architecture.md).
+Deprecated. use `LooperMode.PAUSED`. LEGACY mode is not supported on Android SDKs > Baklava
 
-## Anti-Patterns to Avoid
+### Limiting Threads
 
-| Anti-Pattern                                   | Problem                                      | Solution                                              |
-| ---------------------------------------------- | -------------------------------------------- | ----------------------------------------------------- |
-| `Thread.sleep()` as the wait                   | Slow and flaky                               | `waitUntil*`, `waitForIdle`, idling resources         |
-| External `CountDownLatch` instead of `waitUntil` | Test clock never advances                  | `waitUntil` APIs                                      |
-| `createComposeRule()` combined with `runTest`  | Two separate clocks (not recommended)        | Use `runComposeUiTest { ... }`                        |
-| Using `UnconfinedTestDispatcher` to "fix" v2 failures | Masks real race conditions            | `waitForIdle()` / `runOnIdle`                         |
-| Retrying until pass, never investigating       | Hides systemic problems                      | Retries as a safety net; fix the root cause           |
-| Un-stopped thread pools                        | Pollutes later tests                         | `directExecutor()` or stop threads explicitly         |
-| Mocking `Context`, `SharedPreferences`         | Brittle, hides real behavior                 | Real Robolectric environment or fakes                 |
-| Using `advanceTimeBy` for draw-dependent state | UI does not update                           | `waitForIdle()`                                       |
+DO limit the number of threads that are running during each test. Rogue threads often cause test pollution because they are not automatically cleaned up between tests. Oftentimes threads are inadvertently spawned when using third-party libraries (e.g., for networking) or background processing components. One of the main sources of additional threads during tests are `ExecutorServices` that maintain thread pools. If possible, mock dependent components that spawn threads, or use `MoreExecutors.directExecutor()`. If it's necessary to run multiple threads during a test, make sure to explicitly stop all threads and `ExecutorServices` to avoid test pollution.
+
+## Best Practices
+
+DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. `Context`, `SharedPreferences`, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades. The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners.
+
+## Input Mode Leakage
+
+Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts.
+
+Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup. To resolve this, specify the required input mode in `ComposeUiTestConfig`:
+
+```kotlin
+class FocusTest {
+    @get:Rule
+    val rule = createComposeRule(
+        config = ComposeUiTestConfig(inputMode = InputMode.Keyboard)
+    )
+
+    @Test
+    fun testFocus() {}
+}
+```
+
+To configure the input mode for individual test cases instead of the entire test class, pass `ComposeUiTestConfig` to `runComposeUiTest`:
+
+```kotlin
+class FocusTest {
+    @Test
+    fun testTouchMode() = runComposeUiTest {
+        // Runs with the default InputMode.Touch
+    }
+
+    @Test
+    fun testKeyboardMode() = runComposeUiTest(
+        ComposeUiTestConfig(inputMode = InputMode.Keyboard)
+    ) {
+        // Runs with InputMode.Keyboard
+    }
+}
+```
 
 ## Related References
 
@@ -205,17 +250,13 @@ As a test grows in scope, its chances of becoming flaky increase. Test one compo
 - **Synchronization**: See [synchronization.md](../core/synchronization.md) for `waitForIdle`, `waitUntil*`, idling resources
 - **Clock control**: See [clock-control.md](../advanced/clock-control.md) for `MainTestClock`
 - **Runtime modes**: See [runtime-modes.md](../core/runtime-modes.md) for `LooperMode.PAUSED`
-- **Coroutines**: See [coroutines-viewmodels.md](../testing-patterns/coroutines-viewmodels.md) for test dispatchers
-- **Test doubles**: See [test-doubles.md](../architecture/test-doubles.md) for fakes and DI seams
-- **CI**: See [ci-cd.md](../infrastructure-ci-cd/ci-cd.md) for environment-specific failures
+- **Coroutines**: See [coroutines.md](../testing-patterns/coroutines.md) for test dispatchers
+- **Test doubles**: See [test-doubles.md](../architecture/test-doubles.md) for shadows and mocks
 
 ## Sources
 
-- https://developer.android.com/training/testing/instrumented-tests/stability
 - https://developer.android.com/develop/ui/compose/testing/synchronization
 - https://developer.android.com/develop/ui/compose/testing/migrate-v2
-- https://robolectric.org/best-practices/
-- https://robolectric.org/androidx_test/
-- https://robolectric.org/upgrade_to_version_4/
-- https://robolectric.org/blog/2019/06/04/paused-looper/
-- https://developer.android.com/training/testing/fundamentals
+- https://robolectric.org/upgrade_to_version_4
+- https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html
+- https://robolectric.org/best-practices

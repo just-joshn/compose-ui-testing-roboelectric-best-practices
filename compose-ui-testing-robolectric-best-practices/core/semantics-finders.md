@@ -3,23 +3,28 @@
 ## Table of Contents
 
 1. [Semantics Tree](#semantics-tree)
-2. [Selector Priority](#selector-priority)
-3. [Finders](#finders)
-4. [Matchers](#matchers)
-5. [Merged and Unmerged Trees](#merged-and-unmerged-trees)
-6. [Hierarchy and Selectors](#hierarchy-and-selectors)
-7. [Test Tags](#test-tags)
-8. [Custom Semantics Properties](#custom-semantics-properties)
-9. [Common Issues & Solutions](#common-issues--solutions)
-10. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
-11. [Related References](#related-references)
-12. [Sources](#sources)
+2. [Finders](#finders)
+3. [Matchers](#matchers)
+4. [Merged and Unmerged Trees](#merged-and-unmerged-trees)
+5. [Selectors](#selectors)
+6. [Custom Semantics Properties](#custom-semantics-properties)
+7. [Test Tags with UiAutomator](#test-tags-with-uiautomator)
+8. [Scope Compose Searches to Views](#scope-compose-searches-to-views)
+9. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+10. [Related References](#related-references)
+11. [Sources](#sources)
 
 ## Semantics Tree
 
-Compose UI tests find nodes in the semantics tree, which is generated alongside the UI hierarchy. There are no view IDs: "only some composables emit UI into the UI hierarchy", so you match on semantics.
+UI tests in Compose use *semantics* to interact with the UI hierarchy. The *semantics tree* is generated alongside the UI hierarchy and describes the hierarchy.
 
-The framework exists mainly for accessibility, and "developers decide what and how much to expose". A button with an icon and a `Text` exposes only the text by default. Add properties with a modifier:
+The semantics framework is primarily used for accessibility, so tests take advantage of the information exposed by semantics about the UI hierarchy. Developers decide what and how much to expose.
+
+Testing a Compose UI is different from testing a view-based UI. In Compose, because only some composables *emit* UI into the UI hierarchy, you need a different approach to matching UI elements.
+
+### Add Properties to the Semantics Tree
+
+For example, given a button like this that consists of an icon and a text element, the default semantics tree only contains the text label "Like". This is because some composables, such as `Text`, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a `Modifier`.
 
 ```kotlin
 MyButton(
@@ -27,119 +32,160 @@ MyButton(
 )
 ```
 
-## Selector Priority
-
-The docs do not rank finders; this order is the skill's own, based on their point that tests reuse what semantics already expose for accessibility:
-
-1. **Text**: `onNodeWithText` (users read it; `Text` already exposes it)
-2. **Content description**: `onNodeWithContentDescription` (what accessibility services read)
-3. **Matchers**: `onNode(hasClickAction() and hasText("Save"))` for state and role-like properties
-4. **Test tags**: `onNodeWithTag` when no user-visible semantics distinguish the node
-5. **Custom semantics property**: only when "it's hard to match a specific item using the given finders and matchers"
-
-```kotlin
-// Good: user-facing semantics
-composeTestRule.onNodeWithText("Continue").performClick()
-composeTestRule.onNodeWithContentDescription("Add to favorites").assertIsDisplayed()
-
-// Fallback: stable tag for an item with no distinguishing text
-composeTestRule.onNodeWithTag("cart-count").assertTextEquals("1")
-```
-
-When the text is a string resource, read it from the activity (`composeTestRule.activity.getString(R.string.next)`) so the test follows copy changes. See [test-suite-structure.md](test-suite-structure.md).
-
 ## Finders
 
-Every finder is a method on the rule (or on `ComposeUiTest` inside `runComposeUiTest`). `onNode` returns one `SemanticsNodeInteraction`; `onAllNodes` returns a `SemanticsNodeInteractionCollection`.
+Finders let you select one or multiple elements (or *nodes* in the semantics tree) to make assertions or perform actions on them.
+
+Some of these APIs accept a `SemanticsMatcher` to refer to one or more *nodes* in the semantics tree.
+
+You can use `onNode` and `onAllNodes` to select one or multiple nodes respectively, but you can also use convenience finders for the most common searches, such as `onNodeWithText`, and `onNodeWithContentDescription`.
+
+### Select a Single Node
 
 ```kotlin
-// General form
-composeTestRule.onNode(matcher, useUnmergedTree = false)
-composeTestRule.onAllNodes(matcher)
-
-// Convenience finders
-composeTestRule.onNodeWithText("Button")                 // same as onNode(hasText("Button"))
-composeTestRule.onNodeWithContentDescription("Beatle")
-composeTestRule.onNodeWithTag("Players")
-composeTestRule.onAllNodesWithText("Button")
-composeTestRule.onAllNodesWithContentDescription("Beatle")
-composeTestRule.onAllNodesWithTag("row")
-composeTestRule.onRoot()                                 // the root node
+composeTestRule.onNode(<<SemanticsMatcher>>, useUnmergedTree = false): SemanticsNodeInteraction
 ```
-
-The full list of convenience finders is in the Compose testing cheat sheet, which is an image or PDF download and not extractable as text.
-
-A finder that matches several nodes fails when you act on it. Narrow it or select from a collection:
 
 ```kotlin
-// Bad: fails with several "Save" nodes
-composeTestRule.onNodeWithText("Save").performClick()
-
-// Good: choose explicitly from the collection
-composeTestRule.onAllNodesWithText("Save").onFirst().performClick()
-composeTestRule.onAllNodesWithText("Save")[1].performClick()
+composeTestRule
+    .onNode(hasText("Button")) // Equivalent to onNodeWithText("Button")
 ```
 
-`onFirst()` and `onLast()` expect exactly one element in the result of any later operation, and throw `AssertionError` if none is found. For Compose nested inside View rows or pagers, `onRootWithViewInteraction` (experimental, `ui-test-junit4:1.12.0-alpha01+`) scopes a finder to one View; see [interoperability.md](../advanced/interoperability.md).
+### Select Multiple Nodes
+
+```kotlin
+composeTestRule
+    .onAllNodes(<<SemanticsMatcher>>): SemanticsNodeInteractionCollection
+```
+
+```kotlin
+composeTestRule
+    .onAllNodes(hasText("Button")) // Equivalent to onAllNodesWithText("Button")
+```
+
+### Finder Reference
+
+| Finder          | Behavior                                                                          |
+| --------------- | --------------------------------------------------------------------------------- |
+| `onNodeWithTag` | Finds a semantics node identified by the given tag. Looks for an exact match only. |
+| `onRoot`        | Finds the root semantics node of the Compose tree.                                |
+
+### Collection Reference
+
+| Member         | Behavior                                                                                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`       | Returns all the nodes matching the given matcher.                                                                                                                                                             |
+| `filterToOne`  | Expects to return exactly one node matching the given matcher.                                                                                                                                               |
+| `onFirst`      | Returns the first node in this collection.                                                                                                                                                                   |
+| `onLast`       | Returns the last node in this collection.                                                                                                                                                                    |
+| `get(index)`   | Retrieve node at the given index of this collection. Any subsequent operation on its result will expect exactly one element found (unless `SemanticsNodeInteraction.assertDoesNotExist` is used) and will throw `AssertionError` if none or more than one element is found. |
 
 ## Matchers
 
-A `SemanticsMatcher` is what `onNode` and `assert` take.
+Hierarchical matchers let you go up or down the semantics tree and perform matching.
 
 ```kotlin
-hasText("Button")                    // matches one item in the node's text list; substring = true, ignoreCase = true are opt-in
-hasTextExactly("Hello", "World")     // the text list contains exactly these values (order does not matter)
-hasContentDescription("Add to favorites")
-hasTestTag("Drummer")
-hasClickAction()
-isEnabled()
-isNotEnabled()
+fun hasParent(matcher: SemanticsMatcher): SemanticsMatcher
+fun hasAnySibling(matcher: SemanticsMatcher): SemanticsMatcher
+fun hasAnyAncestor(matcher: SemanticsMatcher): SemanticsMatcher
+fun hasAnyDescendant(matcher: SemanticsMatcher):  SemanticsMatcher
 ```
-
-Combine with `and`, `or`, `not()`:
 
 ```kotlin
-composeTestRule.onNode(hasText("Save") and hasClickAction())
-composeTestRule.onNode(hasText("Button") or hasText("Button2"))
-composeTestRule.onNode(!hasClickAction())
+composeTestRule.onNode(hasParent(hasText("Button")))
+    .assertIsDisplayed()
 ```
 
-Build your own with `SemanticsMatcher(description: String, matcher: (SemanticsNode) -> Boolean)` when no built-in fits. The description appears in failure messages.
+### Matcher Reference
 
-`SemanticsMatcher` also has `expectValue(key, expected)`, `keyIsDefined(key)`, and `keyNotDefined(key)` for custom properties.
+| Matcher                 | Behavior                                                                                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hasText`               | Returns whether the node's text contains the given text. Note that in merged semantics tree there can be a list of text items that got merged from the child nodes. `text`: Value to match as one of the items in the list of text values. `substring`: Whether to use substring matching. `ignoreCase`: Whether case should be ignored. |
+| `hasTextExactly`        | Returns whether the node's text contains exactly the given `textValues` and nothing else.                                                                                                            |
+| `hasContentDescription` | Returns whether the node's content description contains the given value.                                                                                                                                                  |
+| `hasTestTag`            | Returns whether the node is annotated by the given test tag.                                                                                                                                                              |
+| `hasClickAction`        | Return whether the node has a semantics click action defined.                                                                                                                                                            |
+
+### SemanticsMatcher
+
+`SemanticsMatcher`: Wrapper for semantics matcher lambdas that allows to build string explaining to the developer what conditions were being tested.
+
+```kotlin
+SemanticsMatcher(description: String, matcher: (SemanticsNode) -> Boolean)
+infix fun and(other: SemanticsMatcher): SemanticsMatcher
+operator fun not(): SemanticsMatcher
+infix fun or(other: SemanticsMatcher): SemanticsMatcher
+```
+
+| Function                          | Behavior                                                                          |
+| --------------------------------- | --------------------------------------------------------------------------------- |
+| `expectValue`                     | Builds a predicate that tests whether the value of the given key is equal to `expectedValue`. |
+| `keyIsDefined`                    | Builds a predicate that tests whether the given key is defined in semantics.      |
+| `keyNotDefined`                   | Builds a predicate that tests whether the given key is NOT defined in semantics.  |
 
 ## Merged and Unmerged Trees
 
-Some nodes merge their children's semantics. A button holding two `Text` elements shows one node:
-
-```
-Node #2 at (...)px
-  Role = 'Button'
-  Text = '[Hello, World]'
-  MergeDescendants = 'true'
-```
-
-Finders use the merged tree by default. Pass `useUnmergedTree = true` to match the children:
+Some nodes merge the semantics information of their children. For example, a button with two text elements merges the text element labels:
 
 ```kotlin
-composeTestRule.onNodeWithText("World", useUnmergedTree = true).assertIsDisplayed()
+MyButton {
+    Text("Hello")
+    Text("World")
+}
+```
+
+### Print the Merged Tree
+
+From a test, use `printToLog()` to show the semantics tree:
+
+```kotlin
+composeTestRule.onRoot().printToLog("TAG")
+```
+
+This code prints the following output:
+
+```
+Node #1 at (...)px
+ |-Node #2 at (...)px
+   Role = 'Button'
+   Text = '[Hello, World]'
+   Actions = [OnClick, GetTextLayoutResult]
+   MergeDescendants = 'true'
+```
+
+### Match the Unmerged Tree
+
+If you need to match a node of what would be the *unmerged* tree, you can set `useUnmergedTree` to `true`:
+
+```kotlin
 composeTestRule.onRoot(useUnmergedTree = true).printToLog("TAG")
 ```
 
-`useUnmergedTree` is available on all finders. Print the tree before guessing; see [debugging.md](../debugging/debugging.md).
+This code prints the following output:
 
-Use the unmerged tree when you need the child node itself, for example to assert on one child of a merged button. Use `hasTextExactly(...)` when the merged text list must match completely.
-
-## Hierarchy and Selectors
-
-Hierarchical matchers walk the tree: `hasParent`, `hasAnySibling`, `hasAnyAncestor`, `hasAnyDescendant`, each `(SemanticsMatcher) -> SemanticsMatcher`.
-
-```kotlin
-composeTestRule.onNode(hasParent(hasText("Button"))).assertIsDisplayed()
-composeTestRule.onNode(hasAnyAncestor(hasTestTag("settings")) and hasText("Save"))
+```
+Node #1 at (...)px
+ |-Node #2 at (...)px
+   OnClick = '...'
+   MergeDescendants = 'true'
+    |-Node #3 at (...)px
+    | Text = '[Hello]'
+    |-Node #5 at (83.0, 86.0, 191.0, 135.0)px
+      Text = '[World]'
 ```
 
-Selectors make chains read in order:
+The `useUnmergedTree` parameter is available in all finders. For example, here it's used in an `onNodeWithText` finder.
+
+```kotlin
+composeTestRule
+    .onNodeWithText("World", useUnmergedTree = true).assertIsDisplayed()
+```
+
+`useUnmergedTree` is for tests with a special need to inspect implementation detail within children.
+
+## Selectors
+
+An alternative way to create tests is to use *selectors* which can make some tests more readable.
 
 ```kotlin
 composeTestRule.onNode(hasTestTag("Players"))
@@ -150,66 +196,105 @@ composeTestRule.onNode(hasTestTag("Players"))
     .assert(hasText("John"))
 ```
 
-Other selectors on `SemanticsNodeInteraction`: `onChild()`, `onChildAt(index)`, `onParent()`, `onSibling()`, `onSiblings()`, `onAncestors()`, `onDescendants()`.
-
-## Test Tags
-
-```kotlin
-import androidx.compose.ui.platform.testTag
-
-LazyColumn(modifier = Modifier.testTag("myLazyColumn")) { /* ... */ }
-
-composeTestRule.onNodeWithTag("myLazyColumn").performScrollToIndex(20)
-```
-
-Tags do not reach UI Automator by default. Setting `Modifier.semantics { testTagsAsResourceId = true }` once high in the hierarchy exposes them there.
+| Selector        | Behavior                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onChildren`    | Returns children of this node at the moment of invocation, it only captures nodes that are currently present in the semantic tree. This is especially relevant for lazy layouts like 'LazyColumn' or 'LazyRow' where only a subset of items are currently composed and exist in the tree. Therefore, this function will only return those currently composed items, not all the items in the backing data set. |
+| `onChild`       | Returns exactly one child of this node. Use this only if this node has exactly one child.                                                                                                                                                                                                                                                                                                       |
+| `onChildAt`     | Returns child of this node at the given index.                                                                                                                                                                                                                                                                                                                                                  |
+| `onParent`      | Returns a parent of this node.                                                                                                                                                                                                                                                                                                                                                                  |
+| `onSibling`     | Returns exactly one sibling of this node. Use this only if this node has exactly one sibling.                                                                                                                                                                                                                                                                                                   |
+| `onSiblings`    | Returns all siblings of this node.                                                                                                                                                                                                                                                                                                                                                              |
+| `onAncestors`   | Returns all the ancestors of this node.                                                                                                                                                                                                                                                                                                                                                         |
+| `onDescendants` | Returns all the descendants of this node in Depth-First Search order. |
 
 ## Custom Semantics Properties
 
-Expose a value a test cannot otherwise read:
+You can create custom semantics properties to expose information to tests. To do this, define a new `SemanticsPropertyKey` and make it available using the `SemanticsPropertyReceiver`.
 
 ```kotlin
-// Production code
+// Creates a semantics property of type Long.
 val PickedDateKey = SemanticsPropertyKey<Long>("PickedDate")
 var SemanticsPropertyReceiver.pickedDate by PickedDateKey
+```
 
-MyCustomDatePicker(modifier = Modifier.semantics { pickedDate = datePickerValue })
+Now use that property in the `semantics` modifier:
 
-// Test
+```kotlin
+val datePickerValue by remember { mutableStateOf(0L) }
+MyCustomDatePicker(
+    modifier = Modifier.semantics { pickedDate = datePickerValue }
+)
+```
+
+From tests, use `SemanticsMatcher.expectValue` to assert the value of the property:
+
+```kotlin
 composeTestRule
     .onNode(SemanticsMatcher.expectValue(PickedDateKey, 1445378400)) // 2015-10-21
     .assertExists()
 ```
 
-Warning from the docs: do not expose visual properties such as colors, font size, or corner radius this way. It "can pollute production code and wrong implementations can lead to bugs that are hard to find."
+You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers.
 
-## Common Issues & Solutions
+## Test Tags with UiAutomator
 
-| Issue                                              | Solution                                                                  |
-| -------------------------------------------------- | ------------------------------------------------------------------------- |
-| Node not found                                     | `onRoot().printToLog("TAG")`; check merged vs unmerged                    |
-| "Multiple nodes found" error                       | Use `onAllNodes...()` with `onFirst()`, `[index]`, or a narrower matcher  |
-| Child text not matched                             | Add `useUnmergedTree = true`                                              |
-| Icon-only control has no semantics to match        | Give it `contentDescription` in production code                           |
-| Item has no distinguishing text                    | Add `Modifier.testTag(...)`                                               |
-| `isDisplayed()` result silently ignored            | It returns a Boolean; use `assertIsDisplayed()` to assert (`@CheckResult` since 1.13.0-alpha01) |
+By default, composables are accessible from UiAutomator only by their convenient descriptors (displayed text, content description, etc.). If you want to access any composable that uses `Modifier.testTag`, you need to enable the semantic property `testTagsAsResourceId` for the particular composable's subtree.
+
+Enable the semantic property only once high in your composables hierarchy to ensure all nested composables with `Modifier.testTag` are accessible from UiAutomator.
+
+```kotlin
+Scaffold(
+    // Enables for all composables in the hierarchy.
+    modifier = Modifier.semantics {
+        testTagsAsResourceId = true
+    }
+){
+    // Modifier.testTag is accessible from UiAutomator for composables nested here.
+    LazyColumn(
+        modifier = Modifier.testTag("myLazyColumn")
+    ){
+        // Content
+    }
+}
+```
+
+This feature is available in Jetpack Compose version 1.2.0-alpha08 and higher.
+
+Any composable with the `Modifier.testTag(tag)` can be accessible with the use of `By.res(resourceName)` using the same `tag` as the `resourceName`.
+
+## Scope Compose Searches to Views
+
+The `onRootWithViewInteraction` API is included in `androidx.compose.ui:ui-test-junit4:1.12.0-alpha01+` and `androidx.compose.ui:ui-test:1.12.0-alpha01+`. This API is experimental and subject to change.
+
+When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views---such as within a `RecyclerView` or a `ViewPager`. In these scenarios, a standard Compose search like `onNodeWithText("Save")` might fail with a "Multiple nodes found" error.
+
+Use the `onRootWithViewInteraction` API on your test rule. This function accepts an Espresso `ViewInteraction`, allowing you to leverage Espresso to isolate a specific container View and perform Compose interactions exclusively within that scoped hierarchy.
+
+This API is specifically designed for testing Compose components nested inside Views. To test Views nested inside Compose, continue using standard Espresso interactions.
+
+```kotlin
+// Select the "Header" View container
+val headerInteraction = onView(withId(header_id))
+
+// Scope the Compose interaction to only the Header
+composeTestRule
+    .onRootWithViewInteraction(headerInteraction)
+    .onNodeWithContentDescription("Settings")
+    .performClick()
+```
 
 ## Anti-Patterns to Avoid
 
-| Anti-Pattern                                        | Problem                              | Solution                                           |
-| --------------------------------------------------- | ------------------------------------ | -------------------------------------------------- |
-| `onNodeWithTag` for everything                      | Ignores what users and accessibility see | Prefer text or content description first      |
-| Hard-coded copy of a string resource                | Breaks when copy changes             | `activity.getString(R.string.x)`                   |
-| Custom semantics keys for colors or sizes           | Pollutes production code             | Docs: not recommended; use custom properties only when finders and matchers cannot match the item |
-| Dynamic test tags injected into production code to tell apart identical Compose elements in View rows | Production code churn | Scope with `onRootWithViewInteraction` |
-| Calling `isDisplayed()` as if it asserted           | Test can never fail                  | `assertIsDisplayed()`                              |
+- Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.
+- `onChild`: Use this only if this node has exactly one child.
+- `onSibling`: Use this only if this node has exactly one sibling.
+- Caution: Make sure you don't use `By.res(resourcePackage, resourceId)` as this formats the argument as `$resourcePackage:id/$resourceId`, which is different from `Modifier.testTag`.
 
 ## Related References
 
 - **Assertions and actions**: See [assertions-actions.md](assertions-actions.md)
 - **Debugging the tree**: See [debugging.md](../debugging/debugging.md)
 - **Compose inside Views**: See [interoperability.md](../advanced/interoperability.md)
-- **Waiting for nodes to appear**: See [synchronization.md](synchronization.md)
 
 ## Sources
 
@@ -217,7 +302,7 @@ Warning from the docs: do not expose visual properties such as colors, font size
 - https://developer.android.com/develop/ui/compose/testing/apis
 - https://developer.android.com/develop/ui/compose/testing/common-patterns
 - https://developer.android.com/develop/ui/compose/testing/interoperability
-- https://developer.android.com/develop/ui/compose/testing/testing-cheatsheet
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsMatcher
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary
-- https://developer.android.com/jetpack/androidx/releases/compose-ui
