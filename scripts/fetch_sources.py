@@ -8,6 +8,7 @@ Usage: fetch_sources.py [URL ...]   (no arguments: every URL cited by the skill 
 """
 import html
 import json
+import os
 import re
 import sys
 import urllib.request
@@ -18,7 +19,11 @@ LATEST_RELEASE_API = "https://api.github.com/repos/robolectric/robolectric/relea
 
 
 def get(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "skill-source-check"})
+    headers = {"User-Agent": "skill-source-check"}
+    # Anonymous GitHub API calls share a small per-IP rate limit on CI runners; use the job token when present.
+    if url.startswith("https://api.github.com/") and os.environ.get("GITHUB_TOKEN"):
+        headers["Authorization"] = f"Bearer {os.environ['GITHUB_TOKEN']}"
+    req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=60) as resp:
         return resp.read().decode("utf-8", "replace")
 
