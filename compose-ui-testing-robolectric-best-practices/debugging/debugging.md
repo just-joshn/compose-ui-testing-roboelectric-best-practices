@@ -1,268 +1,277 @@
-# Diagnose a failing Compose Robolectric test
+# Debugging & Troubleshooting
 
-Use this guide when a local Android UI test fails during setup, selection, synchronization, or an outcome assertion. Preserve the first failure before changing code. This workflow uses JUnit, Gradle output, a JVM debugger, and semantics dumps. Robolectric has no headed browser or Playwright trace viewer.
+## Table of Contents
 
-## Table of contents
+1. [Debug Tools](#debug-tools)
+2. [Semantics Tree Printing](#semantics-tree-printing)
+3. [Merged vs Unmerged Tree](#merged-vs-unmerged-tree)
+4. [Identifying Flaky Tests](#identifying-flaky-tests)
+5. [Failure Artifacts](#failure-artifacts)
+6. [Debugging Robolectric Environment Issues](#debugging-robolectric-environment-issues)
+7. [Debugging Rendering and Screenshots](#debugging-rendering-and-screenshots)
+8. [Common Issues & Solutions](#common-issues--solutions)
+9. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+10. [Related References](#related-references)
+11. [Sources](#sources)
 
-- [Classify the first failed boundary](#classify-the-first-failed-boundary)
-- [Reproduce the named test](#reproduce-the-named-test)
-- [Inspect semantics and cardinality](#inspect-semantics-and-cardinality)
-- [Diagnose work and clock ownership](#diagnose-work-and-clock-ownership)
-- [Inspect dependencies and host setup](#inspect-dependencies-and-host-setup)
-- [Debug authentication and data](#debug-authentication-and-data)
-- [Collect CI evidence](#collect-ci-evidence)
-- [Confirm the correction](#confirm-the-correction)
-- [Troubleshooting table](#troubleshooting-table)
-- [Review checklist](#review-checklist)
-- [Related guides and sources](#related-guides-and-sources)
+## Debug Tools
 
-## Classify the first failed boundary
+The main way to solve problems in Compose tests is to look at the semantics tree.
 
-| First failure | Inspect first | Do not repair with |
-| --- | --- | --- |
-| Gradle configuration | Plugin versions, wrapper, variant, JDK | Semantics changes |
-| Unresolved Kotlin import | Resolved artifact and published API | Random extra dependencies |
-| `Method ... not mocked` | Robolectric runner and source set | `returnDefaultValues` |
-| Activity cannot launch | Resources, merged manifest, host declaration | A longer wait |
-| No matching node | Mounted content, actual tree, exact text | Index selection |
-| Several matching nodes | Identity and ancestor scope | `[0]` |
-| Compose stays busy | Recomposition loop, animation, idling resource | Global timeout increase |
-| Loading never resolves | Pending fake or external scheduler | Advancing unrelated Compose time |
-| Wrong visible result | Action target and state transition | Replacing the result assertion with a callback count |
+| Tool                                              | Use when                                              | Notes                                                          |
+| ------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------- |
+| `printToLog(tag)`                                 | You can read the log output                           | Debug-level Android log message                                |
+| `printToString()`                                 | You want the tree in an assertion message or `println` | Returns `String`; works on one node or a node collection       |
+| `useUnmergedTree = true`                          | A child node is "missing"                             | See [Merged vs Unmerged Tree](#merged-vs-unmerged-tree)        |
+| `TestFailurePolicy`                               | You want artifacts on every failure                   | Compose 1.13.0-alpha01+, see [Failure Artifacts](#failure-artifacts) |
+| `robolectric.logging.enabled`                     | Resources or SDK setup look wrong                     | Robolectric debug logging                                      |
+| Robolectric Simulator                             | You need to see what Robolectric renders              | Experimental, 4.15+                                            |
 
-A dependency download failure can prevent execution without saying anything about UI correctness. A sandbox-only permission error is an environment suspect until reproduced outside that sandbox. Keep the exact error and affected command.
-
-## Reproduce the named test
-
-For this repository's fixture, run:
-
-```bash
-./gradlew :fixture:testDebugUnitTest \
-  --tests 'fixture.FixtureUiTest.selectorFailureIncludesTreeDiagnostics' \
-  --console=plain --no-daemon --rerun-tasks --stacktrace
-```
-
-In another project, substitute its actual module, local-unit-test variant, class, and method. Do not switch to `connectedAndroidTest` and call it the same reproduction.
-
-Save the command, full output, process exit code, selected SDK, JDK, resolved dependencies, and JUnit XML. The usual report locations for this task are:
-
-```text
-fixture/build/test-results/testDebugUnitTest/TEST-*.xml
-fixture/build/reports/tests/testDebugUnitTest/index.html
-```
-
-Check that the intended method executed without a skip. `UP-TO-DATE`, `NO-SOURCE`, or an empty report cannot establish a fresh pass. Preserve the old report before rerunning because the task can overwrite it.
-
-Use Android Studio's debugger on the local JUnit test to inspect application state and coroutine ownership. Place breakpoints at the action handler, repository boundary, and state emission. Breakpoints can change race timing, so confirm the repair without the debugger too.
-
-Do not add sleeps to slow the test visually. There is no real device window to watch in this local setup. Use action-boundary semantics snapshots instead.
-
-## Inspect semantics and cardinality
-
-The data shape to inspect is the semantics tree, not the composable call tree. Capture both merged and unmerged roots while the environment can still synchronize.
-
-This illustrative fragment needs a configured rule named `compose` and these imports:
+## Semantics Tree Printing
 
 ```kotlin
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.printToString
+@RunWith(AndroidJUnit4::class)
+class CheckoutTest {
+    @get:Rule
+    val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
-println("MERGED\n${compose.onRoot().printToString()}")
-println("UNMERGED\n${compose.onRoot(useUnmergedTree = true).printToString()}")
+    @Test
+    fun showsTotal() {
+        composeTestRule.setContent { CheckoutScreen() }
+
+        // Print the whole tree at any point in the test
+        composeTestRule.onRoot().printToLog("TAG")
+
+        // Limit depth: 0 prints just this node
+        composeTestRule.onRoot().printToLog("TAG", maxDepth = 2)
+
+        // Get it as a String instead of relying on the log
+        val tree = composeTestRule.onRoot().printToString()
+        println(tree)
+
+        composeTestRule.onNodeWithText("Total").assertIsDisplayed()
+    }
+}
 ```
 
-Do not invoke synchronized tree queries from `runOnIdle` or a UI callback. Run them on the test side. If synchronization itself is stuck, a synchronized dump may also time out. Preserve the original timeout rather than allowing a secondary diagnostic failure to replace it.
+The output lists each node with the properties it exposes:
 
-### Missing child in the merged tree
-
-The canonical JUnit output contains this real failure excerpt:
-
-```text
-Failed: assertExists.
-Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'summary-child')
-However, the unmerged tree contains '1' node that matches. Are you missing `useUnmergedNode = true` in your finder?
 ```
-
-Its recorded tree includes the following excerpt. Node identifiers and bounds belong to this run, not stable test expectations.
-
-```text
-MERGED
-Printing with useUnmergedTree = 'false'
-Node #5 at (l=0.0, t=0.0, r=5.0, b=70.0)px
- |-Node #6 at (l=0.0, t=0.0, r=5.0, b=70.0)px, Tag: 'summary'
-   Text = '[Draft, Ready]'
-   Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+Node #1 at (...)px
+ |-Node #2 at (...)px
+   OnClick = '...'
    MergeDescendants = 'true'
-UNMERGED
-Printing with useUnmergedTree = 'true'
-Node #5 at (l=0.0, t=0.0, r=5.0, b=70.0)px
- |-Node #6 at (l=0.0, t=0.0, r=5.0, b=70.0)px, Tag: 'summary'
-   MergeDescendants = 'true'
-    |-Node #7 at (l=0.0, t=0.0, r=5.0, b=35.0)px, Tag: 'summary-child'
-    | Text = '[Draft]'
+    |-Node #3 at (...)px
+    | Text = 'Hi'
+    |-Node #5 at (83.0, 86.0, 191.0, 135.0)px
+      Text = 'There'
 ```
 
-The unmerged excerpt stops at the first child's text. The full output also contains its actions and the second child. The observation establishes that the child exists but is merged into the user-facing group.
-
-Faulty finder for a child-specific assertion:
+Both functions fetch the latest snapshot of the nodes the interaction found earlier, so output can change over time if the tree changes. Call them after the synchronization point you care about.
 
 ```kotlin
-compose.onNodeWithTag("summary-child").assertExists()
+// Good: print right before the failing assertion, after state has settled
+composeTestRule.waitForIdle()
+composeTestRule.onRoot().printToLog("BEFORE_ASSERT")
+composeTestRule.onNodeWithText("Done").assertExists()
+
+// Bad: print immediately after mutating state; nothing has recomposed yet
+myState.value = 1
+composeTestRule.onRoot().printToLog("TAG")
 ```
 
-Corrected finder:
+The sources do not say where debug-level `printToLog` output ends up under Robolectric. If you see nothing in the Gradle test report, use `printToString()` and print or assert on the string.
+
+## Merged vs Unmerged Tree
+
+By default finders search the merged tree: a clickable parent merges its children's semantics, so a button with two `Text` children appears as one node with `Text = '[Hello, World]'` and `MergeDescendants = 'true'`.
 
 ```kotlin
-compose.onNodeWithTag("summary-child", useUnmergedTree = true).assertIsDisplayed()
+// Print both views of the same hierarchy
+composeTestRule.onRoot().printToLog("MERGED")
+composeTestRule.onRoot(useUnmergedTree = true).printToLog("UNMERGED")
+
+// Good: target a merged-away child explicitly
+composeTestRule
+    .onNodeWithText("World", useUnmergedTree = true)
+    .assertIsDisplayed()
+
+// Bad: assuming the child is a separate node in the default (merged) tree
+composeTestRule.onNodeWithText("World").assertIsDisplayed() // may not find it
 ```
 
-These fragments use `onNodeWithTag` and `assertIsDisplayed` from `androidx.compose.ui.test`. `assertExists` is an interaction member, not a top-level import. The public parameter is `useUnmergedTree`, despite the error message's `useUnmergedNode` spelling.
+`useUnmergedTree` is available on all finders. For selector choice and custom semantics, see [semantics-finders.md](../core/semantics-finders.md).
 
-If the claim concerns the group instead, assert its merged text and identity. Do not switch every finder to the unmerged tree. `clearAndSetSemantics` replaces descendant information in the merged tree. The unmerged tree can still expose children for test inspection. Their presence there does not establish that accessibility services receive those original child semantics.
+## Identifying Flaky Tests
 
-### Duplicate action labels
+| Behavior                                    | Likely Cause                                       | Next Step                                                        |
+| ------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------- |
+| Passes, then fails after a rule/API upgrade | v1 to v2 dispatcher change exposes a latent race   | [flaky-tests.md](flaky-tests.md)                                 |
+| Assertion sees old state                    | No recomposition yet, or coroutine queued          | [synchronization.md](../core/synchronization.md)                 |
+| "Multiple nodes found"                      | Same text or tag appears more than once            | Narrow the finder, see [semantics-finders.md](../core/semantics-finders.md) |
+| Fails only on CI                            | JDK, SDK download, or environment difference       | [ci-cd.md](../infrastructure-ci-cd/ci-cd.md)                     |
+| Passes on device, fails on Robolectric      | Fidelity gap (rendering, system UI, `WebView`)     | [test-architecture.md](../architecture/test-architecture.md)     |
 
-The recorded `scopedOpenSelectsDraft` diagnostic contains:
+## Failure Artifacts
 
-```text
-Failed to inject touch input.
-Reason: Expected exactly '1' node but found '2' nodes that satisfy: (Text + InputText + EditableText contains 'Open' (ignoreCase: false))
-```
-
-This is a target-selection failure before the intended user action. Increasing a timeout cannot choose the correct button.
-
-Use meaningful identity. This illustrative correction assumes the canonical `DraftActions` tree:
+`TestFailurePolicy`, `TestFailureHandler`, and `FailureContext` capture a screenshot and UI hierarchy when a test fails. They ship in `androidx.compose.ui:ui-test:1.13.0-alpha01+` and `ui-test-junit4:1.13.0-alpha01+`; 1.12.1 is the latest stable, so this needs a 1.13 pre-release (rc01 at the time of writing).
 
 ```kotlin
-import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
+// Compose 1.13.0-alpha01+
+class MyComposeTest {
+    private val customConfig = ComposeUiTestConfig(
+        failurePolicy = TestFailurePolicy(
+            screenshotCaptureMode = TestFailurePolicy.CaptureMode.Enabled,
+            uiHierarchyCaptureMode = TestFailurePolicy.CaptureMode.Enabled
+        )
+    )
 
-compose.onAllNodesWithText("Open").assertCountEquals(2)
-compose.onNode(hasText("Open") and hasAnyAncestor(hasTestTag("draft")))
-	.performClick()
-compose.onNodeWithText("Draft opened").assertIsDisplayed()
-compose.onNodeWithText("Archive opened").assertDoesNotExist()
+    @Test
+    fun myFirstTest() = runComposeUiTest(config = customConfig) {
+        // ...
+    }
+}
 ```
 
-If the clickable node itself owns both tag and merged text, combine `hasText` and `hasTestTag` on that node instead of searching ancestors. Inspect the selected tree to decide.
+Add a custom handler to forward artifacts elsewhere. Each handler receives a `FailureContext` with the original error and the artifacts produced by earlier handlers.
 
-## Diagnose work and clock ownership
+```kotlin
+private val customConfig = ComposeUiTestConfig(
+    failurePolicy = TestFailurePolicy(
+        screenshotCaptureMode = TestFailurePolicy.CaptureMode.Enabled,
+        failureHandlers = listOf(
+            TestFailureHandler { context ->
+                val screenshot = context.artifacts.firstOrNull {
+                    it.type == FailureArtifact.Type.Screenshot
+                }
+                // ...
+            }
+        )
+    )
+)
 
-Identify the first missing transition rather than draining every scheduler:
-
-1. Confirm the action selected and activated the intended node.
-2. Observe whether the real state owner began the operation.
-3. Identify the dependency that can produce the next state.
-4. Control or observe that dependency.
-5. Assert the resulting visible state.
-
-| Work owner | Evidence to inspect | Correct control |
-| --- | --- | --- |
-| Composition timer or animation | Timer started, current Compose virtual time | `mainClock` |
-| Queued composition coroutine | Effect or resumed task queued at current time | `mainClock.scheduler.runCurrent()` when needed |
-| Separate coroutine test scheduler | Dispatcher supplied to repository or ViewModel | That scheduler, not an unrelated `runTest` scope |
-| Pending fake | Completion belongs to this test's instance | Complete or fail the fake |
-| Android looper task | Which looper owns the callback | A targeted looper action only when that is the actual boundary |
-| External work | Completion signal and executor lifecycle | Bounded observation or registered idling resource |
-| Business date or expiration | Injected application time source | Advance that source |
-
-Compose assertions synchronize known work. They are not browser-style retrying assertions for arbitrary business state. A bounded `waitUntil` can observe external progress, but the operation must be capable of finishing.
-
-The canonical `composeClockDoesNotCompleteSender` test advances a composition-owned delay and observes `Still sending`. It then completes the sender separately. That separation is the repair when time advances but no receipt appears.
-
-## Inspect dependencies and host setup
-
-Inspect resolved dependencies rather than guessing from declared versions:
-
-```bash
-./gradlew :fixture:dependencies --configuration debugUnitTestRuntimeClasspath
-./gradlew --version
+@get:Rule
+val rule = createComposeRule(config = customConfig)
 ```
 
-Use the configuration exposed by your project's plugin and variant. Confirm the actual test-worker JDK as well as the Gradle launcher JDK. Kotlin bytecode target is not the worker's Java version.
+To enable capture suite-wide, the docs use instrumentation runner arguments:
 
-The pinned fixture uses Compose UI 1.12.1 and `androidx.compose.ui.test.junit4.v2.createComposeRule`. Current online 1.13 configuration examples can use APIs absent from 1.12.1. Do not add `ComposeUiTestConfig` merely because a newer guide mentions it.
-
-Check `src/test`, `testImplementation`, resource inclusion, Robolectric runner, explicit supported SDK, and activity declaration. For the default host, check `ui-test-manifest`. For a custom host, check its actual manifest declaration.
-
-The recorded resource-disabled comparison failed before UI execution with:
-
-```text
-java.lang.RuntimeException: Unable to resolve activity for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=org.robolectric.default/androidx.activity.ComponentActivity } -- see https://github.com/robolectric/robolectric/pull/4736 for details
+```kotlin
+// build.gradle.kts
+android {
+    defaultConfig {
+        testInstrumentationRunnerArguments["androidx.compose.ui.test.failure.isUiHierarchyCaptureEnabled"] = "true"
+        testInstrumentationRunnerArguments["androidx.compose.ui.test.failure.isScreenshotCaptureEnabled"] = "true"
+    }
+}
 ```
 
-Restoring Android resource inclusion restored the selected test's pass in that experiment. This observation does not mean every activity-resolution failure has that cause. Inspect the selected variant and manifest first.
+Precedence: an explicit `CaptureMode.Enabled` or `Disabled` in the test policy overrides the runner argument; `CaptureMode.Unspecified` (or a `null` policy) falls back to it. The docs show the runner arguments only as instrumentation arguments and do not say whether local Robolectric runs honor them, so set the policy in code (`ComposeUiTestConfig`) for `src/test`.
 
-Do not downgrade a project's dependencies to fit whatever artifacts happen to be cached. Choose the intended versions, then resolve their required artifacts. A blocked download is not a UI regression.
+## Debugging Robolectric Environment Issues
 
-## Debug authentication and data
+### Debug logging
 
-For fake-backed UI tests, inspect the session state supplied to the real state owner. Verify that the dependency override was installed before the activity or ViewModel was created.
+```kotlin
+// build.gradle.kts: set Robolectric system properties on the unit-test task
+android {
+    testOptions {
+        unitTests.all {
+            it.systemProperty("robolectric.logging.enabled", "true")
+        }
+    }
+}
+```
 
-Log session category and sanitized account identity, not tokens. Check whether the screen starts signed out, refreshes, receives unauthorized status, or routes away. A fake signed-in session cannot prove OAuth redirects, credential storage security, or backend authorization.
+The Robolectric getting-started page recommends this when you are unsure whether resources are being loaded for a library: you should see a lot of resource-loading output.
 
-For stale content, inspect repository instance identity, cache lifetime, stream replay, and record namespace. Do not repair leaked data by forcing test method order.
+### Robolectric Simulator (experimental)
 
-For device-only authentication failures, retain the device and provider evidence in that suite. Do not invent a Robolectric browser callback as proof of the real flow.
+Since Robolectric 4.15 you can launch an interactive preview of your app or test, useful when debugging failing Robolectric tests. The docs call it "highly experimental" and "proof-of-concept", and its rendering may not match a device 100%.
 
-## Collect CI evidence
+```kotlin
+// build.gradle.kts, Gradle plugin route: ./gradlew simulateDebug
+plugins {
+    id("org.robolectric.simulator") version "1.0.3"
+}
 
-Keep the first failing attempt, not only a successful retry. Archive:
+// Standalone API route
+dependencies {
+    testImplementation("org.robolectric:simulator:4.18")
+}
+```
 
-- Exact command, commit, module, variant, and test filter.
-- Wrapper, AGP, Kotlin compiler plugin, Compose, Robolectric, SDK, and worker JDK versions.
-- Process output, JUnit XML, and HTML report.
-- Merged and unmerged semantics dumps where synchronization permits them.
-- Sanitized fake request and completion events.
-- Relevant configuration such as locale, density, font scale, and clock mode.
+The standalone route calls `Simulator().start()` inside a test annotated `@Config(sdk = [VANILLA_ICE_CREAM])` and `@GraphicsMode(GraphicsMode.Mode.NATIVE)`. On JDK 23 and newer, add the `--add-exports` `jvmArgs` listed on the simulator page to the unit-test configuration.
 
-A JVM drawing capture can aid a local diagnosis, but it does not prove device pixels. Use semantics for semantic regressions and a separate device screenshot workflow for rendering claims.
+### Looper warnings
 
-Match CI's versions and test configuration before comparing results. Reduce concurrency as an experiment to expose shared-state or resource contention. Do not make serial execution the permanent fix without understanding the dependency.
+With the default `PAUSED` looper mode, Robolectric warns when a test fails with unexecuted tasks in the main `Looper` queue: that is a hint the pending work matters to the test. AndroidX Test APIs such as `ActivityScenario` and Espresso idle the main looper automatically; for other posted work use `shadowOf(Looper.getMainLooper()).idle()`. See [flaky-tests.md](flaky-tests.md) and [runtime-modes.md](../core/runtime-modes.md).
 
-## Confirm the correction
+## Debugging Rendering and Screenshots
 
-Rerun the named test, its containing class, and the relevant suite. For an intermittent failure, repeat forced executions and preserve every result.
+```kotlin
+// After advancing the clock manually, wait for the draw pass before capturing
+composeTestRule.mainClock.autoAdvance = false
+composeTestRule.mainClock.advanceTimeBy(50L)
+composeTestRule.waitForIdle()
+val bitmap = composeTestRule.onRoot().captureToImage()
+```
 
-Apply a narrow negative control such as a no-op action or wrong-item callback. The corrected test must fail at its behavior assertion, not during compilation or host startup. Restore the behavior and rerun.
+- `advanceTimeBy` does not trigger a draw. Assert anything rendering-related only after `waitForIdle()` or `runOnIdle`.
+- If you change a state variable that is read during draw, `advanceTimeBy` will not update the UI; use `waitForIdle()`.
+- `captureToImage` takes a `timeoutMillis` parameter (default 2000 ms) since 1.13.0-alpha01 for waiting on redraw passes.
+- Rendering on the JVM needs native graphics: `@GraphicsMode(GraphicsMode.Mode.NATIVE)`. See [runtime-modes.md](../core/runtime-modes.md) and [visual-regression.md](../testing-patterns/visual-regression.md).
+- From Robolectric 4.18 on SDK 33/34, `RuntimeShader` uniform setters forward to native code, which can change how Material ripples are drawn in screenshot tests. `robolectric.runtimeShaderScalarUniform=false` restores the old behavior (documented as temporary).
 
-The repository's recorded wrong-item mutation failed on `Draft opened` not being displayed. Its restoration passed. That evidence supports the outcome assertion, not device fidelity or every possible interleaving.
+## Common Issues & Solutions
 
-## Troubleshooting table
+| Symptom                                                        | Cause                                                              | Fix                                                                                       |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| State changed in test but assertion sees old value             | Compose only recomposes on a sync point                            | Assert via the rule (it syncs first), or call `waitForIdle()`                             |
+| Assertion sees "Loading" after upgrading to v2 rules           | v2 queues launched coroutines on a `StandardTestDispatcher`        | `composeTestRule.waitForIdle()` or `composeTestRule.runOnIdle { ... }` before asserting   |
+| Child text not found                                           | Parent merged descendants                                          | `useUnmergedTree = true`, confirm with `printToLog`                                       |
+| "Multiple nodes found" with Compose nested in Views            | Identical Compose content in several Views                         | `onRootWithViewInteraction` (experimental, 1.12.0-alpha01+); see [interoperability.md](../advanced/interoperability.md) |
+| Test hangs or times out waiting on a condition                 | Condition reads non-Compose state, or an external `CountDownLatch` | Use `waitUntil*` APIs; the test clock is not advanced by external latches                 |
+| `Main looper has queued unexecuted runnables`                  | Non-Compose work posted to main `Looper` was never idled           | `shadowOf(Looper.getMainLooper()).idle()` at the right point                              |
+| Date or time strings differ from device                        | Android libcore vs OpenJDK (`Z` timezone marker, `MMM` month)      | Use `X` marker (min SDK 24+) or `java.time` with desugaring; run those tests on a device  |
+| Screenshot differs between Mac and Linux CI                    | Different rendering across platforms                               | See [visual-regression.md](../testing-patterns/visual-regression.md)                                          |
 
-| Symptom | Observation | Repair path |
-| --- | --- | --- |
-| Zero matches in merged tree | Child exists only unmerged | Query the intended group or deliberate child |
-| Repeated label matches twice | Both nodes expose the same action text | Scope by item identity |
-| Infinite loading | Fake is pending or state collection did not resume | Release the right boundary and scheduler |
-| Timeout after global Main replacement | Compose and application scheduling no longer agree | Remove speculative replacement and inspect ownership |
-| Failure only after another method | Mutable fake, preference, stream, or thread survives | Fix ownership and cleanup |
-| CI-only class-version failure | SDK requires a newer worker JVM | Select a supported SDK and JDK combination |
-| Test passes with broken action | Test supplied final state or asserted only existence | Exercise action-to-outcome path |
+## Anti-Patterns to Avoid
 
-## Review checklist
+| Anti-Pattern                                   | Problem                                         | Solution                                                         |
+| ---------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| `Thread.sleep()` to "let the UI settle"        | Slow or flaky; hides the real race              | `waitForIdle()`, `waitUntil*`, or idling resources              |
+| Guessing at selectors                          | Wasted iterations                               | `printToLog` / `printToString` first, then pick the finder       |
+| Printing the tree right after mutating state   | Shows stale tree                                | Print after `waitForIdle()` or an assertion                      |
+| Leaving `printToLog` calls in committed tests  | Noisy logs                                      | Remove, or use failure artifacts                                 |
+| Mocking `Context` or `SharedPreferences` to dodge a failure | Brittle stubbing of Android classes | Use the real Robolectric environment or a fake                   |
+| Assuming a Robolectric pass means device pass  | Fidelity differs (rendering, system UI, `WebView`) | Keep device tests for those cases                             |
 
-- Is the first failing boundary identified?
-- Are the command and original JUnit failure preserved?
-- Does the tree support the chosen matcher and cardinality?
-- Is each asynchronous operation assigned to its actual owner?
-- Does the fix address the first incorrect transition?
-- Did the intended negative control fail at a behavior assertion?
-- Are local and device claims kept separate?
+## Related References
 
-## Related guides and sources
+- **Flaky tests**: See [flaky-tests.md](flaky-tests.md) for timing, sync, and thread causes
+- **Synchronization**: See [synchronization.md](../core/synchronization.md) for `waitForIdle`, `waitUntil*`, idling resources
+- **Selectors**: See [semantics-finders.md](../core/semantics-finders.md) for merged vs unmerged trees and finders
+- **Runtime modes**: See [runtime-modes.md](../core/runtime-modes.md) for `LooperMode` and `GraphicsMode`
+- **Visual testing**: See [visual-regression.md](../testing-patterns/visual-regression.md) for screenshot comparison
+- **CI**: See [ci-cd.md](../infrastructure-ci-cd/ci-cd.md) for android-all downloads and JDK selection
 
-- [Flaky tests](flaky-tests.md) covers repeated-run experiments.
-- [Logs and exceptions](logs-exceptions.md) preserves diagnostic causes.
-- [Semantics selectors](../core/semantics-selectors.md) covers identity and merging.
-- [Assertions and waiting](../core/assertions-waiting.md) chooses synchronization.
-- [Evidence and limits](../references/evidence.md) records the fixture's version boundaries.
-- [Compose testing APIs](https://developer.android.com/develop/ui/compose/testing/apis) documents tree inspection.
-- [Compose synchronization](https://developer.android.com/develop/ui/compose/testing/synchronization) documents clocks and external work.
-- [Robolectric configuration](https://robolectric.org/configuring/) documents SDK and environment settings.
+## Sources
+
+- https://developer.android.com/develop/ui/compose/testing/debug
+- https://developer.android.com/develop/ui/compose/testing/apis
+- https://developer.android.com/develop/ui/compose/testing/common-patterns
+- https://developer.android.com/develop/ui/compose/testing/migrate-v2
+- https://developer.android.com/develop/ui/compose/testing/synchronization
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction
+- https://developer.android.com/develop/ui/compose/testing/interoperability
+- https://developer.android.com/jetpack/androidx/releases/compose-ui
+- https://robolectric.org/simulator/
+- https://robolectric.org/configuring/
+- https://robolectric.org/getting-started/
+- https://robolectric.org/best-practices/
+- https://robolectric.org/upgrade_to_version_4/
+- https://robolectric.org/blog/2019/06/04/paused-looper/
+- https://developer.android.com/training/testing/ui-tests/screenshot
+- https://developer.android.com/training/testing/local-tests/robolectric

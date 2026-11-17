@@ -1,239 +1,243 @@
-# Test accessibility contracts
+# Accessibility Testing
 
-Use this guide to test the semantics, keyboard actions, and focus behavior that your Compose UI exposes. Run these checks as Android local tests under Robolectric. Pair them with device accessibility checks and TalkBack sessions before claiming an accessible user journey.
+## Table of Contents
 
-## Table of contents
+1. [What Can Be Automated](#what-can-be-automated)
+2. [Semantics for Accessibility](#semantics-for-accessibility)
+3. [Accessibility Test Framework Checks](#accessibility-test-framework-checks)
+4. [Focus Navigation Tests](#focus-navigation-tests)
+5. [Input Mode](#input-mode)
+6. [Manual Testing](#manual-testing)
+7. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+8. [Related References](#related-references)
+9. [Sources](#sources)
 
-- [Choose the test layer](#choose-the-test-layer)
-- [Set up a semantics check](#set-up-a-semantics-check)
-- [Check roles, labels, and state](#check-roles-labels-and-state)
-- [Exercise keyboard navigation](#exercise-keyboard-navigation)
-- [Check dialogs and focus restoration](#check-dialogs-and-focus-restoration)
-- [Check dynamic announcements](#check-dynamic-announcements)
-- [Cover contrast and motion](#cover-contrast-and-motion)
-- [Keep checks isolated and actionable](#keep-checks-isolated-and-actionable)
-- [Avoid misleading checks](#avoid-misleading-checks)
-- [Troubleshoot failures](#troubleshoot-failures)
-- [Review checklist](#review-checklist)
-- [Related guides and sources](#related-guides-and-sources)
+## What Can Be Automated
 
-## Choose the test layer
+Compose's semantics framework is primarily used for accessibility, so ordinary Compose test APIs already assert accessibility-relevant properties. Beyond that, there are two automated layers. Their Robolectric status differs:
 
-| Question | Local check | Separate evidence |
-| --- | --- | --- |
-| Does an icon action have a meaningful label? | Content-description matcher and click outcome | TalkBack pronunciation and context |
-| Is a switch announced with the right state? | Role, toggle state, and state description | Spoken output on a device |
-| Can a keyboard user finish the flow? | Inject key events and assert focus and result | Hardware keyboard and IME integration |
-| Does a dialog return focus? | Assert the named trigger regains input focus | Accessibility focus and traversal on a device |
-| Does a status change expose announcement metadata? | Live-region property and updated text | Actual announcement timing with TalkBack |
-| Is text readable with high contrast or large fonts? | Theme and configuration cases | Device rendering, contrast analysis, and visual inspection |
-| Are all accessibility requirements satisfied? | No single local assertion establishes this | Automated device checks plus manual review |
+| Layer                                          | Needs                                           | On Robolectric (`src/test`)                                    |
+| ---------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------- |
+| Assert semantics (labels, roles, text)         | `ui-test-junit4`                                | Same Compose rule APIs as other tests                          |
+| Focus traversal with `performKeyInput`         | `ui-test-junit4`                                | The focus page shows `@RunWith(AndroidJUnit4::class)` and does not mention Robolectric |
+| Accessibility Test Framework checks            | `ui-test-junit4-accessibility`, API 34+         | **Does not work on Robolectric** (API 34+ only) |
 
-There is no axe-core equivalent to install into the Compose semantics tree. Android's Accessibility Test Framework integration is a separate facility with its own dependency and runtime requirements. Do not assume that enabling it works in every Robolectric environment.
+The API reference for `enableAccessibilityChecks` says it requires API 34+ and "currently does not work on Robolectric"; both it and `disableAccessibilityChecks` are `@RequiresApi(34)`. Run accessibility-check tests as instrumented tests in `androidTest`. See [test-architecture.md](../architecture/test-architecture.md).
 
-Keep explicit semantics assertions in the local suite. Add the checks described by the official accessibility testing guide to a supported device test configuration. The pinned fixture does not validate `ui-test-junit4-accessibility` or `enableAccessibilityChecks()` under Robolectric.
+## Semantics for Accessibility
 
-## Set up a semantics check
-
-Use `src/test`, `testImplementation`, Android resources, and a declared activity host. See [local setup](../references/setup.md) for dependencies. This illustrative complete test uses Compose UI 1.12.1, Material3, JUnit 4, and Robolectric. It is not an additional compiled fixture example.
+The default semantics tree for a button with an icon and a text label only contains the text. `Text` already exposes its properties; add the rest with a modifier.
 
 ```kotlin
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.assertIsOff
-import androidx.compose.ui.test.assertIsOn
-import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.performClick
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
-import org.robolectric.annotation.LooperMode
+// Good: the icon-only control exposes a label that both TalkBack and tests can use
+MyButton(
+    modifier = Modifier.semantics { contentDescription = "Add to favorites" }
+)
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [35])
-@LooperMode(LooperMode.Mode.PAUSED)
-class NotificationAccessibilityTest {
-	@get:Rule val compose = createComposeRule()
+// Test
+composeTestRule
+    .onNodeWithContentDescription("Add to favorites")
+    .assertIsDisplayed()
+```
 
-	@Test fun switchExposesAndChangesItsState() {
-		compose.setContent {
-			var enabled by remember { mutableStateOf(false) }
-			MaterialTheme {
-				Switch(
-					checked = enabled,
-					onCheckedChange = { enabled = it },
-					modifier = Modifier.semantics {
-						contentDescription = "Email notifications"
-					},
-				)
-			}
-		}
-		val notifications = compose.onNodeWithContentDescription("Email notifications")
-		notifications.assert(
-			SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch)
-		)
-		notifications.assertIsOff()
-		notifications.performClick()
-		notifications.assertIsOn()
-	}
+```kotlin
+// Bad: a clickable with no label for accessibility services
+Box(
+    modifier = Modifier
+        .size(50.dp)
+        .clickable { }
+        .semantics { contentDescription = "" }
+)
+```
+
+Asserting on `contentDescription` in a normal test is a cheap check that labels exist, and it does not need the Accessibility Test Framework. If a child seems missing, print the unmerged tree; see [debugging.md](../debugging/debugging.md) and [semantics-finders.md](../core/semantics-finders.md).
+
+## Accessibility Test Framework Checks
+
+Since Compose 1.8.0 you can run the Accessibility Test Framework, the same framework behind Accessibility Scanner and Espresso accessibility checks. Checks cover a missing label, color contrast, small touch target size, and traversal order.
+
+```kotlin
+// build.gradle.kts (the docs give no version for this artifact)
+dependencies {
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4-accessibility")
 }
 ```
 
-The test drives the actual toggle and verifies its exposed state. It does not prove that TalkBack announces the switch correctly on every Android version.
-
-## Check roles, labels, and state
-
-Prefer Material and Foundation controls that supply appropriate semantics. For custom controls, expose the role, state, and action that match their behavior. Do not repair a missing production role by finding the control through a test tag alone.
-
-For an icon-only **Delete draft** action, find the content description, perform the action, and assert that the draft is removed or that the confirmation appears. A nonempty description is not enough. "Icon" is nonempty but does not describe the action.
-
-For expandable content, verify both the exposed state and the panel content. Compose has no general ARIA `expanded` attribute. Use the semantics that your component actually promises, such as a localized state description and a click action.
-
-This illustrative fragment assumes `compose` is the hosted rule and the FAQ control exposes `stateDescription`. It needs the listed imports in the test module.
-
 ```kotlin
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
+// src/androidTest (device): API 34+, does not work on Robolectric
+@get:Rule
+val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
-val shipping = compose.onNodeWithText("Shipping")
-shipping.assert(
-	SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Collapsed")
-)
-shipping.performClick()
-shipping.assert(
-	SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Expanded")
-)
-compose.onNodeWithText("Delivery takes three working days").assertIsDisplayed()
-```
+@Test
+fun noAccessibilityLabel() {
+    composeTestRule.setContent {
+        Box(
+            modifier = Modifier
+                .size(50.dp, 50.dp)
+                .background(color = Color.Gray)
+                .clickable { }
+                .semantics { contentDescription = "" }
+        )
+    }
 
-Inspect the merged tree first. A clickable row may merge its label and icon into one accessible control. Test the group rather than requiring every child to remain separately discoverable. Use the unmerged tree only for a deliberate child-level contract.
+    composeTestRule.enableAccessibilityChecks()
 
-Decorative images should not add redundant spoken labels. Do not give every icon a description if adjacent text already describes the action. Conversely, do not clear a meaningful label with `clearAndSetSemantics` merely to simplify a test.
-
-## Exercise keyboard navigation
-
-Test a meaningful path rather than counting arbitrary Tab presses through the entire app.
-
-1. Establish the intended initial focus using the app's real focus policy.
-2. Send Tab or directional keys through the Compose root.
-3. Assert the next named control has input focus.
-4. Activate the control with the supported key.
-5. Assert the resulting content.
-
-This illustrative fragment assumes a screen whose first field is already focused. It requires Compose test APIs and `androidx.compose.ui.input.key.Key`.
-
-```kotlin
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.test.assertIsFocused
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performKeyInput
-
-compose.onNodeWithText("Email").assertIsFocused()
-compose.onRoot().performKeyInput {
-	keyDown(Key.Tab)
-	keyUp(Key.Tab)
+    // Any action (such as performClick) also runs the checks
+    composeTestRule.onRoot().tryPerformAccessibilityChecks()
 }
-compose.onNodeWithText("Password").assertIsFocused()
 ```
 
-Do not click the destination control before testing a startup shortcut. That click can hide the missing-initial-focus defect. If the app is embedded in an Android View host, add a host-level device test where key events begin at that host.
+This test fails with an exception saying the item may not have a label readable by accessibility services. Checks run before every action expected to change the UI. `enableAccessibilityChecks()` is supported only for `AndroidComposeTestRule`; if you wrap the rule in a custom `ComposeTestRule`, call it on the inner `AndroidComposeTestRule`. Use `disableAccessibilityChecks()` to turn them off.
 
-Input focus and accessibility focus are different. `assertIsFocused()` establishes Compose input focus, not TalkBack focus. A skip-to-content action can be tested locally if your app implements one, but web landmark roles and skip links have no automatic native equivalent.
+### Custom Validator
 
-## Check dialogs and focus restoration
+If you mix Views with Compose and already use an `AccessibilityValidator`, or need to configure one, pass it to the rule:
 
-Open the dialog through its trigger. Assert the dialog's content, move focus through the intended actions, dismiss it through the supported action, and assert that focus returns to the named trigger.
+```kotlin
+val accessibilityValidator = AccessibilityValidator()
+    .setThrowExceptionFor(
+        AccessibilityCheckResult.AccessibilityCheckResultType.WARNING
+    )
 
-Use separate cases for **Cancel**, confirmation, and Back or Escape if the product supports those dismissal paths. Do not assume Escape and Android Back have identical handlers.
-
-A useful dialog test verifies that background controls cannot be activated while the dialog is open. Scope selectors to the dialog when background labels repeat. Do not select the first **Cancel** match.
-
-For a focus cycle, list the expected controls explicitly. Checking that a focused control's text happens to occur somewhere in the dialog can pass when the wrong control is focused. Device testing remains necessary for accessibility traversal and system window behavior.
-
-## Check dynamic announcements
-
-For a noncritical status update, inspect the `LiveRegion` semantics property and the new visible text. For a form error, verify that the error is associated with the intended field when your component exposes that relationship.
-
-A local live-region test can establish that the property is `LiveRegionMode.Polite`. It cannot establish that a service spoke the message exactly once or interrupted at the right time. Avoid continuously announcing rapidly changing values such as a countdown.
-
-Capture failures with the selector, selected tree, expected property, and the relevant semantics dump. Those observations are more actionable than an undifferentiated "accessibility failed" report.
-
-## Cover contrast and motion
-
-Add cases for light and dark themes, large font scale, and any app-owned high-contrast setting. Assert that essential labels and actions remain available. A semantics node can exist even if its text is visually clipped or low contrast.
-
-For reduced motion, test the app's actual motion policy. Inject that policy if the component accepts one, trigger the transition, and assert its final usable state. Do not translate browser `prefers-reduced-motion` into an invented Android system flag.
-
-Use device screenshots or an established rendering suite for text clipping, contrast, and font fallback. Keep locale, theme, font scale, density, and OS version in the evidence. JVM rendering is not evidence of device pixels.
-
-## Keep checks isolated and actionable
-
-Create fresh state and focus requesters per test. Dispose test content through the rule. Restore any accessibility-manager or configuration overrides in cleanup.
-
-Compose assertions synchronize known work. Hold asynchronous status updates with a controllable fake, release it, and then assert the updated semantics. If external work is involved, use a bounded condition or a registered idling resource. Never wait with an arbitrary sleep for an announcement.
-
-Run local accessibility-contract classes in CI using the module's local test task. In an `app` module, a class named `NotificationAccessibilityTest` can be selected with:
-
-```shell
-./gradlew :app:testDebugUnitTest --tests '*NotificationAccessibilityTest'
+composeTestRule.enableAccessibilityChecks(accessibilityValidator)
+composeTestRule.onRoot().tryPerformAccessibilityChecks()
 ```
 
-Use the actual module and class name. Keep device accessibility checks as a separately visible CI job, not an implied consequence of the local job passing.
+The default validator is `AccessibilityValidator().setRunChecksFromRootView(true)`.
 
-## Avoid misleading checks
+## Focus Navigation Tests
 
-| Anti-pattern | Failure mechanism | Correct approach |
-| --- | --- | --- |
-| Assert only that a test tag exists | The control can have no accessible label | Assert meaningful label, role, state, and outcome |
-| Require all icon children in the merged tree | Merging represents one user-facing control | Test the group and inspect both trees when needed |
-| Suppress every automated violation | New defects disappear with old ones | Use narrow, owned, time-bounded exclusions in the supported checker |
-| Test only the initial screen | Errors and dialogs can expose different defects | Exercise critical flows and dynamic states |
-| Claim TalkBack support from `assertIsFocused()` | Input focus is not accessibility focus | Add device traversal evidence |
+Automating focus tests keeps the experience consistent for hardware keyboards, D-pads, and accessibility tools. Use `performKeyInput` to simulate key presses and `assertIsFocused()` / `assertIsNotFocused()` to verify state.
 
-## Troubleshoot failures
+```kotlin
+@RunWith(AndroidJUnit4::class)
+class FocusNavigationTest {
+    @get:Rule
+    val composeTestRule = createComposeRule()
 
-| Symptom | Observation to collect | Fix |
-| --- | --- | --- |
-| Label matcher finds two nodes | Merged and unmerged dumps | Scope by meaningful group and remove unintended duplicate labeling |
-| Role assertion fails | Actual role and actions | Use a semantic control or repair the custom control contract |
-| Tab does nothing | Initial focus, input mode, event target | Exercise the real focus setup and check the host |
-| Error text updates but no speech occurs | Device service state and live-region metadata | Fix semantics or service integration at the layer that fails |
-| Accessibility checker cannot initialize locally | Dependency, SDK, runtime exception | Run it in a supported device environment rather than disabling checks globally |
+    @Test
+    fun interactiveElement_isFocusTarget() {
+        composeTestRule.setContent { AppTheme { CardListScreen() } }
 
-## Review checklist
+        val firstCard = composeTestRule.onNodeWithTag("card_1")
+        val secondCard = composeTestRule.onNodeWithTag("card_2")
 
-- [ ] Critical controls expose meaningful labels and appropriate actions.
-- [ ] State changes are checked after real user actions.
-- [ ] Keyboard focus and accessibility focus are not conflated.
-- [ ] Dialog dismissal and focus restoration have explicit cases.
-- [ ] Dynamic errors and pending states are covered.
-- [ ] Device accessibility and visual checks remain separate evidence.
+        // Focus the first element by clicking it
+        firstCard.performClick()
+        firstCard.assertIsFocused()
+        secondCard.assertIsNotFocused()
+    }
+}
+```
 
-## Related guides and sources
+### Tab Order (one-dimensional)
 
-- [Semantics selectors](../core/semantics-selectors.md) explains identity and merging.
-- [Forms and validation](forms-validation.md) covers field errors and submission.
-- [Internationalization](i18n.md) covers translated labels and RTL.
-- [Accessibility testing](https://developer.android.com/develop/ui/compose/accessibility/testing) describes Android automated and manual checks.
-- [Semantics](https://developer.android.com/develop/ui/compose/accessibility/semantics) documents roles, state descriptions, and live regions.
-- [Merging and clearing](https://developer.android.com/develop/ui/compose/accessibility/merging-clearing) explains custom control semantics.
-- [Compose focus](https://developer.android.com/develop/ui/compose/touch-input/focus) covers keyboard focus behavior.
+Verify both forward (`Key.Tab`) and reverse (`Key.Tab` with `Key.ShiftLeft` held) traversal.
+
+```kotlin
+@Test
+fun tabKey_navigatesInAppearanceOrder() {
+    composeTestRule.setContent { AppTheme { CardListScreen() } }
+
+    val firstCard = composeTestRule.onNodeWithTag("card_1")
+    val secondCard = composeTestRule.onNodeWithTag("card_2")
+    val thirdCard = composeTestRule.onNodeWithTag("card_3")
+
+    firstCard.performClick()
+    firstCard.performKeyInput { pressKey(Key.Tab) }
+    secondCard.assertIsFocused()
+
+    secondCard.performKeyInput { pressKey(Key.Tab) }
+    thirdCard.assertIsFocused()
+
+    // Shift + Tab moves backward
+    thirdCard.performKeyInput {
+        withKeyDown(Key.ShiftLeft) { pressKey(Key.Tab) }
+    }
+    secondCard.assertIsFocused()
+}
+```
+
+### Arrow Keys (two-dimensional)
+
+Use `Key.DirectionDown`, `Key.DirectionUp`, `Key.DirectionRight`, and `Key.DirectionLeft`. Directional keys do not wrap around.
+
+```kotlin
+topLeftButton.performClick()
+topLeftButton.performKeyInput { pressKey(Key.DirectionDown) }
+bottomLeftButton.assertIsFocused()
+
+// No wraparound: pressing Down on the bottom element keeps focus there
+bottomLeftButton.performKeyInput { pressKey(Key.DirectionDown) }
+bottomLeftButton.assertIsFocused()
+```
+
+### Text Fields
+
+A single-line text field advances focus on Tab; a multi-line field inserts a tab character and keeps focus. Shift+Tab leaves the multi-line field.
+
+```kotlin
+singleLineNode.performClick()
+singleLineNode.performKeyInput { pressKey(Key.Tab) }
+multiLineNode.assertIsFocused()
+
+multiLineNode.performKeyInput { pressKey(Key.Tab) }   // inserts '\t'
+multiLineNode.assertIsFocused()
+
+multiLineNode.performKeyInput {
+    withKeyDown(Key.ShiftLeft) { pressKey(Key.Tab) }
+}
+singleLineNode.assertIsFocused()
+```
+
+## Input Mode
+
+Compose tests start in touch mode. v2 rules enforce `InputMode.Touch` at the start of each test so input mode state cannot leak between tests. To start in keyboard mode, set it in `ComposeUiTestConfig` (`ui-test` and `ui-test-junit4` 1.13.0-alpha01+; pre-release at the time of writing, 1.12.1 is the latest stable).
+
+```kotlin
+// Per class
+@get:Rule
+val rule = createComposeRule(
+    config = ComposeUiTestConfig(inputMode = InputMode.Keyboard)
+)
+
+// Per test
+@Test
+fun testKeyboardMode() = runComposeUiTest(
+    ComposeUiTestConfig(inputMode = InputMode.Keyboard)
+) {
+    // Runs with InputMode.Keyboard
+}
+```
+
+## Manual Testing
+
+An essential part of accessibility testing is manual: turn on TalkBack or Switch Access and check that everything works. Automated tests flag regressions as the app changes; they do not replace manual passes.
+
+## Anti-Patterns to Avoid
+
+| Anti-Pattern                                          | Problem                                         | Solution                                                         |
+| ----------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| Putting accessibility-check tests in `src/test`        | `enableAccessibilityChecks` does not work on Robolectric | Run them in `androidTest` on API 34+                  |
+| Only automated testing                                | Misses issues only a person with a screen reader finds | Add manual TalkBack / Switch Access passes                |
+| Testing only forward Tab                              | Misses broken reverse traversal                 | Test `Key.Tab` and Shift+Tab                                     |
+| Expecting arrow keys to wrap                          | They do not wrap                                | Assert focus stays on the last element                           |
+| Empty `contentDescription` on clickable elements       | No label for accessibility services             | Provide a meaningful label                                       |
+| Relying on ambient input mode                         | v2 resets to touch each test                    | Set `inputMode` in `ComposeUiTestConfig`                         |
+
+## Related References
+
+- **Selectors**: See [semantics-finders.md](../core/semantics-finders.md) for `contentDescription` finders and merged trees
+- **Component tests**: See [component-testing.md](component-testing.md) for isolating composables
+- **Debugging**: See [debugging.md](../debugging/debugging.md) for printing the semantics tree
+- **Architecture**: See [test-architecture.md](../architecture/test-architecture.md) for what belongs on a device
+- **Device configuration**: See [device-configuration.md](../advanced/device-configuration.md) for font scale and other settings
+
+## Sources
+
+- https://developer.android.com/develop/ui/compose/accessibility/testing
+- https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus
+- https://developer.android.com/develop/ui/compose/testing/semantics
+- https://developer.android.com/develop/ui/compose/testing/migrate-v2
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule
+- https://developer.android.com/jetpack/androidx/releases/compose-ui

@@ -1,240 +1,193 @@
-# Choose the test layer for a Compose feature
+# Choosing Test Types: Unit, Robolectric, or Device
 
-Use this guide when deciding where a regression belongs. Choose the smallest test that exercises the failure mechanism. A Robolectric Compose test runs Android UI code locally, but it is not an end-to-end test of the device, transport, and backend.
+## Table of Contents
 
-## Table of contents
+1. [Decision Matrix](#decision-matrix)
+2. [Unit Tests (Local JVM)](#unit-tests-local-jvm)
+3. [Robolectric UI Tests](#robolectric-ui-tests)
+4. [Device Tests](#device-tests)
+5. [Layering Test Types](#layering-test-types)
+6. [Source Sets and Shared Tests](#source-sets-and-shared-tests)
+7. [Common Mistakes](#common-mistakes)
+8. [Related References](#related-references)
+9. [Sources](#sources)
 
-- [Choose a layer by claim](#choose-a-layer-by-claim)
-- [Test domain and repository contracts](#test-domain-and-repository-contracts)
-- [Test component behavior locally](#test-component-behavior-locally)
-- [Test screen orchestration](#test-screen-orchestration)
-- [Hand off device and service claims](#hand-off-device-and-service-claims)
-- [Layer an inventory feature](#layer-an-inventory-feature)
-- [Avoid duplicate or missing coverage](#avoid-duplicate-or-missing-coverage)
-- [Troubleshoot coverage gaps](#troubleshoot-coverage-gaps)
-- [Review checklist](#review-checklist)
-- [Related guides and sources](#related-guides-and-sources)
+> **When to use**: Deciding where a test should run. Ask: "What is the lowest layer of the pyramid that gives the team the right level of feedback?"
 
-## Choose a layer by claim
+## Decision Matrix
 
-| Claim | First test layer | What remains unproven |
-| --- | --- | --- |
-| Invalid quantity is rejected | Pure domain unit test | Error rendering |
-| Empty form displays required-field error | Robolectric component UI test | Backend validation |
-| Save starts loading and then displays receipt | Robolectric screen test with controlled repository | HTTP and server persistence |
-| JSON maps a 409 response to duplicate SKU | Repository adapter contract test | Server actually returns that response |
-| Server rejects unauthorized deletion | Service integration test | Client presentation |
-| Navigation action opens the detail screen | Local navigation integration test | External intent resolution and system back behavior |
-| OAuth returns through a browser callback | Device and controlled provider integration | Other provider configurations |
-| Dialog labels and actions exist | Local Compose semantics test | TalkBack traversal |
-| Layout responds to width or locale | Configured local UI test | Real device pixels, IME, and insets |
-| Real-time updates change a row | Local UI test with a controlled stream | Socket reconnect, server ordering, and cross-client delivery |
-| Checkout completes with a payment SDK | Local state tests plus SDK/device sandbox integration | Production gateway behavior |
-| State survives actual process death | Dedicated lifecycle and device test | Not established by remounting a composable |
+| Scenario                          | Recommended Type           | Rationale                                                 |
+| --------------------------------- | -------------------------- | --------------------------------------------------------- |
+| Form validator logic              | Unit (local JVM)           | No Android framework needed                               |
+| ViewModel state transitions       | Unit (local JVM)           | Fakes for repositories; no UI                             |
+| Repository / use case             | Unit (local JVM)           | Test doubles replace database and remote sources          |
+| Sign-in form UI behavior          | Component, Robolectric     | Behavior fidelity on Robolectric is more than enough      |
+| Sign-in form appearance           | Component, screenshot test | Official tool: Compose Preview Screenshot Testing         |
+| UI sending credentials to an auth manager | Feature, JVM test with fakes | Fakes stand in for the auth manager's responses |
+| Whole screen, debuggable build    | Application, Robolectric   | UI behavior test running on Robolectric                   |
+| Font scale / theme reactions      | Robolectric                | Pixel accuracy not critical                               |
+| Edge-to-edge, picture-in-picture  | Device                     | System UI is not simulated                                |
+| `WebView` content                 | Device                     | Unsupported on Robolectric                                |
+| Accessibility checks              | Device (API 34+)           | `enableAccessibilityChecks` does not work on Robolectric  |
+| Critical user journey             | Device, release candidate  | End-to-end Compose UI behavior test on a minified build   |
 
-Do not assign percentages to these layers by convention. The source guide's sample proportions and timings describe a browser example, not measured Android targets. Allocate tests according to failure risk and the contracts each layer owns.
+## Unit Tests (Local JVM)
 
-## Test domain and repository contracts
+**Ideal for**:
 
-Keep business-rule permutations below UI when the UI does not add relevant behavior. The data shape in this illustrative example is a requested quantity and a validation result. It uses ordinary Kotlin and JUnit 4 only.
+- ViewModels and presenters
+- Data layer and repositories
+- Domain layer (use cases)
+- Utility classes (math, validation, formatting)
+- Edge cases: negative/zero/boundary values, all network errors, corrupted JSON, full storage, objects recreated mid-process
+
+**Avoid for**:
+
+- Verifying framework or library behavior
+- Unit tests for activities, fragments, and services (little value)
+- Anything that needs Android `Context` inside a ViewModel
 
 ```kotlin
-import org.junit.Assert.assertEquals
-import org.junit.Test
+// src/test/java/.../SignInViewModelTest.kt
+class SignInViewModelTest {
+    @Test
+    fun rejectsEmptyPassword() = runTest {
+        val viewModel = SignInViewModel(FakeUserRepository())
 
-sealed interface QuantityCheck {
-	data object Valid : QuantityCheck
-	data class Invalid(val message: String) : QuantityCheck
-}
+        viewModel.submit(email = "alex@company.org", password = "")
 
-fun checkQuantity(quantity: Int): QuantityCheck =
-	if (quantity > 0) QuantityCheck.Valid
-	else QuantityCheck.Invalid("Enter a quantity greater than zero")
-
-class QuantityCheckTest {
-	@Test fun rejectsZero() {
-		assertEquals(
-			QuantityCheck.Invalid("Enter a quantity greater than zero"),
-			checkQuantity(0),
-		)
-	}
-
-	@Test fun acceptsPositiveQuantity() {
-		assertEquals(QuantityCheck.Valid, checkQuantity(2))
-	}
+        assertEquals(SignInError.EmptyPassword, viewModel.state.value.error)
+    }
 }
 ```
 
-A repository test has a different boundary. Keep the real serialization and response mapper when testing response interpretation. Supply a controlled transport response and assert the domain result. Cover missing fields, malformed responses, pagination, unauthorized responses, and conflict mapping at that boundary.
+Run these on the plain JVM with no Robolectric. Using Robolectric for unit tests is a last resort: legacy code, or APIs that depend on Android classes.
 
-If the claim is server authorization, call the real service in a dedicated test environment. Hiding a Delete button or returning a fake `Forbidden` result does not prove that the server rejects a forged request.
+## Robolectric UI Tests
 
-For an owned API, maintain both adapter contract tests and service integration coverage. A UI test does not need to contact the service to prove that an error message is displayed.
+**Ideal for**:
 
-## Test component behavior locally
+- Isolated UI behavior for components, features, and whole screens
+- A Compose test verifying the UI changed after a click
+- Reactions to font sizes, themes, locales, and screen sizes
+- Screenshots when pixel accuracy is not critical
 
-Use a component test for a small real UI with local state. The following complete illustrative test covers the action-to-error path. It needs an Android test host, resources, Compose Material3, `ui-test-junit4`, Robolectric, and JUnit 4. Put it in `src/test`. Use the setup described in [configuration](../core/configuration.md).
+**Avoid for**:
+
+- System UI (edge-to-edge, picture-in-picture)
+- Unsupported features such as `WebView`
+- Accessibility checks (not supported on Robolectric)
+- Pixel-perfect visual verification (fidelity is lower; different devices render slightly differently)
 
 ```kotlin
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
+// src/test/java/.../SignInScreenTest.kt
+@RunWith(AndroidJUnit4::class)
+class SignInScreenTest {
+    @get:Rule val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [35])
-class QuantityFormTest {
-	@get:Rule val compose = createComposeRule()
+    @Test
+    fun showsWelcomeAfterContinue() {
+        composeTestRule.setContent { SignInScreen(repository = FakeUserRepository()) }
 
-	@Test fun emptySubmitShowsValidationError() {
-		compose.setContent {
-			var submitted by remember { mutableStateOf(false) }
-			Column {
-				Button(onClick = { submitted = true }) { Text("Save") }
-				if (submitted) Text("Quantity is required")
-			}
-		}
+        composeTestRule.onNodeWithText("Continue").performClick()
 
-		compose.onNodeWithText("Quantity is required").assertDoesNotExist()
-		compose.onNodeWithText("Save").performClick()
-		compose.onNodeWithText("Quantity is required").assertIsDisplayed()
-	}
+        composeTestRule.onNodeWithText("Welcome").assertIsDisplayed()
+    }
 }
 ```
 
-This example demonstrates test structure, not a replacement implementation for your production form. Mount the production component in a real regression test. Keep all validation permutations in domain tests and choose representative rendering cases here.
+The Robolectric blog states the same `createAndroidComposeRule<ComponentActivity>()` / `runComposeUiTest { }` code runs on a device and on the JVM from one binary. Setup is in [configuration.md](../core/configuration.md).
 
-Test initial enabled state, invalid input feedback, corrected input, disabled submission during work, and success reset where the component owns those behaviors. A callback payload assertion can supplement the visible outcome. It cannot replace it when the claim is screen behavior.
+## Device Tests
 
-Semantics tests can check labels, enabled state, click actions, and selected state. They do not certify accessibility-service behavior. Use device accessibility testing for traversal and announcements.
+Use instrumented tests "only in cases where you must test against the behavior of a real device."
 
-## Test screen orchestration
+| Needs a device when...                 | Why                                              |
+| -------------------------------------- | ------------------------------------------------ |
+| Edge-to-edge, picture-in-picture       | System UI is not part of the simulation          |
+| `WebView`                              | Unsupported feature on Robolectric               |
+| Real hardware or cross-process IPC     | Robolectric emulates only enough of Android      |
+| Foldable posture logic                 | Posture changes do not trigger a configuration change |
+| Accessibility Test Framework checks    | API 34+, "does not work on Robolectric"          |
+| Release candidate journeys             | Minified release build on phones, foldables, tablets |
 
-A stateless rendering test supplies `Loading`, `Error`, or `Success` directly. It proves that state renders correctly. It does not prove that pressing Save produces those states.
+Robolectric "doesn't have a screen like an emulator does, and some APIs are only partially supported."
 
-For orchestration, mount the real screen owner and inject a repository fake at its external boundary:
+## Layering Test Types
 
-1. Create a fresh fake with a pending completion.
-2. Mount the screen once.
-3. Enter data through semantics and press Save.
-4. Assert loading and unavailable duplicate submission if those are contracts.
-5. Complete the fake with a specific receipt.
-6. Assert the receipt is displayed and loading has ended.
+Five layers, smallest to largest:
 
-The compiled [message example](../examples/FixtureUiTest.kt), `sendShowsReceiptAfterCompletion`, follows this sequence. Its sender observation checks the payload, while the receipt assertion checks what the user sees.
+| Layer             | Runs on                                   | Example                                                 |
+| ----------------- | ----------------------------------------- | ------------------------------------------------------- |
+| Unit              | Local JVM, no Android framework           | Form validator                                          |
+| Component         | Local, Robolectric, or emulator           | Custom button screenshot test                           |
+| Feature           | Local, Robolectric, emulator, or device   | UI behavior test of state management in one screen      |
+| Application       | Debuggable build                          | Configuration changes on a foldable, localization, a11y |
+| Release candidate | Minified release build                    | Critical user journeys                                  |
 
-A local navigation test may use the real navigation graph and fake data boundaries. Assert the destination's content after a user action. A navigation-controller assertion can help diagnose routing, but it does not prove the destination rendered.
+### Execution Profile
 
-Keep one content owner. If `createAndroidComposeRule` launches a production activity that calls `setContent`, do not call `setContent` again from the test. If the test owns the composition, use one call and mount the smallest screen needed.
+| When          | Layers                                       |
+| ------------- | -------------------------------------------- |
+| Every commit  | Unit and Component, affected modules         |
+| Pre-merge     | Unit, Component, Feature                     |
+| Post-merge    | Application                                  |
+| Nightly       | Release candidate on phone, foldable, tablet |
 
-## Hand off device and service claims
+Bias effort toward smaller and more frequent tests. One test class per screen is a good starting point for screen UI tests. Coverage "should not be used as the only metric."
 
-Keep a small set of integrated journeys for failures that local tests cannot expose:
+## Source Sets and Shared Tests
 
-- Launch the actual application and exercise critical navigation.
-- Verify permission requests and result delivery on supported Android versions.
-- Exercise OAuth through the intended browser or provider test environment.
-- Check real IME, focus, insets, and system back behavior.
-- Verify a payment SDK against its sandbox without production charges.
-- Test transport authentication and backend authorization outside a repository fake.
+| Source set     | Runs on                         | Gradle task                  |
+| -------------- | ------------------------------- | ---------------------------- |
+| `src/test`     | Local JVM (UI tests use Robolectric) | `./gradlew test`        |
+| `src/androidTest` | Device or emulator           | `./gradlew connectedCheck`   |
 
-Give each journey explicit seed data, ownership, and cleanup. Do not create a whole account through UI when account creation is merely setup for an unrelated inventory test. Seed through a controlled test API, then drive the behavior actually under test.
+Any UI test in `test` runs with Robolectric. To convert an instrumented test, move it to `test` and add the Robolectric dependencies.
 
-Use a dedicated service environment, not the production backend. Isolate account and record identifiers across workers. A nightly integration suite is useful only if failures have an owner and block or inform an explicit release decision.
-
-## Layer an inventory feature
-
-A practical inventory suite separates these responsibilities:
-
-```text
-Domain tests
-  rejects zero and negative quantities
-  enforces archive rules for pending orders
-
-Repository contract tests
-  maps successful creation response
-  maps duplicate SKU and authorization errors
-  preserves pagination cursor
-
-Robolectric component tests
-  displays required-field feedback
-  renders empty list and error states
-  exposes row actions with meaningful semantics
-
-Robolectric screen tests
-  saving displays pending state and created item
-  retry replaces load error with returned content
-  archive confirmation changes only the selected item
-
-Device and service integration tests
-  application launch reaches inventory
-  real client and test service create a persisted item
-  unauthorized API deletion is rejected
-```
-
-Do not assert every quantity permutation through all layers. Repeat a behavior only when the higher layer adds a distinct claim, such as wiring or persistence.
-
-If domain and component tests pass but the screen test fails, inspect state collection and dependency wiring. If local screen tests pass but integrated tests fail, inspect transport mapping, host lifecycle, navigation, and environment configuration before rewriting selectors.
-
-## Avoid duplicate or missing coverage
-
-Faulty illustrative rendering-only test:
+To share one test body, add a `src/sharedTest/java` directory to both source sets (the 2021 `sharedTest` pattern). `AndroidJUnit4` delegates to `RobolectricTestRunner` on the JVM and to `AndroidJUnit4ClassRunner` on a device.
 
 ```kotlin
-compose.setContent { InventoryScreen(state = InventoryState.Saved("SKU-7")) }
-compose.onNodeWithText("SKU-7 saved").assertIsDisplayed()
+// src/sharedTest/java/.../CheckoutScreenTest.kt: one body, two runners
+@RunWith(AndroidJUnit4::class)
+class CheckoutScreenTest { /* ... */ }
 ```
 
-This is valid only as a rendering test. It passes when Save does nothing because the test supplies `Saved` itself.
+## Common Mistakes
 
-Correct the orchestration claim by mounting the real state owner, performing Save, completing its controlled repository, and asserting `SKU-7 saved`. Keep the rendering-only test if conditional presentation is independently valuable.
+| Anti-Pattern                                   | Problem                                                    | Better Approach                                            |
+| ---------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| Every test on an emulator                      | Slow, flaky; Robolectric handles most behavior tests       | Robolectric for behavior, device for what it cannot do     |
+| Robolectric for pure logic                     | Unneeded framework overhead                                | Plain JVM unit test with fakes                             |
+| Unit tests for activities and fragments        | Little value; entry points only                            | Test the ViewModel; test the screen via the compose rule   |
+| `Context` inside ViewModels                    | Forces Robolectric where a JVM test would do               | Interfaces plus DI; keep logic out of Android classes      |
+| Cross every theme x font size in screenshots   | Thousands of screenshot files, most giving no extra feedback | Pick screenshots that give unique feedback               |
+| Pixel-perfect assertions on Robolectric        | Fidelity is lower; devices render slightly differently     | Robolectric screenshots only when pixel accuracy is not critical |
+| Trusting 4.13 or `API 16+` from Android pages  | Stale numbers                                              | Use robolectric.org: 4.18 supports API 24-37               |
 
-| Mistake | Consequence | Better choice |
-| --- | --- | --- |
-| Every rule tested through device UI | Slow diagnosis and unnecessary setup | Domain tests plus representative UI feedback |
-| All UI dependencies mocked | Compose behavior itself is no longer exercised | Real UI and fake external boundary |
-| All tests hit a live service | UI failures inherit service availability | Local controlled states plus explicit integration suite |
-| Fake response described as HTTP coverage | Missing serialization and authorization regressions | Adapter and service tests |
-| One journey covers an entire feature | First failure hides later checks | Focused journeys with clear outcomes |
+## Related References
 
-## Troubleshoot coverage gaps
+- **Test anatomy and rules**: See [test-suite-structure.md](../core/test-suite-structure.md)
+- **Gradle and Robolectric setup**: See [configuration.md](../core/configuration.md)
+- **Fakes and DI seams**: See [test-doubles.md](test-doubles.md)
+- **Component tests**: See [component-testing.md](../testing-patterns/component-testing.md)
+- **Screenshot testing**: See [visual-regression.md](../testing-patterns/visual-regression.md)
+- **Accessibility**: See [accessibility.md](../testing-patterns/accessibility.md)
+- **Screen sizes**: See [device-configuration.md](../advanced/device-configuration.md)
+- **CI**: See [ci-cd.md](../infrastructure-ci-cd/ci-cd.md)
 
-| Symptom | Observation | Repair |
-| --- | --- | --- |
-| UI tests pass while production fails to parse JSON | Was the serializer bypassed by a domain fake? | Add adapter contract coverage |
-| Validation tests pass but no message appears | Do tests invoke the actual user action? | Add action-to-feedback UI coverage |
-| Local UI passes but activity launch fails | Is the real host and manifest exercised? | Add a host integration test |
-| Fake behavior diverges from service | Compare domain outcomes with adapter contracts | Update shared contract cases |
-| Screen test hangs | Identify pending fake, coroutine scheduler, or busy resource | Control the actual owner of work |
+## Sources
 
-## Review checklist
-
-- Does the test name state the layer's actual claim?
-- Does it exercise the real code that can break that claim?
-- Are fakes explicit and fresh per test?
-- Does synchronization match the owner of asynchronous work?
-- Are device and backend claims covered elsewhere?
-- Would a no-op user action fail the orchestration test?
-- Is repeated coverage justified by a distinct integration risk?
-
-## Related guides and sources
-
-- [When to fake](when-to-fake.md) chooses local boundaries.
-- [Repository contracts](../testing-patterns/repository-contracts.md) covers adapters.
-- [Component testing](../testing-patterns/component-testing.md) covers isolated UI.
-- [Host integration](../testing-patterns/host-integration.md) covers activity ownership.
-- [Compose testing](https://developer.android.com/develop/ui/compose/testing) documents UI testing APIs.
-- [Android testing strategies](https://developer.android.com/training/testing/fundamentals/strategies) describes test scope and tradeoffs.
-- [Robolectric local tests](https://developer.android.com/training/testing/local-tests/robolectric) describes the local Android layer.
+- https://developer.android.com/training/testing/fundamentals
+- https://developer.android.com/training/testing/fundamentals/what-to-test
+- https://developer.android.com/training/testing/fundamentals/strategies
+- https://developer.android.com/training/testing/local-tests
+- https://developer.android.com/training/testing/local-tests/robolectric
+- https://developer.android.com/training/testing/ui-tests
+- https://developer.android.com/training/testing/ui-tests/behavior
+- https://developer.android.com/training/testing/ui-tests/screenshot
+- https://developer.android.com/training/testing/instrumented-tests
+- https://developer.android.com/training/testing/different-screens
+- https://robolectric.org/compatibility_table/
+- https://robolectric.org/blog/2021/10/06/sharedTest/
+- https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/

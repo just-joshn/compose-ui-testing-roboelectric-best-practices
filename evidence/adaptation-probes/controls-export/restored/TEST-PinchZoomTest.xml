@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="PinchZoomTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-16T21:01:38.774Z" hostname="mac-mini.local" time="0.126">
-  <properties/>
-  <testcase name="pinchOutChangesDisplayedZoom" classname="PinchZoomTest" time="0.066"/>
-  <testcase name="cancellationRetainsLiveZoomAndAllowsAnotherGesture" classname="PinchZoomTest" time="0.058"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

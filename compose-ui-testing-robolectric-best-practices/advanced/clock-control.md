@@ -1,211 +1,216 @@
-# Control clocks, timers, and date-dependent UI
+# Clock Control
 
-## Table of contents
+## Table of Contents
 
-- [Choose the time owner](#choose-the-time-owner)
-- [Fix business time before creating content](#fix-business-time-before-creating-content)
-- [Advance Compose effects deliberately](#advance-compose-effects-deliberately)
-- [Test debounce and repeated work](#test-debounce-and-repeated-work)
-- [Control animation frames](#control-animation-frames)
-- [Cover zones and date boundaries](#cover-zones-and-date-boundaries)
-- [Separate external work and loopers](#separate-external-work-and-loopers)
-- [Avoid time shortcuts](#avoid-time-shortcuts)
-- [Troubleshoot](#troubleshoot)
-- [Review checklist](#review-checklist)
-- [Related guides and sources](#related-guides-and-sources)
+1. [What the Clock Drives](#what-the-clock-drives)
+2. [Taking Control](#taking-control)
+3. [Advancing Time](#advancing-time)
+4. [Frame Ordering Rules](#frame-ordering-rules)
+5. [Delayed Effects](#delayed-effects)
+6. [Coroutine Virtual Time](#coroutine-virtual-time)
+7. [Rendering Assertions After Advancing](#rendering-assertions-after-advancing)
+8. [Frame-by-Frame Loops](#frame-by-frame-loops)
+9. [Common Issues & Solutions](#common-issues--solutions)
+10. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+11. [Related References](#related-references)
+12. [Sources](#sources)
 
-## Choose the time owner
+## What the Clock Drives
 
-Use this guide for countdowns, delayed messages, relative dates, debounce, polling, and animations in local Android Compose tests. Use the [host setup](../references/setup.md) before adding manual time control.
+`MainTestClock` ("`composeTestRule.mainClock`", or `mainClock` inside `runComposeUiTest`) is "the clock that drives frames, recompositions and launched effects in compose tests". It drives all recompositions, every `withFrameNanos` subscriber (all Compose animations), and coroutines launched with `LaunchedEffect`, such as gesture detection. If it does not tick, recomposition does not happen and animations are frozen.
 
-There is no single clock that replaces every Android time source. Identify the owner before advancing anything.
+It does not control Android's measure and draw passes. On Android only measure and layout run synchronously; the draw pass is driven by the Choreographer and does not happen as a result of forwarding this clock.
 
-| Work | Control | What it does not control |
-| --- | --- | --- |
-| Recomposition and Compose animation | `rule.mainClock` | Real service responses |
-| Composition-owned coroutine effects | Compose clock and its scheduler | Independent dispatcher scheduler |
-| ViewModel on an injected test dispatcher | That dispatcher's `TestCoroutineScheduler` | Compose unless deliberately shared |
-| `Instant.now()` or billing date | Injected application clock | Coroutine delays |
-| Android handler callback | The relevant Robolectric looper control | Every coroutine or executor |
-| HTTP response | Controlled fake or transport | No clock can invent a response |
-| Android drawing | Test framework synchronization | Device pixels or frame performance |
+This is test time, not wall time, so a test can run quicker than an animation's actual duration. This matches the Robolectric/JVM setup where Compose frames come from a virtual-time clock.
 
-Keep `autoAdvance = true` for ordinary settled-state tests. Pause it only when the intermediate time is the behavior under test. Compose synchronization can advance virtual time to settle work and therefore skip a transient countdown value.
+## Taking Control
 
-The fixture uses Compose UI 1.12.1 and `androidx.compose.ui.test.junit4.v2.createComposeRule`. Do not copy 1.13-only `ComposeUiTestConfig` into it.
-
-## Fix business time before creating content
-
-Inject time into the component that computes business state. `mainClock.advanceTimeBy` does not change `Clock.systemUTC()` or `System.currentTimeMillis()`.
-
-Illustrative Kotlin fragment for a JVM or Android project that supports `java.time`. Use core-library desugaring if required by the consuming app's minimum SDK. This is not a fixture-compiled date formatter.
+By default `autoAdvance` is `true`: the framework advances the clock while it waits for idle, so there are no pending recompositions or animations when your assertion runs. Turn it off to inspect states in between:
 
 ```kotlin
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-
-val clock = Clock.fixed(
-	Instant.parse("2025-01-15T17:00:00Z"),
-	ZoneId.of("America/Los_Angeles"),
-)
-val formatter = DateTimeFormatter
-	.ofPattern("h:mm a", Locale.US)
-	.withZone(clock.zone)
-val label = formatter.format(clock.instant())
+composeTestRule.mainClock.autoAdvance = false
 ```
 
-The expected label is `9:00 AM`. Pass `clock` into the real formatter, repository, or ViewModel before it is constructed. Passing a preformatted expected label into a `Text` composable tests only rendering.
+With it off:
 
-For a holiday banner, seed a December instant before mounting the real route, then assert the banner. Use a separate January test that asserts absence. Avoid dates relative to the day the suite happens to run.
+- `waitForIdle()` only waits for idling resources, plus pending measure, layout, and draw passes.
+- Pending recompositions and animations no longer count as "not idle".
+- Initial composition from `setContent` still happens immediately.
+- Recomposition happens only when the clock produces a frame.
 
-For "2 hours ago", fix both the current instant and the item's creation instant. Set locale and zone when the product's formatting depends on them. Test the actual formatting path rather than calculating expected text with the same production formatter.
+Scroll actions need clock frames, so `performScrollTo` throws `AssertionError` while `autoAdvance` is `false`.
 
-## Advance Compose effects deliberately
-
-The following complete illustrative test uses the pinned fixture's rule API. It requires the same Compose Material3, test, JUnit, Robolectric, resource, and manifest dependencies as [setup](../references/setup.md). It is not included in the canonical compiled fixture.
+## Advancing Time
 
 ```kotlin
-import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
-import org.robolectric.annotation.LooperMode
+composeTestRule.mainClock.advanceTimeByFrame()           // exactly one frame
+composeTestRule.mainClock.advanceTimeBy(250)             // rounded UP to a whole number of frames
+composeTestRule.mainClock.advanceTimeBy(250, ignoreFrameDuration = true)
+composeTestRule.mainClock.advanceTimeUntil(timeoutMillis = 2_000) { condition }
+val now = composeTestRule.mainClock.currentTime          // ms
+```
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [35])
-@LooperMode(LooperMode.Mode.PAUSED)
-class DelayedNoticeTest {
-	@get:Rule val rule = createComposeRule()
+| API                                   | Behavior                                                                                  |
+| ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `advanceTimeByFrame()`                | One frame; commits state changes and runs one recomposition and any triggered measure/layout |
+| `advanceTimeBy(ms)`                   | Rounded up to the nearest multiple of the frame duration (16 ms on JVM)                   |
+| `advanceTimeBy(ms, ignoreFrameDuration = true)` | No rounding; the last few ms may be seen by nobody because work triggers only on frames |
+| `advanceTimeUntil(timeoutMillis) { }` | Single-frame increments until the condition holds; throws `ComposeTimeoutException` otherwise |
 
-	@OptIn(ExperimentalCoroutinesApi::class)
-	@Test fun noticeAppearsAfterDelay() {
-		rule.mainClock.autoAdvance = false
-		rule.setContent {
-			var ready by remember { mutableStateOf(false) }
-			LaunchedEffect(Unit) {
-				delay(1_000)
-				ready = true
-			}
-			Text(if (ready) "Ready" else "Waiting")
-		}
-		rule.mainClock.scheduler.runCurrent()
-		rule.onNodeWithText("Waiting").assertIsDisplayed()
-		rule.mainClock.advanceTimeBy(500)
-		rule.onNodeWithText("Ready").assertDoesNotExist()
-		rule.mainClock.advanceTimeBy(600)
-		rule.mainClock.scheduler.runCurrent()
-		rule.mainClock.advanceTimeByFrame()
-		rule.onNodeWithText("Ready").assertIsDisplayed()
-	}
+The timeout for `advanceTimeUntil` is test clock time, and the condition must read only things this clock drives (Compose state). If it depends on drawing or outside work, use `waitUntil`; see [synchronization.md](../core/synchronization.md).
+
+Auto-advancing and manual advancing are equally fast. Setting `autoAdvance = false` is recommended when calling `advanceTimeBy`, but not strictly necessary.
+
+## Frame Ordering Rules
+
+These explain most "off by one frame" surprises.
+
+- Animations receive their frame time before recomposition. After you toggle state to start an animation, `advanceTimeBy(32)` at 16 ms frames leaves the play time at 0 ms: frame 1 recomposes and schedules the animation, frame 2 gives it its first frame time and sets `t=0`.
+- Animations request the next frame during the current one. `advanceTimeBy(160)` with a running animation produces ten 16 ms frames, not one 160 ms frame. Measure and layout happen after each frame; draw does not happen in between.
+- After changing state, advancing one frame commits it and runs exactly one recomposition.
+- State read during draw is not updated by `advanceTimeBy`; use `waitForIdle()`.
+- Because of rounding, `advanceTimeBy(50L)` does not move the clock exactly 50 ms. Build assertions around frame boundaries.
+
+```kotlin
+// Illustrative: step an animation on the test clock
+@Test
+fun colorAnimation_midway() = runComposeUiTest {
+    mainClock.autoAdvance = false
+    var enabled by mutableStateOf(false)
+    setContent {
+        val color by animateColorAsState(
+            targetValue = if (enabled) Color.Red else Color.Green,
+            animationSpec = tween(durationMillis = 250)
+        )
+        Box(Modifier.size(64.dp).background(color).testTag("box"))
+    }
+    enabled = true
+    mainClock.advanceTimeBy(50L)       // rounded up to a whole frame
+    // assert on something observable: semantics, or a captured image (see animations.md)
 }
 ```
 
-Start the effect before measuring its delay. With the v2 standard dispatcher, launching an effect does not imply immediate execution. `runCurrent()` starts queued tasks at the current virtual time without jumping forward.
+Animation assertion patterns are in [animations.md](../testing-patterns/animations.md).
 
-`advanceTimeBy` normally rounds to frame boundaries. Work at the exact target time may still need a current-task step. The example checks before and after the deadline rather than claiming millisecond-exact frame timing.
+## Delayed Effects
 
-For exact debounce boundaries, test the coroutine owner below the UI with an explicit scheduler. Keep the UI test focused on the visible result.
+Delayed `LaunchedEffect`s resume at their scheduled virtual time, so long waits cost nothing:
 
-## Test debounce and repeated work
+```kotlin
+LaunchedEffect(Unit) {
+    repeat(2) { delay(1000) }
+    done = true
+}
+```
 
-For search debounce, inject the dispatcher used by the real search owner. Enter query A, advance less than the debounce, enter query B, then advance beyond B's deadline. Assert results for B and absence of stale A results.
+```kotlin
+// One call completes both delays
+mainClock.advanceTimeBy(2000)
+onNodeWithText("Done!").assertIsDisplayed()
+```
 
-A repository test can assert which queries crossed its public boundary. The Compose test must still assert rendered results. Do not treat "search was called" as proof that the user saw the right results.
+`mainClock.advanceTimeBy(1000 + 16 /* Frame buffer */)` is the migration guide's pattern for a single `delay(1000)`; it adds a frame buffer to the delay before asserting.
 
-For polling, start with a controlled initial result. Advance one polling interval on its owner, release a different result, and assert the displayed update. Repeat once if repeated scheduling is part of the claim.
+## Coroutine Virtual Time
 
-Do not call `advanceUntilIdle()` on an indefinitely polling owner. It may never become idle. Advance a bounded interval and cancel the polling scope in teardown.
+`mainClock.scheduler` (since 1.11.0) is the `TestCoroutineScheduler` the clock is built on. It dispatches coroutines inside the `Recomposer` and for `LaunchedEffect`s. If the test started with an `effectContext` containing a `TestDispatcher`, `scheduler` returns that dispatcher's scheduler; otherwise an internal one is created.
 
-For a sequence of notifications, verify the first item before advancing to the second. Use the app's actual queue policy. A single jump to the final item cannot catch incorrect ordering or omitted intermediate items.
+| Tool                          | Advances                                      | Use for                                        |
+| ----------------------------- | --------------------------------------------- | ---------------------------------------------- |
+| `mainClock.advanceTimeBy`     | Compose clock (frames, effects, animations)   | Anything driven by Compose                     |
+| `mainClock.scheduler.runCurrent()` | Nothing; runs tasks due now              | Checking an intermediate state with auto-advance off |
+| `waitForIdle()`               | Clock until idle (if auto-advance on)         | Settling before an assertion                   |
+| `runTest { advanceTimeBy }`   | A separate scheduler                          | Not the Compose clock                          |
 
-For countdowns based on a business deadline, advance both dependencies only if both exist. Moving the wall clock may change the computed remaining time, but the UI still needs its scheduled tick to recompute. Advancing only the tick leaves the fixed clock unchanged.
+```kotlin
+// Bad: runTest builds its own scheduler, Compose does not move
+@get:Rule val rule = createComposeRule()
+@Test fun twoClocks() {
+    rule.setContent { /* delay(1000) then "Done!" */ }
+    runTest { advanceTimeBy(1000) }   // does NOT advance the compose clock
+}
 
-## Control animation frames
+// Good: one clock
+@Test fun oneClock() = runComposeUiTest {
+    setContent { /* delay(1000) then "Done!" */ }
+    mainClock.advanceTimeBy(1000 + 16)
+}
+```
 
-Disable automatic advancement before the action that starts the animation. Perform the action, run queued effects if needed, and advance a frame to establish the animation's start. Then advance a measured virtual interval for an intermediate state or until the intended settled state.
+`runTestContext` and `effectContext` must not share a `TestCoroutineScheduler`. `ComposeUiTestConfig` (1.13.0-rc01) exposes both; with it you can pass your own `TestDispatcher` in `effectContext` and the clock will use its scheduler.
 
-Prefer semantic outcomes for behavior tests. For example, after expanding a card, assert that details are displayed and the collapse action is available. A screenshot or numeric property test can cover interpolation separately if that is the actual requirement.
+## Rendering Assertions After Advancing
 
-`advanceTimeUntil` is suitable for a predicate on known Compose state changed by this clock. Do not call synchronized semantics assertions inside its predicate. Such calls can recursively request synchronization.
+Because draw is not driven by this clock, after any `advanceTimeBy` call `waitForIdle()` or `runOnIdle { }` before asserting on rendering, such as `captureToImage()`.
 
-Use bounded `waitUntil` when the predicate needs semantics queries or progress outside this clock. Do not catch every assertion error in the predicate.
+```kotlin
+mainClock.advanceTimeBy(50L)
+waitForIdle()                       // let the triggered draw pass complete
+onRoot().captureToImage()           // @RequiresApi(26); comparison is your own code
+```
 
-Clock advancement can drive recomposition and layout work. It does not establish Android drawing completion by itself. Let the Compose framework synchronize pending Android work before inspecting rendered output. No virtual-time test measures real device animation performance.
+The animation page's `assertAgainstGolden()` is a placeholder: "needs to be implemented in your code". No library API of that name exists in the docs.
 
-## Cover zones and date boundaries
+## Frame-by-Frame Loops
 
-Use explicit instants with offsets. A string without a zone can mean a different instant on another machine.
+`runWithoutImplicitWait` (`ui-test` and `ui-test-junit4` 1.12.0-alpha03+) skips the implicit sync that every node query performs. It speeds up manual stepping loops and nothing else.
 
-| Case | Suggested fixed inputs | Expected contract |
-| --- | --- | --- |
-| Same instant, two zones | UTC instant with Los Angeles and Tokyo | Local time and date match each zone |
-| Month end | January 31 and February 1 | Billing message crosses correctly |
-| Leap day | February 28, 29, and March 1 in leap year | Correct date arithmetic |
-| Midnight | Instants just before and after local midnight | "Today" changes on the local date |
-| Daylight saving transition | Named region zone across transition | Product-defined gap or overlap handling |
-| Locale | Explicit supported locales | Order, text, and numerals follow policy |
+```kotlin
+@Test
+fun stepThroughAnimation() = runComposeUiTest {
+    setContent { MainScreen() }
+    mainClock.autoAdvance = false
+    onNodeWithText("Start Animation").performClick()
+    while (hasPendingWork()) {
+        mainClock.advanceTimeByFrame()
+        waitForIdle()
+        runOnUiThread {
+            runWithoutImplicitWait {
+                val box1 = onNodeWithTag("Box1").fetchSemanticsNode()
+                val box2 = onNodeWithTag("Box2").fetchSemanticsNode()
+                assert(box1.boundsInRoot.right <= box2.boundsInRoot.left)
+            }
+        }
+    }
+}
+```
 
-Keep duration arithmetic separate from calendar arithmetic. A day is not always 24 elapsed hours in a regional time zone. Test the product's chosen rule rather than assuming either interpretation.
+Rules: use it only with `autoAdvance = false` and a stable frame, call it on the UI thread, keep the block read-only, and do not use it in general UI tests.
 
-Avoid changing the JVM default time zone when a constructor parameter works. If a legacy path requires a global change, capture and restore the default in `finally`. Such tests must not run concurrently with code that reads the same global.
+## Common Issues & Solutions
 
-## Separate external work and loopers
+| Issue                                              | Solution                                                                      |
+| -------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Animation still at start after `advanceTimeBy(32)` | Startup takes frames; advance more, or one frame at a time                    |
+| UI never updates with `autoAdvance = false`        | Advance the clock; nothing recomposes by itself                               |
+| Assertion on drawn output is stale                 | `waitForIdle()` or `runOnIdle` after advancing                                |
+| State read in draw does not update                 | `waitForIdle()`, not `advanceTimeBy`                                          |
+| `advanceTimeUntil` throws `ComposeTimeoutException`| Condition not driven by this clock; use `waitUntil`                           |
+| `performScrollTo` throws with manual clock         | Turn `autoAdvance` back on first                                              |
 
-The canonical [clock example](../examples/FixtureUiTest.kt) shows **Still sending** after a Compose delay while the sender remains pending. Completion requires explicitly releasing the sender.
+## Anti-Patterns to Avoid
 
-The same separation applies to executor tasks, socket messages, and Android handlers. Observe which owner has pending work before advancing a scheduler. Do not drain every queue until the UI accidentally reaches the expected state.
+| Anti-Pattern                                    | Problem                                  | Solution                                         |
+| ----------------------------------------------- | ---------------------------------------- | ------------------------------------------------ |
+| `Thread.sleep` to wait for an animation         | Slow and flaky                           | `advanceTimeBy` on the test clock                |
+| `runTest { advanceTimeBy }` next to a rule      | Separate clock                           | `runComposeUiTest`                               |
+| Expecting exact-millisecond advancement         | Rounded to whole frames                  | Assert at frame boundaries                       |
+| Leaving `autoAdvance = false` and then scrolling | Scroll cannot progress                  | Restore it                                       |
+| `runWithoutImplicitWait` everywhere             | No gain outside manual loops             | Limit to frame-stepping loops                    |
 
-If a ViewModel has a separate coroutine scheduler, either advance that scheduler deliberately or configure deliberate sharing through supported APIs. Wrapping the test in an unrelated `runTest` does not connect its time to Compose.
+## Related References
 
-Do not replace `Dispatchers.Main` globally around a rule by guesswork. That can change the environment the Compose rule expects. Restore any required global replacement even if the assertion fails.
+- **Idle and waiting**: See [synchronization.md](../core/synchronization.md)
+- **Animation test patterns**: See [animations.md](../testing-patterns/animations.md)
+- **Coroutine dispatchers**: See [coroutines-viewmodels.md](../testing-patterns/coroutines-viewmodels.md)
+- **Runtime modes**: See [runtime-modes.md](../core/runtime-modes.md)
 
-## Avoid time shortcuts
+## Sources
 
-Bad practice is `Thread.sleep(1_000)` followed by an assertion on a composition-owned delay. Real time may not advance virtual time, and machine load makes the test slower without making it correct.
-
-Correct it by starting the effect, advancing its clock, and asserting the transition. For a suspended external request, release the fake instead.
-
-Another anti-pattern advances 24 hours for every delayed behavior. It hides wrong timer lengths, skips states, and can run unrelated periodic work. Choose bounded intervals on both sides of the relevant deadline.
-
-## Troubleshoot
-
-| Symptom | Observation | Correction |
-| --- | --- | --- |
-| Delay never begins | v2 queued tasks at current time | Start tasks with the owned scheduler |
-| Warning appears immediately | Auto-advance settled a timer | Pause before starting the transition |
-| Date stays unchanged | Real application clock still fixed | Update injected business time |
-| UI not updated at exact deadline | Task or recomposition still queued | Run current tasks and a frame |
-| Test never becomes idle | Infinite animation or polling | Bounded advancement and cancellation |
-| Local pass, CI date failure | Implicit locale or zone | Fix both inputs explicitly |
-
-## Review checklist
-
-- Does every timer have a named owner?
-- Is time installed before a constructor captures it?
-- Are there assertions before and after the intended deadline?
-- Are business time, scheduling time, and external completion separate?
-- Are repeating jobs cancelled and globals restored?
-- Are drawing and performance claims kept outside virtual-time proof?
-
-## Related guides and sources
-
-- [Synchronization](../references/synchronization.md), [network fakes](network-fakes.md), and [authentication flows](authentication-flows.md).
-- [State and ViewModels](../frameworks/state-viewmodels.md) and [canonical examples](../examples/FixtureUiTest.kt).
-- [Compose synchronization](https://developer.android.com/develop/ui/compose/testing/synchronization) and [v2 migration](https://developer.android.com/develop/ui/compose/testing/migrate-v2).
-- [MainTestClock API](https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock) defines frame and scheduler behavior.
-- [Robolectric configuration](https://robolectric.org/configuring/) and [versioned evidence](../references/evidence.md) describe the local environment.
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock
+- https://developer.android.com/develop/ui/compose/animation/testing
+- https://developer.android.com/develop/ui/compose/testing/synchronization
+- https://developer.android.com/develop/ui/compose/testing/migrate-v2
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary
+- https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/

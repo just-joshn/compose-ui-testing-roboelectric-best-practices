@@ -1,239 +1,259 @@
-# Test Compose components in isolation
+# Component Testing
 
-Use this guide for reusable controls, cards, dialogs, and small stateful panels. Mount the real composable under Robolectric and test its public inputs, rendered semantics, and interactions. Move repository orchestration and full navigation journeys to tests that own those behaviors.
+## Table of Contents
 
-## Table of contents
+1. [Setup & Configuration](#setup--configuration)
+2. [Showing a Composable in Isolation](#showing-a-composable-in-isolation)
+3. [Inputs: State and Callbacks](#inputs-state-and-callbacks)
+4. [Events & Interactions](#events--interactions)
+5. [Accessing Resources and the Activity](#accessing-resources-and-the-activity)
+6. [Custom Semantics for Tests](#custom-semantics-for-tests)
+7. [What to Test, Including Edge Cases](#what-to-test-including-edge-cases)
+8. [Isolating Dependencies](#isolating-dependencies)
+9. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+10. [Related References](#related-references)
+11. [Sources](#sources)
 
-- [Choose the component boundary](#choose-the-component-boundary)
-- [Set up the host](#set-up-the-host)
-- [Mount with a theme and inputs](#mount-with-a-theme-and-inputs)
-- [Update controlled state](#update-controlled-state)
-- [Test events and payloads](#test-events-and-payloads)
-- [Exercise slots and composition locals](#exercise-slots-and-composition-locals)
-- [Replace external dependencies](#replace-external-dependencies)
-- [Test removal and restoration](#test-removal-and-restoration)
-- [Keep synchronization and isolation explicit](#keep-synchronization-and-isolation-explicit)
-- [Avoid implementation assertions](#avoid-implementation-assertions)
-- [Troubleshoot component tests](#troubleshoot-component-tests)
-- [Review checklist](#review-checklist)
-- [Related guides and sources](#related-guides-and-sources)
+## Setup & Configuration
 
-## Choose the component boundary
-
-| Behavior | Mount | Assert |
-| --- | --- | --- |
-| Disabled button cannot submit | Real button with disabled input | Disabled semantics and an enabled comparison case |
-| Controlled input accepts edits | Component plus a state-owning wrapper | Updated editable text and dependent UI |
-| Stateful toggle updates itself | Stateful component | Exposed on or off state |
-| Slot content is rendered and usable | Component with representative composable slots | Slot label and resulting action |
-| Theme or feature flag changes behavior | Component with its real provider | Public behavior, not provider internals |
-| Async request shows a result | Small panel with controlled boundary fake | Pending and final UI |
-| Screen loads data and navigates | Real screen with test dependencies | Destination content and request result |
-| Pixel spacing matches a design | Dedicated rendering test | Approved rendering evidence, not semantics alone |
-
-Do not mock the component's own state transitions. A test that supplies `Success` and checks a success label is a rendering test. It does not prove that clicking **Submit** produces success.
-
-## Set up the host
-
-Put Android local tests in `src/test`. Enable Android resources and use `testImplementation` for JUnit, Robolectric, and `ui-test-junit4`. The default Compose rule needs the activity declared by `ui-test-manifest` in the selected debug variant.
-
-Use the [setup reference](../references/setup.md) for dependency wiring. The validated fixture uses Compose UI 1.12.1 and `androidx.compose.ui.test.junit4.v2.createComposeRule`. Do not copy newer 1.13-only environment configuration into that setup.
-
-Keep tests beside the component's owning module, for example:
-
-```text
-feature/profile/src/main/kotlin/example/ProfileCard.kt
-feature/profile/src/test/kotlin/example/ProfileCardTest.kt
-```
-
-A component test still has an Android activity host. It is not a Desktop Compose test or an activity-free function call.
-
-## Mount with a theme and inputs
-
-This illustrative complete test uses Material3, Compose UI test 1.12.1, JUnit 4, and Robolectric with the default host. It defines its own component and does not claim fixture compilation.
+Component tests are Compose UI tests that scope the rule to one screen or one small element. On Robolectric they live in `src/test` and run with `AndroidJUnit4`.
 
 ```kotlin
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
-import org.robolectric.annotation.LooperMode
-
-@Composable
-private fun QuantityPicker(quantity: Int, onIncrease: () -> Unit) {
-	Column {
-		Text("Quantity: $quantity")
-		Button(enabled = quantity < 3, onClick = onIncrease) {
-			Text("Add one")
-		}
-	}
+// build.gradle.kts
+android {
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [35])
-@LooperMode(LooperMode.Mode.PAUSED)
-class QuantityPickerTest {
-	@get:Rule val compose = createComposeRule()
-
-	@Test fun increaseUpdatesQuantityAndStopsAtLimit() {
-		compose.setContent {
-			var quantity by remember { mutableStateOf(2) }
-			MaterialTheme {
-				QuantityPicker(quantity, onIncrease = { quantity += 1 })
-			}
-		}
-		compose.onNodeWithText("Quantity: 2").assertIsDisplayed()
-		compose.onNodeWithText("Add one").performClick()
-		compose.onNodeWithText("Quantity: 3").assertIsDisplayed()
-		compose.onNodeWithText("Add one").assertIsNotEnabled()
-	}
+dependencies {
+    testImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.18")
 }
 ```
 
-Wrap production controls in the real app theme when typography, colors, or component defaults matter. Prefer a small test wrapper to mounting the entire application. Provide only the dependencies that this component needs.
+Gradle coordinates, `@Config`, and JDK requirements are covered in [configuration.md](../core/configuration.md). The `ui-test-manifest` dependency is needed for `createComposeRule()`, but not for `createAndroidComposeRule<YourActivity>()`; it also adds `ComponentActivity` to the manifest for the empty-activity pattern below.
 
-Cover meaningful input variations with separate cases. For the picker, zero, a normal value, and the limit describe behavior. Testing every color token through a semantics tag does not establish visual correctness.
+```
+src/test/java/com/example/
+├── ui/
+│   ├── CartRowTest.kt          # one small element
+│   └── CheckoutScreenTest.kt   # one screen
+```
 
-## Update controlled state
+One test class per screen is a good starting point for screen UI tests.
 
-A controlled composable reads a value and reports an event. Its owner must feed the next value back. A plain Kotlin variable is not observable Compose state.
+## Showing a Composable in Isolation
 
-For a real interaction test, use `remember { mutableStateOf(...) }` in a wrapper as above. For an external-input rendering test, create observable state before `setContent`, then update it with `runOnIdle`.
-
-This illustrative fragment assumes `QuantityPicker` and the rule above. It needs `mutableStateOf`, `assertIsDisplayed`, `onNodeWithText`, and `assertIsNotEnabled` imports from the complete example.
+`ComposeTestRule` can display any composable: the whole app, a single screen, or a small element. Checking that a composable works independently also checks that it is correctly encapsulated.
 
 ```kotlin
-val quantity = mutableStateOf(1)
-compose.setContent {
-	QuantityPicker(quantity.value, onIncrease = { quantity.value += 1 })
+@RunWith(AndroidJUnit4::class)
+class CartRowTest {
+    @get:Rule
+    val composeTestRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Test
+    fun showsItemName() {
+        composeTestRule.setContent {
+            AppTheme {
+                CartRow(item = CartItem(name = "Tea", quantity = 2), onRemove = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("Tea").assertIsDisplayed()
+    }
 }
-compose.onNodeWithText("Quantity: 1").assertIsDisplayed()
-compose.runOnIdle { quantity.value = 3 }
-compose.onNodeWithText("Quantity: 3").assertIsDisplayed()
-compose.onNodeWithText("Add one").assertIsNotEnabled()
 ```
 
-Call `setContent` once. Do not remount the component to simulate every prop update. Remounting destroys remembered state and can conceal a stale-input bug.
+```kotlin
+// Good: a rule that shows only what you set via setContent
+createAndroidComposeRule<ComponentActivity>()
 
-Test the distinction between an initial value and a controlled value. A parameter named `initialQuantity` may intentionally initialize `remember` once. Do not demand that later changes reset it unless that is the component's contract.
+// Bad: an app activity that already calls setContent; you cannot call setContent again
+createAndroidComposeRule<MainActivity>()
+```
 
-## Test events and payloads
+Isolation does not mean unit UI tests only. Tests that scope larger parts of the UI are also very important; see [test-architecture.md](../architecture/test-architecture.md).
 
-Drive events through the control's public UI. For a selection component, open its menu, choose a named option, and assert the selected label. Record the selected ID only if the callback payload is part of the public contract.
+## Inputs: State and Callbacks
 
-A wrapper can display callback output as a receipt. This lets the test prove both callback delivery and the value a caller receives. For a pure callback-only button, a callback assertion is valid, but pair broader screen tests with a user-visible result.
+Give the composable the values it renders and callbacks it invokes, rather than its real dependencies. The Android docs' example passes a ready-made `exampleUiState`; the navigation guide likewise says to pass navigation callbacks (lambdas), not a `NavController`, and to test screens with mock values and callbacks.
 
-For text inputs, use `performTextInput` to insert text or `performTextReplacement` to replace the whole value. Assert editable semantics, including label text if the component merges that text into the node. Do not inspect private `TextFieldState` fields instead of what the field displays.
+```kotlin
+@Test
+fun clickingRemove_invokesCallback() {
+    var removed: CartItem? = null
+    val item = CartItem(name = "Tea", quantity = 2)
 
-For keyboard interactions, establish focus, inject the supported key through `performKeyInput`, and assert the same outcome as the corresponding touch action. A direct callback invocation proves neither focus handling nor key routing.
+    composeTestRule.setContent {
+        CartRow(item = item, onRemove = { removed = it })
+    }
 
-For disabled controls, assert disabled semantics. Add an enabled case that exercises the action so a disconnected callback cannot pass the entire suite.
+    composeTestRule.onNodeWithContentDescription("Remove Tea").performClick()
 
-## Exercise slots and composition locals
+    composeTestRule.runOnIdle { assertEquals(item, removed) }
+}
+```
 
-Compose slots are composable lambdas, not HTML children or framework-specific named slots. Pass real representative content into `title`, `content`, and `actions` slots.
+### Testing State Changes
 
-For a dialog component with an actions slot:
+Mutate observable state from the test, then assert through the rule, which syncs first.
 
-1. Mount the real dialog with a title, body, and **Close** action.
-2. Assert all three appear in the correct user-facing grouping.
-3. Click **Close**.
-4. Assert the dialog disappears and its owning screen remains usable.
+```kotlin
+@Test
+fun reflectsStateChange() {
+    var enabled by mutableStateOf(false)
+    composeTestRule.setContent { StatusBadge(online = enabled) }
 
-Do not assert the composable call order or the number of layout wrappers. Those details can change without changing the slot contract.
+    composeTestRule.onNodeWithText("Offline").assertExists()
 
-For a composition local, use `CompositionLocalProvider` around the component. Prefer the real provider when its behavior is relevant. A fake analytics or feature-flag dependency can be provided when its external behavior is outside the test claim.
+    enabled = true
 
-If a slot receives state, test at least the pending and populated branches. A slot test that always receives populated data can miss a loading branch that never renders.
+    composeTestRule.onNodeWithText("Online").assertExists()
+}
+```
 
-## Replace external dependencies
+Without a sync call "no recomposition will occur and the UI will appear to be paused"; any assertion, action, or `waitForIdle()` triggers it. See [synchronization.md](../core/synchronization.md).
 
-Inject small boundary interfaces or immutable state. Keep Compose runtime, semantics, and interaction code real.
+## Events & Interactions
 
-| Dependency | Useful replacement | What remains unproven |
-| --- | --- | --- |
-| Repository request | Fresh controlled repository fake | HTTP, serialization, server policy |
-| Analytics | Recording event sink | SDK delivery and remote processing |
-| Feature flags | Immutable per-test flag values | Remote configuration fetching |
-| Current user | Test session provider | OAuth and backend authorization |
-| Business time | Explicit clock or instant | Device clock integration |
+```kotlin
+// Click, then assert the resulting UI
+composeTestRule.onNodeWithText("Continue").performClick()
+composeTestRule.onNodeWithText("Welcome").assertIsDisplayed()
 
-Configure dependencies before mounting. If an effect starts immediately, replacing a singleton afterward can leave the first request using production dependencies.
+// Text input and scrolling
+composeTestRule.onNodeWithTag("email").performTextInput("a@example.com")
+composeTestRule.onNodeWithTag("footer").performScrollTo()
 
-Use [the canonical message panel tests](../examples/FixtureUiTest.kt) for a compiled controlled-sender pattern. `sendShowsReceiptAfterCompletion` holds the request pending, enters a real message, clicks **Send**, completes the sender, and asserts the returned receipt.
+// performGesture is deprecated in favor of performTouchInput; make one perform call per action
+composeTestRule.onNodeWithTag("list").performTouchInput { swipeLeft() }
+```
 
-Do not make all component tests depend on the real service. Keep a smaller integration suite for that boundary.
+Finders, assertions, and the full action list are in [semantics-finders.md](../core/semantics-finders.md) and [assertions-actions.md](../core/assertions-actions.md).
 
-## Test removal and restoration
+## Accessing Resources and the Activity
 
-Remove content through state inside the single mounted composition when disposal is the behavior under test. Assert the user-visible removal and, where contractual, cancellation of owned work.
+Use an `AndroidComposeTestRule` with `ComponentActivity` when you need both your own content and activity resources, for example to assert text against a string resource.
 
-A `key` change can intentionally replace a component instance. Use it to test whether stale results from an old request contaminate a fresh component. The canonical fixture's disposal case demonstrates that distinction.
+```kotlin
+class MyComposeTest {
+    @get:Rule
+    val composeTestRule = createAndroidComposeRule<ComponentActivity>()
 
-State restoration is a different claim. If the component promises saveable state, use the appropriate state-restoration test facility for the project's version. Do not call disposal and remounting "process death" or assume `remember` survives recreation.
+    @Test
+    fun myTest() {
+        composeTestRule.setContent {
+            MyAppTheme {
+                MainScreen(uiState = exampleUiState)
+            }
+        }
 
-## Keep synchronization and isolation explicit
+        val continueLabel = composeTestRule.activity.getString(R.string.next)
+        composeTestRule.onNodeWithText(continueLabel).performClick()
+    }
+}
+```
 
-Create state holders, callback recordings, fakes, and providers per test. Never share a mutable query cache or completed deferred between methods.
+```kotlin
+// Good: derive expected text from the resource
+composeTestRule.onNodeWithText(composeTestRule.activity.getString(R.string.next))
 
-Default clock advancement suits settled-state assertions. Hold external requests pending to observe loading. Disable automatic Compose clock advancement only when testing a specific timed transition.
+// Bad: hardcoded string that breaks when copy or locale changes
+composeTestRule.onNodeWithText("Next")
+```
 
-If a ViewModel uses a separate test scheduler, advance that scheduler deliberately. A new `runTest` scope does not automatically share the Compose clock. See [synchronization](../references/synchronization.md).
+On Robolectric, resources require `isIncludeAndroidResources = true`.
 
-Let the rule dispose the composition. Cancel test-owned scopes and restore overridden globals even after a failure. If the real activity already calls `setContent`, do not mount a second content owner through an activity rule.
+## Custom Semantics for Tests
 
-## Avoid implementation assertions
+When a finder or matcher cannot single out an item, expose a value through a custom semantics property and match it with `SemanticsMatcher.expectValue`.
 
-| Anti-pattern | Why it fails | Replacement |
-| --- | --- | --- |
-| Assert a private state variable changed | State can change while rendering is broken | Assert the displayed quantity or selection |
-| Update a plain local variable in `onValueChange` | No observable state triggers recomposition | Use a state-owning wrapper |
-| Call `setContent` repeatedly | State resets can hide update defects | Change observable input state |
-| Snapshot every component state | Large baselines obscure the behavior | Use semantics for behavior and targeted rendering checks |
-| Mock Compose internals | The tested path differs from production | Fake only external boundaries |
-| Assert only a callback count for a complete form | The UI can remain stuck in loading | Assert success or error content too |
+```kotlin
+// Production code
+val PickedDateKey = SemanticsPropertyKey<Long>("PickedDate")
+var SemanticsPropertyReceiver.pickedDate by PickedDateKey
 
-## Troubleshoot component tests
+val datePickerValue by remember { mutableStateOf(0L) }
+MyCustomDatePicker(
+    modifier = Modifier.semantics { pickedDate = datePickerValue }
+)
 
-| Symptom | Check | Correction |
-| --- | --- | --- |
-| Text never updates | Is the wrapper's value observable? | Feed events back through Compose state |
-| Provider lookup fails | Which local or theme does the component read? | Supply the smallest real provider |
-| Menu item is ambiguous | Popup root and repeated labels | Scope to menu identity, not index zero |
-| Loading is never visible | Fake completion and auto-advancing timers | Keep a fresh fake pending |
-| Failure occurs before content mounts | Resources, activity declaration, runner | Repair the host, not selectors |
-| Test passes only alone | Singleton flags, caches, scopes | Use per-test dependencies and cleanup |
+// Test
+composeTestRule
+    .onNode(SemanticsMatcher.expectValue(PickedDateKey, 1445378400)) // 2015-10-21
+    .assertExists()
+```
 
-## Review checklist
+Use this only when it is hard to match the item with the standard finders. Do not expose visual properties such as colors, font size, or corner radius: it can pollute production code and wrong implementations lead to bugs that are hard to find.
 
-- [ ] The mounted boundary owns the claimed behavior.
-- [ ] Controlled state is fed back through an observable owner.
-- [ ] Each test calls `setContent` once.
-- [ ] Actions lead to observable assertions.
-- [ ] Slots and providers use representative content.
-- [ ] External fakes do not become integration claims.
-- [ ] Accessibility and lifecycle contracts have focused cases.
+## What to Test, Including Edge Cases
 
-## Related guides and sources
+For a screen UI test, check critical interactions on a single screen: clicking buttons, typing in forms, and checking visible states. Cover normal paths and the edge cases that larger tests and human testers rarely hit, expressed as inputs to the composable:
 
-- [Accessibility](accessibility.md) covers labels, state, and keyboard behavior.
-- [Fixtures and hooks](../core/fixtures-hooks.md) covers lifecycle ownership.
-- [State and ViewModels](../frameworks/state-viewmodels.md) covers screen orchestration.
-- [Common Compose test patterns](https://developer.android.com/develop/ui/compose/testing/common-patterns) describes isolated composables and state restoration.
-- [Compose testing APIs](https://developer.android.com/develop/ui/compose/testing/apis) documents actions and assertions.
-- [State in Compose](https://developer.android.com/develop/ui/compose/state) explains observable state and state hoisting.
+| Case                                         | How to drive it in a component test                          |
+| -------------------------------------------- | ------------------------------------------------------------ |
+| Empty, loading, and error UI states          | Pass each state value in `setContent`                        |
+| Corrupted or unexpected data                 | Pass the data the model would produce; assert fallback UI    |
+| Object recreated mid-process (rotation)      | `StateRestorationTester`, see [state-restoration.md](state-restoration.md) |
+| Different fonts, themes, locales, sizes      | `DeviceConfigurationOverride`, see [device-configuration.md](../advanced/device-configuration.md) |
+| Focus order for keyboard and D-pad users     | See [accessibility.md](accessibility.md)                     |
+| Animation intermediate states                | See [animations.md](animations.md)                           |
+
+Behavior tests like "the UI changed after clicking a button" are well within Robolectric's fidelity. Do not test the framework or a library; test your composable's logic.
+
+## Isolating Dependencies
+
+Replace dependencies with fakes injected at a seam, so the composable (or its state holder) receives deterministic data. Android's guidance prefers fakes over mocks and stubs because they are lightweight and need no mocking framework.
+
+```kotlin
+// Good: a fake behind an interface
+class FakeCartRepository(private val items: List<CartItem>) : CartRepository {
+    override fun items(): List<CartItem> = items
+}
+
+// Bad: mocking Android classes that other Android code acts on
+val context = mock<Context>()
+```
+
+Do not mock or spy on Android classes that Android code will act on, such as `Context` or `SharedPreferences`; stubbing is brittle. See [test-doubles.md](../architecture/test-doubles.md) and [coroutines-viewmodels.md](coroutines-viewmodels.md).
+
+## Anti-Patterns to Avoid
+
+| Anti-Pattern                                    | Problem                                    | Solution                                                 |
+| ----------------------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
+| Only unit-scoped UI tests                       | Misses integration of larger UI parts      | Add tests scoped to bigger parts of the UI              |
+| Calling `setContent` on a rule whose activity already does | Not allowed                       | `createAndroidComposeRule<ComponentActivity>()`          |
+| Hardcoded strings from resources                | Breaks on copy or locale change            | `composeTestRule.activity.getString(R.string.x)`         |
+| Exposing colors or font sizes via custom semantics | Pollutes production code                | Test visuals with screenshot tests                       |
+| Mocking `Context` or `SharedPreferences`        | Brittle                                    | Real Robolectric environment or fakes                    |
+| Asserting right after mutating state outside the rule | No recomposition yet                 | Assert via the rule, or `waitForIdle()`                  |
+| Testing library or framework behavior           | No value for your code                     | Test your composable's logic                             |
+
+## Related References
+
+- **Setup**: See [test-suite-structure.md](../core/test-suite-structure.md) for rules and test anatomy
+- **Selectors**: See [semantics-finders.md](../core/semantics-finders.md) for finders and custom semantics keys
+- **Assertions**: See [assertions-actions.md](../core/assertions-actions.md) for assertions and actions
+- **State restoration**: See [state-restoration.md](state-restoration.md) for `rememberSaveable` checks
+- **Accessibility**: See [accessibility.md](accessibility.md) for focus and a11y checks
+- **Test doubles**: See [test-doubles.md](../architecture/test-doubles.md) for fakes over mocks
+
+## Sources
+
+- https://developer.android.com/develop/ui/compose/testing/common-patterns
+- https://developer.android.com/develop/ui/compose/testing
+- https://developer.android.com/develop/ui/compose/testing/apis
+- https://developer.android.com/develop/ui/compose/testing/synchronization
+- https://developer.android.com/guide/navigation/testing/compose
+- https://developer.android.com/training/testing/fundamentals/what-to-test
+- https://developer.android.com/training/testing/fundamentals/test-doubles
+- https://developer.android.com/training/testing/local-tests/robolectric
+- https://robolectric.org/best-practices/
+- https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/

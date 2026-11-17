@@ -1,240 +1,201 @@
-# Run Compose Robolectric tests in CI
+# CI/CD Integration
 
-Use this guide to establish the local JVM test lane for an Android module.
-This lane tests Compose behavior with Robolectric, not an installed application.
-Keep device rendering, TalkBack, system UI, and real service checks in separate jobs.
+## Table of Contents
 
-## Table of contents
+1. [Pipeline Shape](#pipeline-shape)
+2. [JDK Selection](#jdk-selection)
+3. [Local Tests Task](#local-tests-task)
+4. [Android-all Downloads](#android-all-downloads)
+5. [Custom Mirror and Proxy](#custom-mirror-and-proxy)
+6. [Preloaded Jars and Offline](#preloaded-jars-and-offline)
+7. [Restricting SDKs](#restricting-sdks)
+8. [Flakiness and Retries](#flakiness-and-retries)
+9. [Best Practices](#best-practices)
+10. [Common Issues & Solutions](#common-issues--solutions)
+11. [Related References](#related-references)
+12. [Sources](#sources)
 
-- [Choose the lane](#choose-the-lane)
-- [Establish the build contract](#establish-the-build-contract)
-- [Run the first CI job](#run-the-first-ci-job)
-- [Partition pull request and scheduled work](#partition-pull-request-and-scheduled-work)
-- [Manage environments and secrets](#manage-environments-and-secrets)
-- [Cache inputs without hiding failures](#cache-inputs-without-hiding-failures)
-- [Add containers and shards](#add-containers-and-shards)
-- [Preserve failure evidence](#preserve-failure-evidence)
-- [Troubleshoot](#troubleshoot)
-- [Review checklist](#review-checklist)
-- [Related guides and sources](#related-guides-and-sources)
+> **Scope**: The official docs give generic CI guidance plus Robolectric download settings. No page covers a CI provider (GitHub Actions, GitLab), sharding, or report merging for Compose/Robolectric, so none is shown here.
 
-## Choose the lane
+## Pipeline Shape
 
-| Claim | CI lane | Inputs |
-| --- | --- | --- |
-| A user action changes a Compose screen | Android local unit tests with Robolectric | Resources, host manifest, controlled dependencies |
-| Repository serialization or HTTP contract works | Repository integration tests | Local server and real client |
-| TalkBack traverses controls correctly | Device accessibility tests | Installed application and accessibility service |
-| A layout has correct device pixels | Device or dedicated screenshot tests | Explicit renderer and baseline policy |
-| Startup or scrolling meets a budget | Android benchmarks | Release-like build and controlled device |
-| Multiple runtime SDK models behave correctly | Robolectric SDK matrix | Supported SDK and compatible worker JDK |
+A typical CI workflow:
 
-Do not replace the first row with `connectedDebugAndroidTest`.
-That task belongs to a different test layer and requires a device.
-Do not add staging credentials to a UI suite whose dependencies are fakes.
+1. Detect a change (pull request).
+2. Provision a server.
+3. Fetch the code, plus the Android SDK or emulator images if needed.
+4. Build: `./gradlew build`.
+5. Run local tests: `./gradlew test`.
+6. Start emulators and run instrumented tests.
+7. Upload artifacts (test results, APKs).
 
-## Establish the build contract
+Robolectric UI tests in `src/test` run in step 5 with no emulator. Run Unit and Component tests on every commit, Feature tests pre-merge, Application tests post-merge, and release candidates nightly. See [test-architecture.md](../architecture/test-architecture.md).
 
-Before adding provider YAML, make one hosted test pass locally.
-Inspect the Android module's wrapper, AGP version, test-worker JDK, Compose artifacts,
-Robolectric version, and chosen runtime SDK.
+## JDK Selection
 
-The repository's reproduction target uses Gradle 9.4.1, AGP 9.2.0,
-JDK 17, Compose UI 1.12.1, and Robolectric 4.18 with runtime SDK 35.
-Compile SDK 37 does not mean that the tests run at SDK 37.
-Robolectric 4.18 requires Java 21 for runtime SDKs 36 and 37.
-Do not upgrade a consuming project just to match this example.
+Pick the JDK from the highest Android API level the tests target.
 
-The module needs these pieces before CI can run a meaningful assertion:
+| Android API under test | Minimum Java |
+| ---------------------- | ------------ |
+| 36-37 (Android 16, 17) | 21           |
+| 34-35 (Android 14, 15) | 17           |
+| 29-33 (Android 10-13)  | 9            |
+| 24-28 (Android 7.0-9)  | 8            |
 
-- Tests in `src/test`, with `testImplementation` dependencies.
-- Android resources enabled for local unit tests.
-- A Robolectric-aware JUnit runner.
-- An explicit supported runtime SDK.
-- A declared activity host, including `ui-test-manifest` when using the default host.
-- The version-correct Compose rule factory.
+Robolectric 4.18 supports API 24-37. On Java 17 or higher, add `--add-opens` flags to the unit-test JVM:
 
-For UI 1.12.1, use `androidx.compose.ui.test.junit4.v2.createComposeRule`.
-Do not copy the 1.13-only `ComposeUiTestConfig` into this combination.
-See [setup](../references/setup.md) and the [canonical tests](../examples/FixtureUiTest.kt).
+```kotlin
+// build.gradle.kts
+android {
+  testOptions {
+    unitTests.all {
+      it.jvmArgs(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.security=ALL-UNNAMED",
+        "--add-opens=java.base/java.text=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+        "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+        "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+      )
+    }
+  }
+}
+```
 
-These commands illustrate a consuming Android module named `app`:
+Match the CI JDK to the one in [configuration.md](../core/configuration.md).
+
+## Local Tests Task
 
 ```bash
-./gradlew --version
-./gradlew :app:tasks --all
-./gradlew :app:testDebugUnitTest --tests 'com.example.ui.HostSmokeTest' \
-  --stacktrace --console=plain
+./gradlew test
 ```
 
-Expect a completed named test, a JUnit XML file, and an HTML report.
-A successful Gradle configuration or `NO-SOURCE` task is not the expected result.
-For this repository, substitute `:fixture:testDebugUnitTest` and `fixture.FixtureUiTest`.
+Local tests (`src/test`, including Robolectric UI tests) run on the JVM. Instrumented tests need an emulator or device and are a separate step.
 
-## Run the first CI job
+Keep Robolectric dependencies and `isIncludeAndroidResources = true` in the module, as covered in [configuration.md](../core/configuration.md).
 
-The following GitHub Actions example is illustrative.
-It assumes an Android SDK on the hosted Ubuntu runner, compile SDK 37 available,
-and the reproduction target described above.
-Check your selected runner image inventory before adopting it.
-The action major versions are explicit. Pin reviewed commit SHAs in a hardened repository.
+## Android-all Downloads
 
-```yaml
-name: Local Compose tests
-on:
-  pull_request:
-  push:
-    branches: [main]
-permissions:
-  contents: read
-concurrency:
-  group: compose-local-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-jobs:
-  test:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Run local UI tests
-        run: ./gradlew :app:testDebugUnitTest --stacktrace --console=plain
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: local-compose-debug
-          retention-days: 14
-          path: |
-            app/build/test-results/testDebugUnitTest/
-            app/build/reports/tests/testDebugUnitTest/
+Robolectric downloads the android-all jar for each SDK it runs. It uses its own `MavenArtifactFetcher` and "does not use any proxies defined by the Gradle build system." Restricted CI networks (Artifactory, corporate proxies) cause failures here.
+
+| Property                                | Purpose                                              | Default                          |
+| --------------------------------------- | ---------------------------------------------------- | -------------------------------- |
+| `robolectric.dependency.repo.url`       | Maven repository for runtime dependencies            | `https://repo1.maven.org/maven2` |
+| `robolectric.dependency.repo.id`        | Repository ID                                        | `mavenCentral`                   |
+| `robolectric.dependency.repo.username`  | Repository username                                  | `null`                           |
+| `robolectric.dependency.repo.password`  | Repository password                                  | `null`                           |
+| `robolectric.dependency.proxy.host`     | Proxy host (since 4.9.1)                             | `null`                           |
+| `robolectric.dependency.proxy.port`     | Proxy port (since 4.9.1)                             | `0`                              |
+| `robolectric.dependency.dir`            | Folder with preloaded jars                           | `null`                           |
+| `robolectric.offline`                   | Disable runtime fetching of jars                     | `false`                          |
+
+## Custom Mirror and Proxy
+
+```kotlin
+// build.gradle.kts
+android {
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all {
+        it.systemProperty("robolectric.dependency.repo.url", "https://local-mirror/repo")
+        it.systemProperty("robolectric.dependency.repo.id", "local")
+        // Username and password only needed when the repository requires an account
+        it.systemProperty("robolectric.dependency.repo.username", "username")
+        it.systemProperty("robolectric.dependency.repo.password", "password")
+        // Since Robolectric 4.9.1
+        it.systemProperty("robolectric.dependency.proxy.host", System.getenv("ROBOLECTRIC_PROXY_HOST"))
+        it.systemProperty("robolectric.dependency.proxy.port", System.getenv("ROBOLECTRIC_PROXY_PORT"))
+      }
+    }
+  }
+}
 ```
 
-A test failure must remain a failed job even when artifact publication succeeds.
-An upload warning can indicate failure before any test ran.
-Treat the Gradle log as necessary evidence in that case.
-See [GitHub Actions](github-actions.md) for matrices and reusable workflows.
+`repo.url` and `repo.id` are enough for most scenarios.
 
-## Partition pull request and scheduled work
+## Preloaded Jars and Offline
 
-Choose the partition from risk and measured feedback time, not an arbitrary test count.
+Load android-all jars from a local directory instead of downloading:
 
-| Trigger | Typical work | Required evidence |
-| --- | --- | --- |
-| Pull request | All fast behavior tests for the selected variant | Named tests and no unexpected skips |
-| Main branch | Same lane plus module or variant integration | Distinct reports per variant |
-| Scheduled | Additional runtime SDKs, locales, larger regression set | Expected matrix and test inventory |
-| Protected manual workflow | Real service or device smoke tests | Credentials, cleanup, and environment identity |
-
-A package filter is a concrete way to select an intentional smoke suite:
-
-```bash
-./gradlew :app:testDebugUnitTest --tests 'com.example.smoke.*'
+```kotlin
+// build.gradle.kts
+android {
+  testOptions {
+    unitTests {
+      all {
+        it.systemProperty(
+          "robolectric.dependency.dir",
+          "${rootDir}/robolectric-jars/preinstrumented"
+        )
+      }
+    }
+  }
+}
 ```
 
-Run the unfiltered task in the scheduled lane:
+- When `robolectric.dependency.dir` is set, Robolectric always reads from it and never downloads, regardless of `robolectric.offline`.
+- A missing jar fails the test with `Path is not a file: ...`.
+- Set it only in environments that have the jars (for example CI machines with a pre-populated cache).
+- `robolectric.offline=true` only matters when `robolectric.dependency.dir` is not set: Robolectric then looks for jars in the test's working directory.
 
-```bash
-./gradlew :app:testDebugUnitTest
+Alternative: fetch the jars with a script before any Gradle task, so no Gradle properties change. Populate the directory with the jars for your Robolectric version before tests run.
+
+## Restricting SDKs
+
+`robolectric.enabledSdks` takes a comma-separated list of SDK levels or names (for example `33, 34` or `TIRAMISU, UPSIDE_DOWN_CAKE`); only tests targeting a listed SDK run. Default: all SDKs.
+
+```kotlin
+android { testOptions { unitTests.all { it.systemProperty("robolectric.enabledSdks", "34") } } }
 ```
 
-A naming convention is not automatic JUnit tagging.
-Document the package's intended coverage and check that every requested class runs.
-Do not silently exclude a flaky class. Record its owner, failure evidence,
-repair deadline, and the checks that remain required.
+## Flakiness and Retries
 
-## Manage environments and secrets
+Fix flaky tests first. A retry mechanism (JUnit rule, CI step) is acceptable on big tests: "Add retrying mechanisms to big tests, but always fix flaky tests." Use `waitUntil` to wait for conditions. See [flaky-tests.md](../debugging/flaky-tests.md) and [synchronization.md](../core/synchronization.md).
 
-Construct fresh fakes and mutable state per test.
-Do not use the pipeline environment to share a logged-in singleton between methods.
-A fake session can test authenticated rendering without a real password.
-It does not test OAuth or server authorization.
+## Best Practices
 
-Keep real integration credentials in provider-managed secrets with minimum permissions.
-Do not grant secrets to untrusted pull request code.
-Do not echo environment dumps, tokens, or real user data into semantics artifacts.
-Separate protected integration jobs from the credential-free local UI lane.
+| Practice                                         | Benefit                                         |
+| ------------------------------------------------ | ----------------------------------------------- |
+| Run `./gradlew test` on every commit             | Fast feedback without an emulator               |
+| Match CI JDK to the highest API under test       | Meets the minimum Java per Android API level       |
+| Set `robolectric.dependency.repo.*` behind a mirror | Reliable android-all resolution              |
+| Preload jars into `robolectric.dependency.dir`   | No network dependency on CI                     |
+| Upload test results as artifacts                 | Debug failures after the run                    |
+| Keep instrumented tests in a separate step       | Local lane stays emulator-free                  |
+| Limit threads in tests                           | Avoid cross-test pollution                      |
 
-Gradle process environment and test-worker system properties are different channels.
-If a test reads a JVM property, explicitly forward an allowlisted value in the build.
-Do not assume an arbitrary `-D` on the Gradle command reaches the test worker.
-For runtime SDK selection, prefer explicit test configuration or documented Robolectric
-properties that the build deliberately forwards.
+## Common Issues & Solutions
 
-## Cache inputs without hiding failures
+| Problem                                              | Cause                                                       | Fix                                                               |
+| ---------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
+| android-all not downloaded on CI                     | Network restrictions; Gradle proxy settings are not used    | Set repo URL/ID or proxy properties above                         |
+| Flaky SHA mismatch retrieving Maven artifacts        | Reported after upgrading to 4.10.x on CI                    | Mirror or preload the jars                                        |
+| `Path is not a file: ...`                            | `robolectric.dependency.dir` set but jar missing            | Populate the directory, or unset the property                     |
+| Failure on JDK 17+ about internal access             | Missing `--add-opens` flags                                 | Add the `jvmArgs` block                                           |
+| SDK 36/37 tests fail on JDK 17                       | API 36-37 need Java 21                                      | Use JDK 21                                                        |
+| Tests differ between Mac and Linux (screenshots)     | Platform rendering differences                              | Record screenshots on CI, or tolerate small changes; see [visual-regression.md](../testing-patterns/visual-regression.md) |
+| `SimpleDateFormat`/`DateTimeFormatter` output differs | Android libcore vs OpenJDK                                  | Use `X` marker (min SDK 24+) or `java.time` with desugaring       |
 
-Cache dependency downloads and supported Gradle caches.
-Keep the wrapper checksum and dependency verification policy in version control.
-Restore caches from trusted contexts and avoid publishing privileged caches from forks.
+## Related References
 
-| Input | Cache policy | What still runs |
-| --- | --- | --- |
-| Gradle distributions and dependency artifacts | Use a provider's maintained Gradle integration | Dependency resolution and task graph |
-| Android SDK packages | Preprovision or install exact packages | SDK availability check |
-| Robolectric runtime artifacts | Allow the supported dependency cache to retain downloads | First hosted test for the selected SDK |
-| Test reports | Publish as artifacts, not dependency caches | Fresh result validation |
-| Module `build/` tree | Do not blindly restore as a shared cache | Gradle's own input-aware mechanisms |
+- **Gradle and JDK setup**: See [configuration.md](../core/configuration.md)
+- **Choosing test types and lanes**: See [test-architecture.md](../architecture/test-architecture.md)
+- **Flaky tests**: See [flaky-tests.md](../debugging/flaky-tests.md)
+- **Waiting without sleeps**: See [synchronization.md](../core/synchronization.md)
+- **Screenshot tests on CI**: See [visual-regression.md](../testing-patterns/visual-regression.md)
 
-A cache hit is not test evidence.
-Gradle may legitimately reuse task outputs under its input model.
-For a diagnostic execution that must rerun tests, use `--rerun-tasks` and preserve the log.
-Distinguish an executed result from a reused result in any verification report.
+## Sources
 
-## Add containers and shards
-
-Use [containers](docker.md) when the toolchain or native runtime differs across runners.
-The image must contain a compatible JDK and Android SDK, not browser binaries.
-Do not add a display server or emulator to the local JVM lane without a specific need.
-
-Gradle has no general Playwright-style `--shard=1/4` switch.
-Use an explicit class partition, a tested distribution product, or module jobs.
-See [parallel execution](parallel-sharding.md) for a checked class-list approach.
-Name every artifact with its module, variant, SDK, and shard identity as needed.
-Never let two shards overwrite `TEST-ExampleTest.xml` in one destination.
-
-## Preserve failure evidence
-
-Always retain JUnit XML and the entire HTML report directory when available.
-Keep the command, source revision, tool versions, runner identity, and shard selection
-with the result. Collect a semantics dump at the point of failure when possible.
-Robolectric does not produce Playwright traces or automatic action videos.
-
-Do not use `./gradlew ... || true` to reach the upload step.
-Use the provider's unconditional publication mechanism instead.
-A report parser must reject missing, malformed, stale, empty, or unexpectedly skipped
-results rather than convert an infrastructure failure into a green badge.
-See [reporting](reporting.md) for the acceptance checklist.
-
-## Troubleshoot
-
-| Symptom | Observe first | Corrective action |
-| --- | --- | --- |
-| SDK location not found | Runner SDK path and installed platforms | Provision the required compile SDK and set the SDK environment |
-| Unsupported runtime SDK | `@Config`, worker Java version, Robolectric version | Select a supported combination |
-| Activity cannot launch | Merged manifest and resource inclusion | Restore the host declaration or resources |
-| Class passes locally, fails in CI | Full exception, dependencies, worker limits | Reproduce the same task and toolchain before changing timeouts |
-| UI assertion times out | Work owner and pending fake | Complete the fake or advance its actual scheduler |
-| Green job with no tests | Task outcomes and JUnit methods | Fail the acceptance check and repair selection |
-| Report missing after a compiler error | Gradle log before the test task | Fix compilation, do not diagnose semantics |
-
-## Review checklist
-
-- The job runs an Android local-unit-test task.
-- The JDK supports the selected runtime SDK.
-- The host smoke test executes before broader async tests are trusted.
-- Fakes and pending work belong to one test.
-- Publication does not suppress the test command's failure.
-- Every expected shard and method contributes evidence.
-- Device and service claims have separate verification lanes.
-
-## Related guides and sources
-
-- [GitLab](gitlab.md) and [other providers](other-providers.md).
-- [Reporting](reporting.md), [coverage](test-coverage.md), and [test speed](performance.md).
-- [Android local tests](https://developer.android.com/training/testing/local-tests/robolectric).
-- [Robolectric setup](https://robolectric.org/getting-started/) and [compatibility](https://robolectric.org/compatibility_table/).
-- [Gradle test filtering](https://docs.gradle.org/9.4.1/userguide/java_testing.html).
-- [GitHub workflow syntax](https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions).
+- https://developer.android.com/training/testing/continuous-integration
+- https://developer.android.com/training/testing/fundamentals/strategies
+- https://developer.android.com/training/testing/instrumented-tests/stability
+- https://developer.android.com/training/testing/ui-tests/screenshot
+- https://robolectric.org/getting-started/
+- https://robolectric.org/compatibility_table/
+- https://robolectric.org/configuring/
+- https://robolectric.org/best-practices/
+- https://robolectric.org/blog/2023/11/11/improving-android-all-downloading/

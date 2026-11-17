@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="ItemHttpContractTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-16T20:59:17.326Z" hostname="mac-mini.local" time="0.017">
-  <properties/>
-  <testcase name="createsItemOverHttp" classname="ItemHttpContractTest" time="0.006"/>
-  <testcase name="uploadsMultipartBytesAndDecodesReceipt" classname="ItemHttpContractTest" time="0.006"/>
-  <testcase name="rejectsHttpErrorBeforeTryingToDecodeHtml" classname="ItemHttpContractTest" time="0.005"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

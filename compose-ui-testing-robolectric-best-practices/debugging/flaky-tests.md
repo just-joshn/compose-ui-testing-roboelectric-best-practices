@@ -1,285 +1,221 @@
-# Reproduce and fix flaky local UI tests
+# Debugging and Managing Flaky Tests
 
-Use this guide when the same test sometimes passes and sometimes fails without an intentional code change. It covers Compose UI tests run locally with Robolectric. A failure that always occurs in CI is an environment-specific defect until evidence establishes intermittency.
+## Table of Contents
 
-## Table of contents
+1. [Understanding Flakiness Types](#understanding-flakiness-types)
+2. [Compose Synchronization Causes](#compose-synchronization-causes)
+3. [Coroutine Timing (v1 vs v2 Rules)](#coroutine-timing-v1-vs-v2-rules)
+4. [Looper and Thread Causes](#looper-and-thread-causes)
+5. [Test Environment Leakage](#test-environment-leakage)
+6. [Retries](#retries)
+7. [Prevention Strategies](#prevention-strategies)
+8. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+9. [Related References](#related-references)
+10. [Sources](#sources)
 
-- [Classify the variation](#classify-the-variation)
-- [Repeat actual executions](#repeat-actual-executions)
-- [Build a root-cause timeline](#build-a-root-cause-timeline)
-- [Fix synchronization by work owner](#fix-synchronization-by-work-owner)
-- [Fix identity and animation assumptions](#fix-identity-and-animation-assumptions)
-- [Remove shared state and leaked work](#remove-shared-state-and-leaked-work)
-- [Compare the CI environment](#compare-the-ci-environment)
-- [Quarantine without hiding the defect](#quarantine-without-hiding-the-defect)
-- [Confirm stability and prevent recurrence](#confirm-stability-and-prevent-recurrence)
-- [Troubleshooting table](#troubleshooting-table)
-- [Review checklist](#review-checklist)
-- [Related guides and sources](#related-guides-and-sources)
+## Understanding Flakiness Types
 
-## Classify the variation
+A test that does not behave deterministically is flaky. In Compose and Robolectric tests the common causes cluster by where the nondeterminism comes from:
 
-| Category | Typical symptom | First experiment |
-| --- | --- | --- |
-| Work ownership | Loading sometimes remains or transient UI disappears | Hold the external completion deterministically |
-| UI identity | Wrong row activated after list order changes | Match by meaningful item identity |
-| Clock ownership | Delay advances in one scope but UI never changes | Identify the scheduler that owns the delay |
-| Test order | Method passes alone and fails after another method | Compare fake, global, and storage ownership |
-| Worker sharing | Failure appears with concurrent workers | Isolate mutable paths and external records |
-| Environment | Consistent CI failure, local pass | Match versions, JDK, SDK, locale, and resource configuration |
-| External dependency | Failures correlate with network or service state | Replace only that boundary for local UI coverage |
-| Resource exhaustion | Worker terminates or hangs under suite load | Inspect memory limits and owned thread cleanup |
+| Category               | Symptoms                                    | Common Causes                                                              |
+| ---------------------- | ------------------------------------------- | -------------------------------------------------------------------------- |
+| **Sync-driven**        | Assertion sees old UI, node not found       | Unknown background work, mutated state with no sync point, queued coroutine |
+| **Clock-driven**       | Animation or delay assertions off by a frame | Auto-advance on when it should be off, assertion before draw pass          |
+| **Looper/thread-driven** | Passes alone, fails in a suite            | Unexecuted main-looper tasks, rogue `ExecutorService` threads              |
+| **State-driven**       | Order-dependent failures                    | Leaked input mode, shared singletons, shared mutable fakes                 |
+| **Environment-driven** | CI-only failures                            | SDK/JDK differences, android-all download problems, platform rendering     |
 
-Do not begin by increasing a global timeout. A timeout is an observation that the required condition did not occur within a bound. It does not identify why.
+### Flakiness Decision Tree
 
-Use one change per diagnostic experiment. If both concurrency and waiting change, a pass cannot identify which assumption was wrong.
-
-## Repeat actual executions
-
-Gradle has no built-in Playwright `--repeat-each` equivalent in this workflow. Force the selected test task to run and retain each result before the next run overwrites it.
-
-This illustrative shell loop runs from a checkout with a Gradle wrapper and the fixture task. It uses a fresh evidence directory, continues after test failures, and reports failure if any attempt fails. It records repeated task executions, not independent machine environments.
-
-```bash
-RUN="$(mktemp -d "$PWD/flaky-evidence.XXXXXX")"
-failed=0
-for attempt in $(seq 1 10); do
-  destination="$RUN/$attempt"
-  mkdir -p "$destination"
-  status=0
-  ./gradlew :fixture:testDebugUnitTest \
-    --tests 'fixture.FixtureUiTest.sendShowsReceiptAfterCompletion' \
-    --console=plain --no-daemon --rerun-tasks \
-    > "$destination/gradle.log" 2>&1 || status=$?
-  printf '%s\n' "$status" > "$destination/exit-code.txt"
-  if [ -d fixture/build/test-results/testDebugUnitTest ]; then
-    cp -R fixture/build/test-results/testDebugUnitTest "$destination/junit"
-  fi
-  if [ "$status" -ne 0 ]; then
-    failed=1
-  fi
-done
-printf 'Evidence directory %s\n' "$RUN"
-exit "$failed"
+```
+Test fails intermittently
+├─ Assertion runs before the UI reflects the change?
+│  ├─ Compose-only state → missing sync point → waitForIdle / assert via the rule
+│  ├─ Coroutine launched, v2 rule → queued on StandardTestDispatcher → waitForIdle / runOnIdle
+│  └─ Background work Compose cannot see → idling resource or waitUntil*
+│
+├─ Fails only when run after other tests?
+│  └─ State leak, rogue threads → see Test Environment Leakage
+│
+├─ Fails only on CI?
+│  └─ Environment → see ci-cd.md
+│
+└─ Fails on device but not on Robolectric (or reverse)?
+   └─ Fidelity gap → see test-architecture.md
 ```
 
-Use the project's real module, variant, and method. Run long loops in a managed job rather than an untracked background shell. An existing Gradle workspace must not be driven concurrently by separate commands that write the same reports.
+## Compose Synchronization Causes
 
-Inspect every attempt's exit code and JUnit testcase. If compilation or dependency resolution failed, report that attempt as infrastructure or setup failure, not as an intermittent UI assertion. If no selected testcase exists, the attempt is not a pass.
-
-Compare these execution scopes:
-
-1. Suspect method alone.
-2. Its complete class.
-3. The relevant suite containing likely predecessors.
-4. The suite under the CI worker configuration.
-
-A serial pass suggests a concurrency hypothesis. It does not prove concurrency is the cause. Run the original failing configuration again after fixing the suspected sharing.
-
-## Build a root-cause timeline
-
-Collect events at meaningful boundaries rather than printing every frame:
-
-```text
-user action selected Draft/Open
-state owner started request for draft-7
-fake received request draft-7
-test completed request draft-7
-state owner published receipt
-semantics displayed Draft opened
-```
-
-This is an illustrative event sequence, not a measured fixture log. Assign each event to a real observation before using it to diagnose a run. Keep request identifiers sanitized and include the selected item identity.
-
-The first absent event narrows the investigation:
-
-| Last observed event | Inspect next |
-| --- | --- |
-| Action selected | Enabled state and actual click callback |
-| Request started | Correct fake instance and dependency installation order |
-| Fake completed | Cancellation, scheduler, and state collector |
-| State published | Lifecycle collection and recomposition |
-| Semantics changed | Matcher identity, merged tree, and display bounds |
-
-Capture the failing selector and both semantics trees when synchronization permits. Preserve exceptions with their cause chains. Do not replace a primary failure with a second exception from diagnostic collection.
-
-The recorded canonical JUnit ambiguity diagnostic begins:
-
-```text
-Failed to inject touch input.
-Reason: Expected exactly '1' node but found '2' nodes that satisfy: (Text + InputText + EditableText contains 'Open' (ignoreCase: false))
-```
-
-This is evidence of an ambiguous target. It is not evidence that the click was too fast. Inspecting the matching nodes is more useful than adding a delay.
-
-## Fix synchronization by work owner
-
-Faulty illustrative test body:
+Compose tests are synchronized with the UI by default: an assertion or action through the rule first waits until the UI is idle, and the virtual clock lets tests run as fast as possible. Flakiness appears when you step outside that contract.
 
 ```kotlin
-compose.onNodeWithText("Send").performClick()
-Thread.sleep(500)
-compose.onNodeWithText("Delivered Hello").assertIsDisplayed()
-```
-
-A sleep assumes a completion deadline that the test does not control. It can be too short under load and still waste time when the operation finishes sooner.
-
-Correct the boundary. This illustrative fragment assumes the canonical `MessagePanel` and a fresh sender equivalent to the canonical private `ControlledSender`. It needs `performTextInput`, `performClick`, `onNodeWithText`, and `assertIsDisplayed` from `androidx.compose.ui.test`.
-
-```kotlin
-val sender = ControlledSender()
-compose.setContent { MessagePanel(sender) }
-compose.onNodeWithText("Message").performTextInput("Hello")
-compose.onNodeWithText("Send").performClick()
-compose.onNodeWithText("Sending").assertIsDisplayed()
-compose.runOnIdle { sender.complete("Delivered Hello") }
-compose.onNodeWithText("Delivered Hello").assertIsDisplayed()
-compose.onNodeWithText("Sending").assertDoesNotExist()
-```
-
-The test can now inspect the pending state before the request finishes. A final receipt assertion proves the result, not merely the fake's call count.
-
-If work is genuinely external and cannot be completed directly, observe a bounded condition. This fragment additionally needs `onAllNodesWithText`:
-
-```kotlin
-compose.waitUntil(timeoutMillis = 2_000) {
-	compose.onAllNodesWithText("Delivered Hello").fetchSemanticsNodes().size == 1
+// Bad: state changes, but nothing triggers recomposition before the check
+var lastSeenValue = 0
+composeTestRule.setContent {
+    val value by myCounter.collectAsState()
+    lastSeenValue = value
 }
-compose.onNodeWithText("Delivered Hello").assertIsDisplayed()
+myCounter.value = 1
+assertTrue(lastSeenValue == 1) // fails: no recomposition yet
+
+// Good: the assertion goes through the rule, which syncs first
+myCounter.value = 1
+composeTestRule.onNodeWithText("1").assertExists()
 ```
 
-Do not wrap arbitrary assertions in catch-and-retry loops. A collection query represents zero matches naturally. The final assertion establishes display state after the bounded observation.
+Sync only covers Compose hierarchies, not the rest of your app. For work Compose cannot see, pick by test size:
 
-Keep time owners separate:
-
-| Owner | Correct action | Wrong substitute |
-| --- | --- | --- |
-| Composition delay or animation | Advance `mainClock` after establishing its start | `Thread.sleep` |
-| Composition task queued now | `mainClock.scheduler.runCurrent()` where needed | Advancing an unrelated test scope |
-| Injected coroutine scheduler | Advance that scheduler | Assuming Compose drives it |
-| Deferred request | Complete its pending result | Advancing virtual time indefinitely |
-| Wall-clock expiry | Inject application time source | Assuming `Instant.now()` follows Compose time |
-| Android looper callback | Target that looper when required by the tested adapter | Globally draining every queue |
-
-With automatic clock advancement, synchronized operations can skip transient animation states. Disable it before triggering the transition when the intermediate state is the contract. Establish the start frame, advance deliberately, and assert the intended state. Do not add an unexplained large duration until the test happens to pass.
-
-## Fix identity and animation assumptions
-
-Faulty repair for duplicate labels:
+| Situation                                   | Tool                                                    |
+| ------------------------------------------- | ------------------------------------------------------- |
+| Small UI test, known background work        | `registerIdlingResource` / `unregisterIdlingResource`   |
+| Bigger UI test, waiting for an outcome      | `waitUntil*` APIs                                       |
+| Manual frame stepping                       | `mainClock.autoAdvance = false`, `advanceTimeBy(...)`   |
 
 ```kotlin
-compose.onAllNodesWithText("Open")[0].performClick()
+// Good: wait for a condition, not for a duration
+composeTestRule.waitUntilAtLeastOneExists(hasText("Loaded"), 5_000)
+composeTestRule.waitUntilDoesNotExist(hasTestTag("spinner"), 5_000)
+composeTestRule.waitUntilNodeCount(hasTestTag("row"), 10, 5_000)
+
+// Bad: arbitrary pause
+Thread.sleep(2_000)
+
+// Bad: external latch; the test clock is not advanced, so behavior is unpredictable
+latch.await()
 ```
 
-List order can vary, so the first match can target the wrong item. Correct the selector with a stable item identity and observable action label. The canonical example uses `hasText("Open") and hasAnyAncestor(hasTestTag("draft"))`.
+Android's stability guide says to avoid pausing tests for an arbitrary period: it makes tests slow or flaky, because the same test can take different time on different machines. Idling resources can be hard to install without polluting the code under test, which is why the wait-until APIs are preferred as tests grow. Full API details live in [synchronization.md](../core/synchronization.md).
 
-Assert both the intended result and an important unchanged result. The canonical test requires `Draft opened` and absence of `Archive opened`. Its recorded wrong-item mutation failed the visible-result assertion and passed after restoration.
+## Coroutine Timing (v1 vs v2 Rules)
 
-Use an index only when order itself is the behavior under test. Establish the expected order before acting. Do not use index zero to hide a singular finder's ambiguity.
-
-Do not disable all animations to conceal a state bug. For settled-state behavior, ordinary Compose synchronization is usually enough. For animation timing, explicitly control the Compose clock. Device animation and rendering performance remain separate claims.
-
-## Remove shared state and leaked work
-
-Faulty ownership:
+The v1 rules used an `UnconfinedTestDispatcher`: a launched coroutine ran immediately, which could mask real race conditions. The v2 rules (`androidx.compose.ui.test.junit4.v2.*`, `androidx.compose.ui.test.v2.*`; available from 1.11.0-alpha03) use a `StandardTestDispatcher`: launched work is queued until the test advances the virtual clock.
 
 ```kotlin
-companion object {
-	val sender = ControlledSender()
+// After moving to v2, this can fail: the coroutine is queued, UI still shows "Loading"
+composeTestRule.setContent { ProfileScreen(viewModel) }
+assertEquals("Done", viewModel.state.value)
+
+// Good
+composeTestRule.waitForIdle()
+// or
+composeTestRule.runOnIdle { assertEquals("Done", viewModel.state.value) }
+```
+
+If you turn `autoAdvance` off, `composeTestRule.mainClock.scheduler.runCurrent()` runs queued tasks at the current virtual time without advancing the clock; `waitForIdle()` advances until idle.
+
+```kotlin
+// Bad: two separate clocks, not recommended
+@Test
+fun twoClocks() = runTest {
+    composeTestRule.setContent { /* ... */ }
+}
+
+// Good: runComposeUiTest runs inside its own runTest scope with a synchronized clock
+@Test
+fun oneClock() = runComposeUiTest {
+    setContent { /* ... */ }
+    mainClock.advanceTimeBy(1000 + 16 /* frame buffer */)
+    onNodeWithText("Done!").assertExists()
 }
 ```
 
-Its deferred and request history survive between test methods. Once completed, later tests can skip loading or display a stale receipt.
+See [coroutines-viewmodels.md](../testing-patterns/coroutines-viewmodels.md) for dispatcher injection and [clock-control.md](../advanced/clock-control.md) for clock stepping.
 
-Prefer a local fake in each test. JUnit's test instance lifecycle also permits instance fields, but local values make ownership clearest. Keep databases, file paths, preference names, and external record IDs independent where writes can overlap.
+## Looper and Thread Causes
 
-Use an explicit owner for cleanup:
+Robolectric runs the test and the UI event loop on the same thread, so classic cross-thread races are rarer than on a device. The remaining causes are about the looper model and stray threads.
 
-- The Compose rule disposes its test-owned composition.
-- Composition-owned scopes cancel with disposal.
-- Test-owned scopes must be cancelled and joined by their fixture.
-- Executors must shut down and owned threads must terminate.
-- Registered idling resources must be unregistered.
-- Global dispatcher or service overrides must be restored after failures too.
+- `PAUSED` is the default looper mode and Robolectric strongly encourages it: tasks posted to the main `Looper` are not run inline, so ordering matches a real device. Legacy mode ran posted tasks immediately, earlier than a device would.
+- Tasks posted to the main `Looper` outside Compose or AndroidX Test APIs must be drained explicitly. `ActivityScenario`, `FragmentScenario`, and Espresso idle it for you.
+- Tasks posted to background `Looper`s run on real threads in `PAUSED` mode.
 
-Robolectric does not clean up arbitrary rogue threads for you. A test can pass while leaked work corrupts the next method.
+```kotlin
+// Good: drain the main looper at the point your code under test needs it
+Handler(Looper.getMainLooper()).post { events.add("after") }
+events.add("between")
+shadowOf(Looper.getMainLooper()).idle()
+assertThat(events).containsExactly("before", "between", "after").inOrder()
+```
 
-For late-result bugs, start a request, dispose its owner, mount a fresh screen, and complete the stale request. Assert the stale receipt never appears. The canonical `disposalCancelsPendingSendAndFreshPanelIsIsolated` test exercises this local ownership boundary. It does not prove process-death behavior.
+If a test fails with `Main looper has queued unexecuted runnables`, the unexecuted behavior probably matters to that test; step through with a watch on `Looper.getMainLooper().getQueue()` to find where the `idle()` call belongs. See [runtime-modes.md](../core/runtime-modes.md).
 
-## Compare the CI environment
+### Thread hygiene
 
-Record rather than assume parity:
+Robolectric's best-practices page: limit the number of threads running during each test. Rogue threads such as `ExecutorService` pools cause test pollution.
 
-| Difference | Evidence | Response |
-| --- | --- | --- |
-| JDK or runtime SDK | Worker Java version and `@Config` | Use a supported combination |
-| Compose v1 versus v2 | Resolved artifact and factory import | Account for dispatcher ordering explicitly |
-| Missing Android resources | Selected variant's test configuration and manifest | Restore required host setup |
-| Locale, density, font scale | Effective resource configuration | Declare the scenario's required configuration |
-| Dependency availability | Download exception and repository settings | Fix cache or network setup, not UI waits |
-| Worker memory pressure | Worker exit diagnostics and runner limits | Bound parallelism and eliminate leaks |
-| Files shared across workers | Actual path and ownership | Allocate per-test or per-worker directories |
+```kotlin
+// Good: run work inline in tests (Guava)
+val executor = MoreExecutors.directExecutor()
 
-The fixture's recorded v1/v2 probe produced `events=[effect, apply]` for v1 and `events=[apply, effect]` for v2. These are observations for that probe, not a universal ordering contract for application code. A migration that exposes hidden immediate-execution assumptions needs synchronization, not a version downgrade by guesswork.
+// Bad: a real pool left running after the test
+val pool = Executors.newFixedThreadPool(4) // never shut down
+```
 
-Match the CI toolchain and run command locally. Setting `CI=true` alone does not recreate its JDK, resource limits, or dependency cache. A headless-versus-headed comparison is a browser concern, not a Robolectric UI mode switch.
+Stop threads explicitly in teardown if a test must start them, and inject executors and dispatchers so tests can replace them ([test-doubles.md](../architecture/test-doubles.md)).
 
-## Quarantine without hiding the defect
+## Test Environment Leakage
 
-A quarantine is a temporary reporting and ownership decision. It is not a fix.
+- v2 rules enforce `InputMode.Touch` at the start of each test so input mode cannot leak. If you need keyboard mode, set it per class or per test via `ComposeUiTestConfig(inputMode = InputMode.Keyboard)` (`ComposeUiTestConfig` is 1.13.0-alpha01+).
+- `@Config(qualifiers = ...)` and `RuntimeEnvironment.setQualifiers(...)` change the simulated device configuration. Scope them to the class or method that needs them.
+- Do not mock or spy on Android classes (`Context`, `SharedPreferences`); stubbing is brittle. Use real Robolectric objects or fakes.
 
-If the team must separate a known flaky test, keep its source and dedicated execution visible. Record the issue, owner, observed failure signature, expiry, and condition for returning to the normal suite.
+## Retries
 
-Use the project's JUnit category or dedicated task convention. Do not silently exclude the test via a method-name filter or blanket `@Ignore`. A skipped test is not a passing test.
+The Android stability guide: you should fix flaky tests, but retries can maintain productivity when the failure condition is too improbable to reproduce. Typical mechanisms:
 
-Retain every retry attempt. A failed first attempt followed by a pass must remain classified as flaky in reporting. Do not make retry-until-green the acceptance criterion.
+- A JUnit rule that retries a test a number of times
+- A retry step in the CI workflow
+- A system to restart an emulator that is unresponsive, such as Gradle-managed devices (device tests only)
 
-If retries are enabled by an existing Gradle plugin, keep their budget small and document the policy in the CI guide. This guide does not assume an installed retry plugin or invent a Gradle retry DSL.
+"Add retrying mechanisms to big tests, but always fix flaky tests." The sources do not name a specific retry library or Gradle setting for local Robolectric runs, so none is shown here.
 
-## Confirm stability and prevent recurrence
+## Prevention Strategies
 
-After the repair, run the named method and its class repeatedly under the original failing configuration. Report the actual number of executed attempts and their outcomes. Ten passes are evidence for ten attempts, not proof that no race exists.
+### Isolation Checklist
 
-Add a negative control for the broken assumption:
+- [ ] Every wait is a condition (`waitUntil*`, `waitForIdle`, idling resource), never a sleep
+- [ ] Assertions go through the rule or follow `waitForIdle()` / `runOnIdle`
+- [ ] Coroutine dispatchers and executors are injected and replaced in tests
+- [ ] No `ExecutorService` pool outlives a test
+- [ ] Data comes from deterministic fakes, not network or shared state
+- [ ] Tests run with the default `PAUSED` looper mode
+- [ ] State changes read during draw are followed by `waitForIdle()`, not `advanceTimeBy`
+- [ ] Tests do not depend on another test having run first
 
-- Route the click to the wrong item to check identity assertions.
-- Remove the result state update to check outcome coverage.
-- Leave the fake pending to check that the test does not fabricate success.
-- Deliver a stale result after disposal to check ownership.
+### Keep Tests Small and Scoped
 
-Require compilation and host startup to succeed before counting a negative control as a detected regression. Preserve the intended named assertion failure, restore the change, and rerun.
+As a test grows in scope, its chances of becoming flaky increase. Test one component or feature with fakes on Robolectric, and leave true end-to-end flows to device tests. See [test-architecture.md](../architecture/test-architecture.md).
 
-Prefer deterministic tests that hold and release meaningful work over repeated burn-in alone. Keep visible preconditions that identify the first incorrect transition. Do not add unrelated assertions solely to increase the assertion count.
+## Anti-Patterns to Avoid
 
-## Troubleshooting table
+| Anti-Pattern                                   | Problem                                      | Solution                                              |
+| ---------------------------------------------- | -------------------------------------------- | ----------------------------------------------------- |
+| `Thread.sleep()` as the wait                   | Slow and flaky                               | `waitUntil*`, `waitForIdle`, idling resources         |
+| External `CountDownLatch` instead of `waitUntil` | Test clock never advances                  | `waitUntil` APIs                                      |
+| `createComposeRule()` combined with `runTest`  | Two separate clocks (not recommended)        | Use `runComposeUiTest { ... }`                        |
+| Using `UnconfinedTestDispatcher` to "fix" v2 failures | Masks real race conditions            | `waitForIdle()` / `runOnIdle`                         |
+| Retrying until pass, never investigating       | Hides systemic problems                      | Retries as a safety net; fix the root cause           |
+| Un-stopped thread pools                        | Pollutes later tests                         | `directExecutor()` or stop threads explicitly         |
+| Mocking `Context`, `SharedPreferences`         | Brittle, hides real behavior                 | Real Robolectric environment or fakes                 |
+| Using `advanceTimeBy` for draw-dependent state | UI does not update                           | `waitForIdle()`                                       |
 
-| Symptom | Root-cause observation to seek | Repair |
-| --- | --- | --- |
-| Loading skipped intermittently | Reused completion or automatic timer advancement | Fresh pending fake and deliberate clock mode |
-| Wrong row opens | Selector matches multiple items or depends on order | Scope by meaningful identity |
-| Passes alone only | Shared mutable state, persisted data, or leaked job | Fix lifecycle and cleanup |
-| Timeout unaffected by larger values | Work has no producer or wrong scheduler is advanced | Control the real owner |
-| Passes only on retry | First-attempt seed, startup, or state leak differs | Preserve and investigate first attempt |
-| CI worker exits without assertion | Resource or environment failure | Inspect worker diagnostics separately from UI results |
+## Related References
 
-## Review checklist
+- **Debugging**: See [debugging.md](debugging.md) for printing the semantics tree and failure artifacts
+- **Synchronization**: See [synchronization.md](../core/synchronization.md) for `waitForIdle`, `waitUntil*`, idling resources
+- **Clock control**: See [clock-control.md](../advanced/clock-control.md) for `MainTestClock`
+- **Runtime modes**: See [runtime-modes.md](../core/runtime-modes.md) for `LooperMode.PAUSED`
+- **Coroutines**: See [coroutines-viewmodels.md](../testing-patterns/coroutines-viewmodels.md) for test dispatchers
+- **Test doubles**: See [test-doubles.md](../architecture/test-doubles.md) for fakes and DI seams
+- **CI**: See [ci-cd.md](../infrastructure-ci-cd/ci-cd.md) for environment-specific failures
 
-- Is intermittency established by executed named tests?
-- Are failed attempts retained with their JUnit evidence?
-- Does each experiment change one suspected cause?
-- Are clocks and pending requests controlled separately?
-- Is selector identity independent of incidental order?
-- Are fake state, files, and asynchronous work isolated?
-- Does the corrected test reject the original broken behavior?
-- Is any quarantine visible, owned, and time-bounded?
+## Sources
 
-## Related guides and sources
-
-- [Debugging](debugging.md) preserves first-failure evidence.
-- [Logs and exceptions](logs-exceptions.md) records causes without swallowing them.
-- [Fixtures and hooks](../core/fixtures-hooks.md) defines cleanup ownership.
-- [Parallel execution](../infrastructure-ci-cd/parallel-sharding.md) isolates workers.
-- [Synchronization reference](../references/synchronization.md) separates clock domains.
-- [Compose synchronization](https://developer.android.com/develop/ui/compose/testing/synchronization) documents waiting and idling resources.
-- [Compose v2 migration](https://developer.android.com/develop/ui/compose/testing/migrate-v2) documents dispatcher changes.
-- [Robolectric best practices](https://robolectric.org/best-practices/) documents rogue-thread hazards.
+- https://developer.android.com/training/testing/instrumented-tests/stability
+- https://developer.android.com/develop/ui/compose/testing/synchronization
+- https://developer.android.com/develop/ui/compose/testing/migrate-v2
+- https://robolectric.org/best-practices/
+- https://robolectric.org/androidx_test/
+- https://robolectric.org/upgrade_to_version_4/
+- https://robolectric.org/blog/2019/06/04/paused-looper/
+- https://developer.android.com/training/testing/fundamentals

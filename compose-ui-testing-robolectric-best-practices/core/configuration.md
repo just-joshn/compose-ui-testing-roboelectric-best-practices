@@ -1,184 +1,214 @@
-# Configure Android local Compose tests
+# Configuration
 
-Use this guide to add Robolectric-hosted Compose tests, diagnose host failures, or choose SDK and worker settings. This is an Android local-unit-test configuration, not Compose Desktop and not an instrumentation runner configuration.
+## Table of Contents
 
-## Contents
+1. [Version Reference](#version-reference)
+2. [Gradle Dependencies](#gradle-dependencies)
+3. [JDK Requirements](#jdk-requirements)
+4. [Configuring Robolectric](#configuring-robolectric)
+5. [SDK, Qualifiers, and Application](#sdk-qualifiers-and-application)
+6. [System Properties](#system-properties)
+7. [Common Issues & Solutions](#common-issues--solutions)
+8. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+9. [Related References](#related-references)
+10. [Sources](#sources)
 
-- [Inspect the existing build](#inspect-the-existing-build)
-- [Choose the configuration boundary](#choose-the-configuration-boundary)
-- [Wire dependencies and resources](#wire-dependencies-and-resources)
-- [Establish one hosted test](#establish-one-hosted-test)
-- [Choose an activity owner](#choose-an-activity-owner)
-- [Configure environments and execution](#configure-environments-and-execution)
-- [Keep timeouts and artifacts useful](#keep-timeouts-and-artifacts-useful)
-- [Troubleshoot setup](#troubleshoot-setup)
-- [Review checklist](#review-checklist)
-- [Related guides and sources](#related-guides-and-sources)
+## Version Reference
 
-## Inspect the existing build
+| Component                         | Version (as of 2026-11-17)                                          |
+| --------------------------------- | ------------------------------------------------------------------- |
+| Compose BOM                       | `2026.09.00`                                                        |
+| `ui-test`, `ui-test-junit4`, `ui-test-manifest` | `1.12.1` stable; `1.13.0-rc01` release candidate      |
+| Robolectric                       | `4.18` (API 24 to 37)                                               |
+| JUnit                             | `junit:junit:4.13.2` (Robolectric Getting Started)                  |
 
-Record the module, variant, Gradle wrapper, Android Gradle Plugin, Kotlin setup, Compose compiler plugin, resolved Compose test version, Robolectric version, runtime SDK, and test-worker JDK before changing anything.
+Some Android pages show older example versions (for example Robolectric `4.13`, and "API 21+" or "API 16+" support claims). Use the robolectric.org compatibility table: 4.18 supports API 24 to 37.
 
-These illustrative commands assume an Android module named `app` with a debug variant:
+## Gradle Dependencies
 
-```bash
-./gradlew --version
-./gradlew :app:tasks --all
-./gradlew :app:dependencies --configuration debugUnitTestRuntimeClasspath
-./gradlew :app:dependencyInsight \
-  --configuration debugUnitTestRuntimeClasspath \
-  --dependency ui-test-junit4
-```
-
-Use the module and configuration names your build actually generates. A successful dependency graph is not a passing activity-hosted test.
-
-The repository fixture uses Gradle 9.4.1, AGP 9.2.0, Compose compiler plugin 2.2.10, BOM 2026.09.00, Compose UI 1.12.1, Robolectric 4.18, JUnit 4.13.2, and an API 35 runtime on JDK 17. These versions define one observed combination. They are not minimum versions or a migration requirement for other projects.
-
-## Choose the configuration boundary
-
-| Need | Configure | Avoid |
-| --- | --- | --- |
-| Android resources in local tests | `testOptions.unitTests.isIncludeAndroidResources` | `returnDefaultValues` as a repair |
-| Default Compose host | `ui-test-manifest` in the tested variant | Assuming `createComposeRule` is activity-free |
-| Real application activity | Its manifest declaration and Android rule | Adding a second content owner |
-| A different Android API | `@Config(sdk = [...])` with a supported worker JDK | Confusing compile SDK with runtime SDK |
-| A feature-specific qualifier | Narrow `@Config(qualifiers = ...)` | Changing every test's locale or dimensions |
-| Repeated build settings | Existing convention plugin | A base test class with hidden mutable state |
-| External service integration | Separate integration job and explicit configuration | Real secrets in deterministic UI tests |
-
-## Wire dependencies and resources
-
-This illustrative module-level Gradle Kotlin DSL fragment assumes the Android and Compose compiler plugins already exist. Preserve your project's plugin strategy and version catalog.
+Declare the BOM once and add the Compose test libraries without versions.
 
 ```kotlin
+// app/build.gradle.kts
 android {
-	buildFeatures {
-		compose = true
-	}
-	testOptions {
-		unitTests.isIncludeAndroidResources = true
-	}
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
-	testImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
-	testImplementation("androidx.compose.ui:ui-test-junit4")
-	testImplementation("androidx.compose.material3:material3")
-	testImplementation("org.robolectric:robolectric:4.18")
-	testImplementation("junit:junit:4.13.2")
-	debugImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
-	debugImplementation("androidx.compose.ui:ui-test-manifest")
+    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
+    implementation(composeBom)
+    testImplementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    // Compose test rules and transitive dependencies
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    // Needed for createComposeRule(), not for createAndroidComposeRule<YourActivity>()
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.18")
+    // AndroidJUnit4 runner; the docs show this artifact with a version variable only
+    testImplementation("androidx.test.ext:junit:$testJunitVersion")
 }
 ```
 
-The explicit versions reproduce the fixture dependency choices. In a consuming project, align with its existing BOM and confirm its selected version before copying the v2 import.
-
-Put local tests in `src/test/java` or `src/test/kotlin`, according to the project's configured source directories. Use `testImplementation`, not `androidTestImplementation`. Official Compose testing examples often target `src/androidTest`; adapt their source set and runner for Robolectric.
-
-AGP 9 includes built-in Kotlin support. Do not add `org.jetbrains.kotlin.android` blindly to that setup. Older AGP builds may use the separate Kotlin Android plugin. Apply the Compose compiler plugin matching the project's Kotlin setup rather than guessing from the Compose UI version.
-
-The BOM aligns Compose libraries. It does not select Robolectric, the Android plugin, or the worker JDK.
-
-## Establish one hosted test
-
-This complete illustrative file belongs in `app/src/test/kotlin/example/HostTest.kt`. It assumes the dependencies above and the debug host manifest.
+- `isIncludeAndroidResources = true` appears in the project configuration on both the Robolectric Getting Started page and the Android Robolectric page.
+- `androidx.test:core` is listed as an optional "Robolectric environment" test dependency on the Android local tests page. The Robolectric AndroidX Test page imports `ApplicationProvider` and `ActivityScenario` from `androidx.test.core`.
+- No allowed page gives a version for `androidx.test.ext:junit` or `androidx.test:core`; pick the current release yourself.
+- The Android docs show `ui-test-junit4` under `androidTestImplementation`. Using `testImplementation` for the JVM is what the BOM page shows.
 
 ```kotlin
-package example
+// Good: BOM manages every Compose test artifact together
+testImplementation("androidx.compose.ui:ui-test-junit4")
 
-import androidx.compose.material3.Text
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
-import org.robolectric.annotation.LooperMode
+// Bad: pinning one artifact against the BOM unless you need to
+testImplementation("androidx.compose.ui:ui-test-junit4:1.13.0-rc01")
+```
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [35])
-@LooperMode(LooperMode.Mode.PAUSED)
-class HostTest {
-	@get:Rule val rule = createComposeRule()
+To override a BOM version for one library, keep the `platform(...)` line and give that library an explicit version. `ComposeUiTestConfig` needs `ui-test` and `ui-test-junit4` 1.13.0 (`1.13.0-alpha01+` per the migration page; `1.13.0-rc01` per the API reference). For 1.12.1, omit it.
 
-	@Test fun hostsContent() {
-		rule.setContent { Text("Hosted") }
-		rule.onNodeWithText("Hosted").assertIsDisplayed()
-	}
+## JDK Requirements
+
+| Android API under test | Minimum Java |
+| ---------------------- | ------------ |
+| 36, 37                 | Java 21      |
+| 34, 35                 | Java 17      |
+| 29 to 33               | Java 9       |
+
+On Java 17 or higher the JVM needs `--add-opens` flags so Robolectric can reach OpenJDK internals:
+
+```kotlin
+android {
+    testOptions {
+        unitTests.all {
+            it.jvmArgs(
+                "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                "--add-opens=java.base/java.util=ALL-UNNAMED",
+                "--add-opens=java.base/java.io=ALL-UNNAMED",
+                "--add-opens=java.base/java.net=ALL-UNNAMED",
+                "--add-opens=java.base/java.security=ALL-UNNAMED",
+                "--add-opens=java.base/java.text=ALL-UNNAMED",
+                "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+                "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+                "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+            )
+        }
+    }
 }
 ```
 
-Run the exact test:
+## Configuring Robolectric
 
-```bash
-./gradlew :app:testDebugUnitTest --tests example.HostTest \
-  --console=plain --rerun-tasks
+Two mechanisms: `@Config` on a class or method, and `robolectric.properties` for a package.
+
+```kotlin
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
+class SignInScreenTest {
+
+    // Method-level @Config wins over the class-level one
+    @Test
+    @Config(qualifiers = "w360dp-h640dp-xhdpi")
+    fun narrowPhone_stacksFields() { /* ... */ }
+}
 ```
 
-Expect one executed passing test, not `NO-SOURCE`, an empty suite, or a skipped test. Inspect the JUnit XML as well as the process exit status.
+```properties
+# src/test/resources/com/mycompany/app/robolectric.properties
+sdk=33
+```
 
-In Compose 1.12.1 the factory lives in `androidx.compose.ui.test.junit4.v2`. The interfaces `ComposeTestRule` and `ComposeContentTestRule` remain in `androidx.compose.ui.test.junit4`. Do not invent a `v2.ComposeTestRule` import.
+- Method annotations beat class annotations; base classes are searched, so shared values can move to a base class.
+- `robolectric.properties` is found by walking up the package hierarchy (including the unnamed top-level package); deeper packages override shallower ones. Place it under `src/test/resources`.
+- `@Config` overrides anything from properties files.
+- Global defaults for all tests: provide a `GlobalConfigProvider` service implementation.
 
-`onNode` is a provider member. `assertExists` and `assertDoesNotExist` are interaction members. Do not import them as top-level extensions. Convenience extensions such as `onNodeWithText` and `assertIsDisplayed` do need imports.
+## SDK, Qualifiers, and Application
 
-## Choose an activity owner
+| Setting                       | Example                                      | Notes                                                       |
+| ----------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
+| Fixed SDKs                    | `@Config(sdk = [TIRAMISU, UPSIDE_DOWN_CAKE])` | Test runs once per listed SDK                               |
+| Range                         | `@Config(minSdk = UPSIDE_DOWN_CAKE)`         | `sdk` cannot be combined with `minSdk`/`maxSdk`             |
+| Default SDK                   | (nothing)                                    | Robolectric uses your module's `targetSdk`                  |
+| Resource qualifiers           | `@Config(qualifiers = "fr-xlarge")`          | Dash-separated, in Android's documented qualifier order     |
+| Custom `Application`          | `@Config(application = CustomApplication::class)` | Class or method level                                  |
 
-`createComposeRule()` launches a host and lets the test call `setContent`. Its manifest artifact declares `androidx.activity.ComponentActivity`.
+```kotlin
+// Good: one very large screen that fits every tested size without clipping or scaling
+@Config(qualifiers = "w1000dp-h1000dp-480dpi")
+class ResponsiveScreenTest { /* ... */ }
+```
 
-For `createAndroidComposeRule<MainActivity>()`, import the factory from `androidx.compose.ui.test.junit4.v2`. Declare the activity in the appropriate manifest. If `MainActivity.onCreate` already calls `setContent`, drive that existing content. Do not call `rule.setContent` again.
+The Android screen-size page uses `qualifiers = "w1000dp-h1000dp-480dpi"` as "a very large screen size that can fit all of the test sizes" without clipping or scaling. Qualifier syntax, defaults, and `RuntimeEnvironment.setQualifiers` are covered in [device-configuration.md](../advanced/device-configuration.md).
 
-If dependencies must exist before the activity starts, install them through an ordered outer rule or application test configuration. `@Before` runs after rule setup and can be too late for an automatically launched activity. See [fixtures and hooks](fixtures-hooks.md).
+Other `@Config` elements in the 4.18 Javadoc: `fontScale`, `instrumentedPackages`, `manifest` (deprecated), `shadows`, plus constants `ALL_SDKS`, `NEWEST_SDK`, `OLDEST_SDK`, `TARGET_SDK`. Runtime behavior has its own annotations; see [runtime-modes.md](runtime-modes.md).
 
-## Configure environments and execution
+## System Properties
 
-Pin a runtime SDK for reproducible local evidence. Expand the SDK matrix only for an Android behavior that needs that coverage. Robolectric 4.18 documents API 24 through 37. API 35 needs Java 17 minimum. API 36 and 37 need Java 21 minimum. Recheck the versioned compatibility table when upgrading.
+Set globally through the `unitTests.all` block:
 
-The JDK running Gradle and its test workers is not the Kotlin bytecode target. Setting `jvmTarget = 17` does not launch a Java 17 worker.
+```kotlin
+android {
+    testOptions {
+        unitTests.all {
+            it.systemProperty("robolectric.logging.enabled", "true")
+        }
+    }
+}
+```
 
-Use `PAUSED` looper mode for the documented fixture behavior. It is also Robolectric's documented default. Do not switch to legacy mode to force an unrelated asynchronous test to pass.
+| Property                                | Purpose                                              | Default                          |
+| --------------------------------------- | ---------------------------------------------------- | -------------------------------- |
+| `robolectric.enabledSdks`               | Only run tests targeting listed SDKs                 | All SDKs                         |
+| `robolectric.offline`                   | `true` disables runtime fetching of jars             | `false`                          |
+| `robolectric.dependency.dir`            | Folder containing runtime dependencies               | `null`                           |
+| `robolectric.dependency.repo.url` / `.id` | Maven repository for runtime dependencies          | Maven Central                    |
+| `robolectric.logging.enabled`           | Debug logging                                        | `false`                          |
 
-For deterministic screen tests, inject flags, sessions, repositories, and business time locally. For a real service test, validate its URL and credentials at the integration boundary. Do not require `.env` or production accounts to run a semantics test.
+CI download and proxy settings are covered in [ci-cd.md](../infrastructure-ci-cd/ci-cd.md).
 
-Start with conservative worker parallelism. Increase workers only after checking memory use and state ownership. Namespace any disk files or external resources by run and worker. A Gradle worker is not a shared authenticated UI fixture.
+## Common Issues & Solutions
 
-## Keep timeouts and artifacts useful
+| Issue                                              | Solution                                                                      |
+| -------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Robolectric cannot access JDK internals on Java 17+ | Add the `--add-opens` `jvmArgs` above                                      |
+| Running tests against API 36 or 37                 | Java 21 is the minimum for those API levels                                   |
+| `sdk` and `minSdk` in the same `@Config`           | Not allowed; use one form                                                     |
+| Need to see what Robolectric is loading            | `robolectric.logging.enabled=true`                                            |
+| Configuration ignored                              | Check precedence: method `@Config`, class `@Config`, then `robolectric.properties` |
 
-Keep local runs free of automatic retries while diagnosing failures. A pass after retry does not remove the first failure's significance.
+## Anti-Patterns to Avoid
 
-Archive test XML, HTML reports, exception output, selected variant, SDK, and worker JDK. Capture semantics trees for selection failures. JVM screenshot capture, if separately configured, does not certify device pixels.
+| Anti-Pattern                                     | Problem                                      | Solution                                          |
+| ------------------------------------------------ | -------------------------------------------- | ------------------------------------------------- |
+| Copying `4.13` from the Android Robolectric page | Older than the current release               | Use `4.18` from robolectric.org                   |
+| Declaring `@Config(sdk = ...)` on every class    | Repeated, drifts                             | Base class or `robolectric.properties`            |
 
-Use a bounded `waitUntil` for external work. Do not introduce a global five-minute timeout to hide a fake that was never completed. The 1.13-only `ComposeUiTestConfig` is not part of the validated 1.12.1 API.
+## Related References
 
-## Troubleshoot setup
+- **Test anatomy and rules**: See [test-suite-structure.md](test-suite-structure.md)
+- **Runtime modes**: See [runtime-modes.md](runtime-modes.md)
+- **Screen sizes and locales**: See [device-configuration.md](../advanced/device-configuration.md)
+- **CI downloads and JDK**: See [ci-cd.md](../infrastructure-ci-cd/ci-cd.md)
 
-| Symptom | First observation | Correction |
-| --- | --- | --- |
-| `Method ... not mocked` | Runner and test source set | Use a Robolectric-aware runner and local dependencies |
-| Activity cannot resolve | Debug merged manifest and resource inclusion | Include resources and declare the actual host |
-| Unsupported SDK | Robolectric version and `@Config` | Select a supported runtime SDK |
-| Unsupported class-file version | Actual worker JDK | Run that SDK with its supported JDK |
-| Unresolved v2 factory | Resolved `ui-test-junit4` version | Match the import to the artifact, not an online snippet |
-| No tests run | Module, variant, method filter, runner | Require a nonempty report with the intended method |
-| Failure only in release | Variant host and dependencies | Configure that variant explicitly or test the intended debug task |
+## Sources
 
-Anti-patterns include enabling `unitTests.isReturnDefaultValues`, mixing Desktop test artifacts into Android, and upgrading the whole build merely to repair a selector. These hide or widen the original failure instead of diagnosing it.
-
-## Review checklist
-
-- The test uses the Android local source set and task.
-- The runtime dependency graph is aligned.
-- The activity has one content owner and a real manifest declaration.
-- The selected SDK and actual worker JDK are compatible.
-- One hosted behavior test executes without skips.
-- Configuration changes are narrower than the symptom they repair.
-
-## Related guides and sources
-
-- [Modules and variants](modules-variants.md) covers matrices and task dependencies.
-- [Setup reference](../references/setup.md) records fixture-specific setup facts.
-- [Compose test setup](https://developer.android.com/develop/ui/compose/testing) documents dependencies and hosts.
-- [Robolectric getting started](https://robolectric.org/getting-started/) documents local Android resources and the runner.
-- [Robolectric compatibility](https://robolectric.org/compatibility_table/) lists SDK and JDK requirements.
-- [Evidence](../references/evidence.md) explains known documentation contradictions and exact observed versions.
+- https://developer.android.com/develop/ui/compose/testing
+- https://developer.android.com/develop/ui/compose/bom
+- https://developer.android.com/develop/ui/compose/bom/bom-mapping
+- https://developer.android.com/develop/ui/compose/testing/migrate-v2
+- https://developer.android.com/training/testing/local-tests
+- https://developer.android.com/training/testing/local-tests/robolectric
+- https://developer.android.com/training/testing/different-screens/tools
+- https://developer.android.com/training/testing/instrumented-tests/androidx-test-libraries/test-setup
+- https://developer.android.com/jetpack/androidx/releases/compose-ui
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig
+- https://robolectric.org/getting-started/
+- https://robolectric.org/configuring/
+- https://robolectric.org/compatibility_table/
+- https://robolectric.org/androidx_test/
+- https://robolectric.org/javadoc/4.18/org/robolectric/annotation/Config.html
