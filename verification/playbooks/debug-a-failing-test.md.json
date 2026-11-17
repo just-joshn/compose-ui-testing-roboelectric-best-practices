@@ -1,0 +1,276 @@
+{
+  "units": [
+    {
+      "text": "Use this playbook when a Compose UI test fails on Robolectric and the cause is not known.",
+      "meta": true
+    },
+    {
+      "text": "1. Run the failing test and record the exact command, the failure message, and the stack trace.",
+      "meta": true
+    },
+    {
+      "text": "2. Print the semantics tree at any point in the test, because looking at it is the main way to solve problems in tests. See [debugging.md](../debugging/debugging.md#semantics-tree-printing).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
+          "quote": "The main way to solve problems in your tests is to look at the semantics tree. Print the tree by calling composeTestRule.onRoot().printToLog() at any point in your test."
+        }
+      ]
+    },
+    {
+      "text": "3. Print the semantics tree with `useUnmergedTree` set to true as well as the default tree, because some nodes merge the semantics information of their children. See [semantics-finders.md](../core/semantics-finders.md#merged-and-unmerged-trees).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Some nodes merge the semantics information of their children."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "If you need to match a node of what would be the unmerged tree, you can set useUnmergedTree to true"
+        }
+      ]
+    },
+    {
+      "text": "4. Check whether the UI has identical Compose elements nested inside multiple traditional Android Views, where a standard Compose search might fail with a \"Multiple nodes found\" error. See [debugging.md](../debugging/debugging.md#multiple-nodes-found-inside-android-views).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "In these scenarios, a standard Compose search like onNodeWithText(\"Save\") might fail with a \"Multiple nodes found\" error."
+        }
+      ]
+    },
+    {
+      "text": "5. If an assertion fails right after launching a task and the data is still in a \"Loading\" state, check whether the test uses the v2 APIs, which queue coroutines instead of executing them immediately. See [debugging.md](../debugging/debugging.md#assertion-fails-after-launching-a-task-v2-apis).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Failure: You launch a task (for example, a ViewModel loads data), but your assertion fails immediately because the data is still in a \"Loading\" state."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Cause: With the v2 APIs, coroutines are queued rather than executed immediately. The task was queued but never actually ran before the result was checked."
+        }
+      ]
+    },
+    {
+      "text": "6. If the UI does not update after a state change, check whether the test used the methods that synchronize it, because without them no recomposition occurs. See [debugging.md](../debugging/debugging.md#ui-appears-paused).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "However, if you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused."
+        }
+      ]
+    },
+    {
+      "text": "7. If the failure mentions unexecuted tasks in the main Looper queue, note that `LooperMode.PAUSED` warns when a test fails with them. See [debugging.md](../debugging/debugging.md#looper-warnings).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "However, it has the following improvements: Robolectric will warn users if a test fails with unexecuted tasks in the main Looper queue"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "LooperMode.PAUSED"
+        }
+      ]
+    },
+    {
+      "text": "8. Check whether the test relies on a non-touch input mode configured through instrumentation APIs before the test starts, which can make tests fail during migration. See [flaky-tests.md](../debugging/flaky-tests.md#input-mode-leakage).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts."
+        }
+      ]
+    },
+    {
+      "text": "9. You can automatically capture screenshots and UI hierarchies upon test failure, because debugging UI tests often requires inspecting the screen state and composition hierarchy. See [debugging.md](../debugging/debugging.md#failure-artifacts).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Debugging UI tests often requires inspecting the screen state and composition hierarchy when an assertion fails."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "You can automatically capture screenshots and UI hierarchies upon failure"
+        }
+      ]
+    },
+    {
+      "text": "10. If it is not clear whether resources are loaded for a library, turn on Robolectric debug logging. See [debugging.md](../debugging/debugging.md#debug-logging).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/getting-started",
+          "quote": "If you are not sure if resources are being loaded for a particular library, enable debug logging by setting the system property robolectric.logging.enabled = true and run your tests."
+        }
+      ]
+    },
+    {
+      "text": "11. The Robolectric simulator can be a useful way to preview how your UI would look in a Robolectric environment, which can be helpful when debugging failing Robolectric tests. It is highly experimental and still largely in the proof-of-concept stage, and UI rendered in it may not match an Android emulator or device 100%. See [debugging.md](../debugging/debugging.md#robolectric-simulator).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "This can be helpful, for instance, when debugging failing Robolectric tests."
+        },
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "UI rendered in the Robolectric simulator may not match an Android emulator or device 100%."
+        },
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "The Robolectric simulator can be a useful way to preview how your UI would look in a Robolectric environment."
+        },
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "Note that the Robolectric simulator is highly experimental and is still largely in the proof-of-concept stage."
+        }
+      ]
+    },
+    {
+      "text": "12. Check whether the failure comes from a documented difference between Android libcore and OpenJDK, or from a fidelity limit of Robolectric. See [debugging.md](../debugging/debugging.md#android-libcore-and-openjdk-differences) and [debugging.md](../debugging/debugging.md#fidelity-limits).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Because of that, you may notice different behaviours when running your app on a device or emulator, and running your tests on the JVM with Robolectric."
+        },
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests"
+        }
+      ]
+    },
+    {
+      "text": "13. If a rendering assertion fails after advancing the clock, check whether the test waited for the draw pass to complete. See [debugging.md](../debugging/debugging.md#wait-for-draw-before-capturing).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "you want to assert anything related to rendering (e.g. SemanticsNodeInteraction.captureToImage), you will need a call to androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle or androidx.compose.ui.test.junit4.ComposeTestRule.runOnIdle to make sure that any triggered draw pass has been completed."
+        }
+      ]
+    },
+    {
+      "text": "- State the cause as the first place the evidence shows the test going wrong, with the command output, file and line, or official page behind it.",
+      "meta": true
+    },
+    {
+      "text": "- Separate what the evidence shows from what you infer.",
+      "meta": true
+    },
+    {
+      "text": "- If no official page covers the behavior, say it is not documented.",
+      "meta": true
+    },
+    {
+      "text": "- List open questions.",
+      "meta": true
+    },
+    {
+      "text": "- Fix the cause the evidence points to, with the smallest change. Each item below applies to one cause from the investigation.",
+      "meta": true
+    },
+    {
+      "text": "- Merged tree hides the node: set `useUnmergedTree` for a special need to inspect implementation detail within children. See [semantics-finders.md](../core/semantics-finders.md#merged-and-unmerged-trees).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "If you need to match a node of what would be the unmerged tree, you can set useUnmergedTree to true"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "useUnmergedTree is for tests with a special need to inspect implementation detail within children"
+        }
+      ]
+    },
+    {
+      "text": "- Identical elements inside Android Views: use `onRootWithViewInteraction`, which is experimental and subject to change. See [interoperability.md](../advanced/interoperability.md).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Use the onRootWithViewInteraction API on your test rule. This function accepts an Espresso ViewInteraction"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "This API is experimental and subject to change."
+        }
+      ]
+    },
+    {
+      "text": "- Queued coroutines: use `waitForIdle` or `runOnIdle` to execute queued tasks before asserting. See [debugging.md](../debugging/debugging.md#assertion-fails-after-launching-a-task-v2-apis).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Use waitForIdle or runOnIdle to execute queued tasks before asserting"
+        }
+      ]
+    },
+    {
+      "text": "- Condition that depends on external work: use `waitUntil`. See [synchronization.md](../core/synchronization.md#waiting-for-conditions).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+        }
+      ]
+    },
+    {
+      "text": "- Unexecuted main Looper tasks: if you see test failures like 'Main looper has queued unexecuted runnables.', you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper. See [synchronization.md](../core/synchronization.md#draining-the-main-looper).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "you may need to insert shadowOf(getMainLooper()).idle() calls to your test to drain the main Looper"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Main looper has queued unexecuted runnables."
+        }
+      ]
+    },
+    {
+      "text": "- Non-touch input mode: specify the required input mode in `ComposeUiTestConfig`. See [configuration.md](../core/configuration.md#input-mode).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "To resolve this, specify the required input mode in ComposeUiTestConfig"
+        }
+      ]
+    },
+    {
+      "text": "- Rendering assertion after advancing the clock: call `waitForIdle` or `runOnIdle` before asserting. See [debugging.md](../debugging/debugging.md#wait-for-draw-before-capturing).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "you want to assert anything related to rendering (e.g. SemanticsNodeInteraction.captureToImage), you will need a call to androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle or androidx.compose.ui.test.junit4.ComposeTestRule.runOnIdle to make sure that any triggered draw pass has been completed."
+        }
+      ]
+    },
+    {
+      "text": "- Rerun the failing test with the same command and record the result.",
+      "meta": true
+    },
+    {
+      "text": "- Reintroduce the cause, confirm the test fails again, then restore the fix.",
+      "meta": true
+    },
+    {
+      "text": "- Print the semantics tree again after the fix and compare it with the tree from the investigation. See [debugging.md](../debugging/debugging.md#semantics-tree-printing).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
+          "quote": "Print the tree by calling composeTestRule.onRoot().printToLog() at any point in your test."
+        }
+      ]
+    },
+    {
+      "text": "- Remove temporary diagnostic output added during the investigation, and run the rest of the module's tests.",
+      "meta": true
+    },
+    {
+      "text": "- Ask an independent reviewer for a different explanation that fits the same evidence.",
+      "meta": true
+    }
+  ]
+}

@@ -1,0 +1,291 @@
+{
+  "units": [
+    {
+      "text": "Use when the goal is to check existing Compose UI tests against the official documentation and report which findings the documentation supports.",
+      "meta": true
+    },
+    {
+      "text": "1. Read each test, the code under test, and the build files. Run the tests and record the exact command and result as the baseline.",
+      "meta": true
+    },
+    {
+      "text": "2. Check the source set. Any UI test present in the `test` source set runs with Robolectric: [test-architecture.md](../architecture/test-architecture.md#source-sets).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Any UI test present in the test source set runs with Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "3. Check the setup functions. The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs: [test-suite-structure.md](../core/test-suite-structure.md#v2-apis).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs."
+        }
+      ]
+    },
+    {
+      "text": "4. Check for `createComposeRule` used together with `runTest`, which creates two separate clocks, one for Compose and one for the test coroutine scope: [test-suite-structure.md](../core/test-suite-structure.md#cautions).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Using createComposeRule in conjunction with runTest creates two separate clocks: one for Compose, and one for the test coroutine scope"
+        }
+      ]
+    },
+    {
+      "text": "5. Check for `androidx.compose.ui.test.junit4.ComposeTestRule` (for example `createComposeRule`) used inside `runAndroidComposeUiTest`, `runEmptyComposeUiTest`, or their variants. These APIs independently manage the test environment, so mixing them may lead to unexpected behavior: [test-suite-structure.md](../core/test-suite-structure.md#cautions).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/v2/package-summary",
+          "quote": "Avoid using androidx.compose.ui.test.junit4.ComposeTestRule (e.g., createComposeRule) inside runAndroidComposeUiTest or any of their respective variants"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/v2/package-summary",
+          "quote": "Since these APIs independently manage the test environment, mixing them may lead to unexpected behavior"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/v2/package-summary",
+          "quote": "Avoid using androidx.compose.ui.test.junit4.ComposeTestRule (e.g., createComposeRule) inside runEmptyComposeUiTest or any of their respective variants"
+        }
+      ]
+    },
+    {
+      "text": "6. Check how tests wait. In some cases, an external `CountDownLatch` used instead of the `waitUntil` APIs could behave unexpectedly, since the test clock won't be advanced: [synchronization.md](../core/synchronization.md#warnings).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "In some cases, using mechanisms in a test like an external CountDownLatch instead of the waitUntil APIs could behave unexpectedly, since the test clock won't be advanced"
+        }
+      ]
+    },
+    {
+      "text": "7. Check the finders. The documentation says to use `onChild` only if the node has exactly one child, and `onSibling` only if the node has exactly one sibling: [semantics-finders.md](../core/semantics-finders.md#anti-patterns-to-avoid).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns exactly one child of this node. Use this only if this node has exactly one child."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Returns exactly one sibling of this node. Use this only if this node has exactly one sibling."
+        }
+      ]
+    },
+    {
+      "text": "8. Check the actions. You cannot chain actions inside a perform function, and `performGesture` is deprecated and replaced by `performTouchInput`: [assertions-actions.md](../core/assertions-actions.md#anti-patterns-to-avoid).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "You cannot chain actions inside a perform function. Instead, make multiple perform...() calls."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "This function is deprecated. > Replaced by performTouchInput, use this instead: > > kotlin > performTouchInput(block)"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Replaced by performTouchInput, use this instead: performTouchInput(block)"
+        }
+      ]
+    },
+    {
+      "text": "9. Check the scroll actions. `performScrollTo` acts on a node that is part of the scrollable content, while `performScrollToIndex` and `performScrollToKey` act on a scrollable container: [assertions-actions.md](../core/assertions-actions.md#anti-patterns-to-avoid).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on the node that is part of the scrollable content, not on the scrollable container"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container"
+        }
+      ]
+    },
+    {
+      "text": "10. Check for mocks or spies of Android classes that will be acted on by other Android code, such as `Context` and `SharedPreferences`. The small exceptions are classes with very narrow responsibilities, such as event listeners. Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades: [debugging.md](../debugging/debugging.md#anti-patterns-to-avoid).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. Context, SharedPreferences, and many others)."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners."
+        }
+      ]
+    },
+    {
+      "text": "11. Check for custom semantics properties that expose visual properties such as colors, font size or rounded corner radius. This is not recommended: [semantics-finders.md](../core/semantics-finders.md#anti-patterns-to-avoid).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find."
+        }
+      ]
+    },
+    {
+      "text": "12. Check what the tests rely on. System UI like edge-to-edge or picture-in-picture, and unsupported features like `WebView`, still require device tests: [test-architecture.md](../architecture/test-architecture.md#device-tests).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like WebView."
+        }
+      ]
+    },
+    {
+      "text": "13. Check for `enableAccessibilityChecks` in tests that run on Robolectric. It requires API 34+ and is not supported on Robolectric: [runtime-modes.md](../core/runtime-modes.md#accessibility-checks-on-robolectric).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "This requires API 34+ (Android U), and currently does not work on Robolectric."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTest",
+          "quote": "Requires API 34+ (Android U) and is not supported on Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "14. Check for `LooperMode.Mode.LEGACY`. It is deprecated and is not supported on Android SDKs > Baklava: [runtime-modes.md](../core/runtime-modes.md#looper-mode).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Deprecated. use LooperMode.PAUSED"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "LEGACY mode is not supported on Android SDKs > Baklava"
+        }
+      ]
+    },
+    {
+      "text": "- Report each finding with the test and line, the documented statement it relies on, and the official page that states it.",
+      "meta": true
+    },
+    {
+      "text": "- List separately anything you noticed that no official page covers, and mark it not documented. Do not present it as a finding.",
+      "meta": true
+    },
+    {
+      "text": "- Give the baseline command and result, and say which tests were not run.",
+      "meta": true
+    },
+    {
+      "text": "- If the request was only for a review, stop here.",
+      "meta": true
+    },
+    {
+      "text": "- Change only what a finding supports, and keep each change traceable to that finding.",
+      "meta": true
+    },
+    {
+      "text": "- For v1 setup functions, follow [migrate-to-v2-apis.md](migrate-to-v2-apis.md).",
+      "meta": true
+    },
+    {
+      "text": "- For `createComposeRule` used together with `runTest`, switch to `runComposeUiTest`. The `runComposeUiTest` API automatically executes the test block within its own `runTest` scope, and the test clock is synchronized with the Compose environment: [flaky-tests.md](../debugging/flaky-tests.md#migrate-to-runcomposeuitest).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "If you're using Compose test APIs alongside the Kotlin runTest API, it's strongly recommended to switch to runComposeUiTest"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Using createComposeRule in conjunction with runTest creates two separate clocks: one for Compose, and one for the test coroutine scope"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "This configuration can force you to manually synchronize the test scheduler"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "The runComposeUiTest API automatically executes your test block within its own runTest scope"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "If you're using Compose test APIs alongside the Kotlin runTest API, it's strongly recommended to switch to"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "The runComposeUiTest API automatically executes your test block within its own runTest scope. The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually."
+        }
+      ]
+    },
+    {
+      "text": "- Replace `performGesture` with `performTouchInput`, and make multiple `perform...()` calls instead of chaining actions: [assertions-actions.md](../core/assertions-actions.md#anti-patterns-to-avoid).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "You cannot chain actions inside a perform function. Instead, make multiple perform...() calls."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Replaced by performTouchInput, use this instead: performTouchInput(block)"
+        }
+      ]
+    },
+    {
+      "text": "- A condition that depends on external work, such as data loading or measure or draw external to Compose, should use `waitUntil()`: [debugging.md](../debugging/debugging.md#anti-patterns-to-avoid).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+        }
+      ]
+    },
+    {
+      "text": "- Replace `LooperMode.Mode.LEGACY` with `LooperMode.PAUSED`: [runtime-modes.md](../core/runtime-modes.md#looper-mode).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Deprecated. use LooperMode.PAUSED"
+        }
+      ]
+    },
+    {
+      "text": "- Run the baseline commands again and compare the results with the baseline.",
+      "meta": true
+    },
+    {
+      "text": "- For each changed test, break the behavior it checks, confirm the failure, then restore it.",
+      "meta": true
+    },
+    {
+      "text": "- Re-read every finding against its reference file or official page, and drop any finding you cannot tie to one.",
+      "meta": true
+    },
+    {
+      "text": "- Before reporting a test as needing a device, note that Robolectric provides enough fidelity to run most UI tests, including behavior tests such as a Compose test that verifies the UI has changed after clicking a button: [test-suite-structure.md](../core/test-suite-structure.md#robolectric-versus-device-tests).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button."
+        },
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like WebView."
+        }
+      ]
+    },
+    {
+      "text": "- Before reporting a test as too broad, note that the documentation says UI tests scoping larger parts of your UI are also very important: [test-suite-structure.md](../core/test-suite-structure.md#test-scope).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "This doesn't mean you should *only* create unit UI tests. UI tests scoping larger parts of your UI are also very important."
+        }
+      ]
+    }
+  ]
+}

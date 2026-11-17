@@ -1,0 +1,289 @@
+{
+  "units": [
+    {
+      "text": "Use this playbook when a Compose UI test passes and fails without code changes.",
+      "meta": true
+    },
+    {
+      "text": "1. Run the test repeatedly with the same command and record each pass or fail, with the failure message of each failing run.",
+      "meta": true
+    },
+    {
+      "text": "2. Compare the output of a failing run with the output of a passing run.",
+      "meta": true
+    },
+    {
+      "text": "3. Check whether the test uses the methods that synchronize it with the UI. Assertions and actions through the rule synchronize beforehand, and without synchronizing methods no recomposition occurs. See [flaky-tests.md](../debugging/flaky-tests.md#compose-synchronization).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Compose tests are synchronized by default with your UI. When you call an assertion or an action with the ComposeTestRule, the test is synchronized beforehand, waiting until the UI tree is idle."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "However, if you don't use the methods that synchronize your tests, no recomposition will occur and the UI will appear to be paused."
+        }
+      ]
+    },
+    {
+      "text": "4. Check the `autoAdvance` property of the main clock, because `waitForIdle()` depends on it. See [flaky-tests.md](../debugging/flaky-tests.md#manual-synchronization).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "function waits for Compose to be idle, but the function depends on the autoAdvance property:"
+        }
+      ]
+    },
+    {
+      "text": "5. Check whether the test waits for a condition that depends on external work, such as data loading, without `waitUntil`. See [flaky-tests.md](../debugging/flaky-tests.md#wait-for-conditions).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+        }
+      ]
+    },
+    {
+      "text": "6. Check whether the test uses an external mechanism such as `CountDownLatch` instead of the `waitUntil` APIs. In some cases this could behave unexpectedly, since the test clock won't be advanced. See [synchronization.md](../core/synchronization.md#warnings).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "In some cases, using mechanisms in a test like an external CountDownLatch instead of the waitUntil APIs could behave unexpectedly, since the test clock won't be advanced."
+        }
+      ]
+    },
+    {
+      "text": "7. Check whether asynchronous work that is not done through Compose's mechanisms is registered as an `IdlingResource`. See [synchronization.md](../core/synchronization.md#idling-resources).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/IdlingResource",
+          "quote": "However, any asynchronous work that is not done through one of Compose's mechanisms won't be included in the default synchronization"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/IdlingResource",
+          "quote": "For such work, test authors can create an IdlingResource and register it into the test with androidx.compose.ui.test.junit4.ComposeTestRule .registerIdlingResource, and the interaction will wait for that resource to become idle prior to performing it"
+        }
+      ]
+    },
+    {
+      "text": "8. Check which API version the test uses. The v1 APIs run a launched coroutine immediately, which could mask real timing issues or race conditions, while the v2 APIs queue it until the test advances the virtual clock. See [flaky-tests.md](../debugging/flaky-tests.md#coroutine-timing-v1-vs-v2).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "v1 APIs (UnconfinedTestDispatcher): When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Unlike production behavior, this immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "v2 APIs (StandardTestDispatcher): When a coroutine is launched, it is queued and does not execute until the test explicitly advances the virtual clock."
+        }
+      ]
+    },
+    {
+      "text": "9. Check whether the test combines `createComposeRule` with `runTest`, which creates two separate clocks. See [flaky-tests.md](../debugging/flaky-tests.md#migrate-to-runcomposeuitest).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Using createComposeRule in conjunction with runTest creates two separate clocks: one for Compose, and one for the test coroutine scope."
+        }
+      ]
+    },
+    {
+      "text": "10. Check each timeout: the `waitUntil` timeout on the rule observes wall clock time, while the `advanceTimeUntil` timeout is test clock time. See [synchronization.md](../core/synchronization.md#waituntil-behavior).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "This observes wall clock time, not test clock time"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "This is test clock time, not the wall clock or cpu time"
+        }
+      ]
+    },
+    {
+      "text": "11. Check the Looper mode. In `LooperMode.PAUSED`, tasks posted to the main Looper are not executed automatically, and tasks posted to background loopers run asynchronously in separate threads. See [flaky-tests.md](../debugging/flaky-tests.md#main-looper-and-threads).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Tasks posted to the main Looper are not executed automatically, and must be explicitly executed via ShadowLooper APIs like ShadowLooper.idle()."
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Each Looper has its own thread. Tasks posted to background loopers are executed asynchronously in separate threads."
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "LooperMode.PAUSED"
+        }
+      ]
+    },
+    {
+      "text": "12. Check how many threads run during the test, because rogue threads often cause test pollution since they are not automatically cleaned up between tests. See [flaky-tests.md](../debugging/flaky-tests.md#limiting-threads).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DO limit the number of threads that are running during each test. Rogue threads often cause test pollution because they are not automatically cleaned up between tests."
+        }
+      ]
+    },
+    {
+      "text": "13. Check whether the test relies on non-touch input modes configured through instrumentation APIs before the test starts, which can make tests fail during migration. See [flaky-tests.md](../debugging/flaky-tests.md#input-mode-leakage).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts."
+        }
+      ]
+    },
+    {
+      "text": "- State the observed pass and fail pattern, with the commands and the number of runs.",
+      "meta": true
+    },
+    {
+      "text": "- State the cause that the difference between failing and passing runs supports, with the evidence behind it.",
+      "meta": true
+    },
+    {
+      "text": "- If repeated runs do not reproduce the failure, say the cause is not established.",
+      "meta": true
+    },
+    {
+      "text": "- If no official page covers the behavior, say it is not documented.",
+      "meta": true
+    },
+    {
+      "text": "- Fix the cause the evidence points to, with the smallest change. Each item below applies to one cause from the investigation.",
+      "meta": true
+    },
+    {
+      "text": "- Condition on external work: use `waitUntil` or one of its helpers. See [synchronization.md](../core/synchronization.md#waiting-for-conditions).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "You can also use any of the waitUntil helpers:"
+        }
+      ]
+    },
+    {
+      "text": "- Condition on Compose state: try `MainTestClock.advanceTimeUntil` before `waitUntil`, because `waitUntil` sleeps after every iteration. See [synchronization.md](../core/synchronization.md#waituntil-behavior).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "Therefore, we recommend that you try using MainTestClock.advanceTimeUntil before resorting to waitUntil"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "Compared to MainTestClock.advanceTimeUntil, waitUntil sleeps after every iteration to yield to other processes"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Note that the given condition should be checking the state that can be affected by this clock (it only works with Compose state)."
+        }
+      ]
+    },
+    {
+      "text": "- Background work outside Compose: register an `IdlingResource` on the rule. See [synchronization.md](../core/synchronization.md#idling-resources).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/IdlingResource",
+          "quote": "For such work, test authors can create an IdlingResource and register it into the test with androidx.compose.ui.test.junit4.ComposeTestRule .registerIdlingResource, and the interaction will wait for that resource to become idle prior to performing it"
+        }
+      ]
+    },
+    {
+      "text": "- Assertions on shared variables: use `runOnIdle`, which waits until the app is idle. See [synchronization.md](../core/synchronization.md#runonidle).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "Executes the given action in the same way as runOnUiThread but waits until the app is idle before executing the action. This is the recommended way of doing your assertions on shared variables."
+        }
+      ]
+    },
+    {
+      "text": "- Queued coroutines: use `waitForIdle` or `runOnIdle` before asserting. In scenarios involving manual synchronization, such as when auto-advancing is disabled, use `runCurrent()` to execute queued tasks without advancing the virtual clock. See [flaky-tests.md](../debugging/flaky-tests.md#failures-after-upgrading-to-v2) and [flaky-tests.md](../debugging/flaky-tests.md#run-queued-coroutines-without-advancing-time).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "Use waitForIdle or runOnIdle to execute queued tasks before asserting"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "In scenarios involving manual synchronization, such as when auto-advancing is disabled, launching a coroutine does not result in immediate execution because the test clock is paused."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "To execute coroutines in the queue without advancing the virtual clock, use the runCurrent() API."
+        }
+      ]
+    },
+    {
+      "text": "- Compose test APIs alongside `runTest`: switch to `runComposeUiTest`, which is strongly recommended. See [flaky-tests.md](../debugging/flaky-tests.md#migrate-to-runcomposeuitest).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "If you're using Compose test APIs alongside the Kotlin runTest API, it's strongly recommended to switch to runComposeUiTest."
+        }
+      ]
+    },
+    {
+      "text": "- Unexecuted main Looper tasks: if you see test failures like 'Main looper has queued unexecuted runnables.', you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper. See [synchronization.md](../core/synchronization.md#draining-the-main-looper).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "you may need to insert shadowOf(getMainLooper()).idle() calls to your test to drain the main Looper"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Main looper has queued unexecuted runnables."
+        }
+      ]
+    },
+    {
+      "text": "- Extra threads: if necessary to run multiple threads, explicitly stop all threads and `ExecutorServices`. See [flaky-tests.md](../debugging/flaky-tests.md#limiting-threads).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "If it's necessary to run multiple threads during a test, make sure to explicitly stop all threads and ExecutorServices to avoid test pollution."
+        }
+      ]
+    },
+    {
+      "text": "- Non-touch input mode: specify the required input mode in `ComposeUiTestConfig`. See [flaky-tests.md](../debugging/flaky-tests.md#input-mode-leakage).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "To resolve this, specify the required input mode in ComposeUiTestConfig"
+        }
+      ]
+    },
+    {
+      "text": "- Rerun the test the same number of times with the same command as the investigation, and compare the pass and fail record with the earlier one.",
+      "meta": true
+    },
+    {
+      "text": "- Where the failure can be reproduced, reintroduce the cause, confirm the failure returns, then restore the fix.",
+      "meta": true
+    },
+    {
+      "text": "- Check whether the test waits with an external mechanism such as `CountDownLatch` instead of the `waitUntil` APIs, which in some cases could behave unexpectedly. See [synchronization.md](../core/synchronization.md#warnings).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "In some cases, using mechanisms in a test like an external CountDownLatch instead of the waitUntil APIs could behave unexpectedly, since the test clock won't be advanced."
+        }
+      ]
+    },
+    {
+      "text": "- Ask an independent reviewer for a different explanation that fits the same pass and fail record.",
+      "meta": true
+    }
+  ]
+}

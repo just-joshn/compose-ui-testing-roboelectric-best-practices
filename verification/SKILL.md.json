@@ -1,7 +1,7 @@
 {
   "units": [
     {
-      "text": " Use when writing, reviewing, or debugging Jetpack Compose UI tests that run locally on the JVM with Robolectric. Covers compose test rules (createComposeRule, createAndroidComposeRule, runComposeUiTest), semantics finders and matchers, merged vs unmerged trees, assertions and actions, synchronization and idling resources, waitUntil, the MainTestClock and animations, coroutines in the v2 test APIs, state restoration (StateRestorationTester), device configuration (DeviceConfigurationOverride, Robolectric qualifiers), accessibility checks and focus tests, View, Espresso and UiAutomator interoperability, shadows and mocks, Robolectric @Config, robolectric.properties, LooperMode, GraphicsMode, SQLiteMode, screenshots, flaky tests, debugging with printToLog, choosing Robolectric or device tests, and CI.",
+      "text": " Workflow for Jetpack Compose UI tests with Robolectric. Given a goal, constraints, and a success check, it selects a playbook, investigates, makes a small change grounded in current official Compose testing and Robolectric documentation, verifies the real result, and returns evidence for review. Use when writing a new Compose UI test, debugging a failing test, fixing a flaky test, reviewing tests, setting up Robolectric, or migrating to the v2 Compose test APIs.",
       "meta": true
     },
     {
@@ -22,78 +22,179 @@
       ]
     },
     {
-      "text": "This skill provides guidance for Jetpack Compose UI tests that run on the JVM with Robolectric. It uses only the official Compose UI testing and Robolectric documentation. Every statement in the reference files is backed by a quote from those pages, recorded in the repository's `verification/` ledgers.",
+      "text": "The user directs the outcome. This skill coordinates the process: it works like a disciplined Compose UI testing and Robolectric team that prefers a small, well-supported change with a clear explanation.",
       "meta": true
     },
     {
-      "text": "Consult these references based on what you're doing:",
+      "text": "Follow the workflow below, taking the branch each decision points to. Each playbook supplies the task-specific part of the stages it names.",
       "meta": true
     },
     {
-      "text": "**When to use**: Creating new test files, writing test cases, implementing test scenarios",
+      "text": "The only sources of truth are current official Compose UI testing and Robolectric documentation: the Compose testing docs and the Compose test API reference on developer.android.com, and robolectric.org.",
       "meta": true
     },
     {
-      "text": "**When to use**: Testing font scale, locale, layout direction, dark mode, sizes, and Robolectric qualifiers",
+      "text": "- State facts about Compose testing or Robolectric only from the reference files this skill links to, or from those official pages. Each reference file lists its official sources.",
       "meta": true
     },
     {
-      "text": "**When to use**: Testing Compose alongside Views, Espresso, or UiAutomator",
+      "text": "- If neither covers a question, say it is not documented. Do not fill the gap from memory.",
       "meta": true
     },
     {
-      "text": "**When to use**: Test failures, node not found, timeouts, unexpected behavior",
+      "text": "- Facts about the user's project come from the project itself: its code, build files, and test output.",
       "meta": true
     },
     {
-      "text": "**When to use**: Choosing between Robolectric and device tests, or deciding what to replace",
+      "text": "Start every task by writing down three things:",
       "meta": true
     },
     {
-      "text": "**When to use**: Improving existing tests, code review",
+      "text": "- **Goal**: the outcome the user wants.",
       "meta": true
     },
     {
-      "text": "**When to use**: Setting up the project, Robolectric config, CI",
+      "text": "- **Constraints**: what must not change, and any limits on time, scope, or tools.",
       "meta": true
     },
     {
-      "text": "After writing or modifying tests:",
+      "text": "- **Success check**: an observable result that shows the goal is met, such as a named test passing.",
       "meta": true
     },
     {
-      "text": "1. **Run the tests**.",
+      "text": "If the user gave all three, restate them and continue. If one is missing, propose it from the request and continue; ask only when the choice would change what you build.",
       "meta": true
     },
     {
-      "text": "2. **Look at the semantics tree**, the main way to solve problems in your tests: `composeTestRule.onRoot().printToLog()` → [debugging.md](debugging/debugging.md)",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
-          "quote": "The main way to solve problems in your tests is to look at the semantics tree. Print the tree by calling composeTestRule.onRoot().printToLog() at any point in your test."
-        }
-      ]
+      "text": "Pick the playbook that matches the goal. If none fits exactly, use the closest one and say which one you chose.",
+      "meta": true
     },
     {
-      "text": "3. **Match unmerged nodes when needed**: set `useUnmergedTree` to `true` → [semantics-finders.md](core/semantics-finders.md)",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
-          "quote": "If you need to match a node of what would be the *unmerged* tree, you can set useUnmergedTree to true"
-        }
-      ]
+      "text": "Follow the playbook's investigation steps. In every playbook:",
+      "meta": true
     },
     {
-      "text": "4. **Conditions that depend on external work**: use a more general concept such as `waitUntil()` → [synchronization.md](core/synchronization.md)",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
-        }
-      ]
+      "text": "- Read the code under test and the existing tests before proposing anything.",
+      "meta": true
     },
     {
-      "text": "5. **Repeat** until the tests pass.",
+      "text": "- Run the relevant tests and record the exact command and its result.",
+      "meta": true
+    },
+    {
+      "text": "- Record each piece of evidence with where it came from: a command and its output, a file and line, or an official page.",
+      "meta": true
+    },
+    {
+      "text": "- Split independent investigations across subagents when the harness supports them. Keep a single owner for edits.",
+      "meta": true
+    },
+    {
+      "text": "Decide what the user asked for:",
+      "meta": true
+    },
+    {
+      "text": "- **Explanation or plan**: go to Deliver supported findings.",
+      "meta": true
+    },
+    {
+      "text": "- **Working change**: go to Design and implement.",
+      "meta": true
+    },
+    {
+      "text": "Report the answer, the evidence behind it, the official pages that support each technical statement, and any open questions. Use the playbook's guidance for what to include. This ends the workflow.",
+      "meta": true
+    },
+    {
+      "text": "- Make the smallest change that meets the success check within the constraints.",
+      "meta": true
+    },
+    {
+      "text": "- Use only the APIs and patterns in the playbook's reference files.",
+      "meta": true
+    },
+    {
+      "text": "- Keep each change traceable to a piece of evidence from the investigation.",
+      "meta": true
+    },
+    {
+      "text": "- Run the success check itself, not a proxy, and record the command and output.",
+      "meta": true
+    },
+    {
+      "text": "- Show that the test can fail: break the behavior it checks, confirm the failure, then restore it.",
+      "meta": true
+    },
+    {
+      "text": "- Re-read every technical statement in your explanation against its reference file or official page.",
+      "meta": true
+    },
+    {
+      "text": "- Ask an independent reviewer, such as a fresh subagent, to challenge the change and the explanation when the harness supports it.",
+      "meta": true
+    },
+    {
+      "text": "- **Yes**: go to Deliver the change and evidence.",
+      "meta": true
+    },
+    {
+      "text": "- **No or inconclusive**: return to Investigate and establish evidence with what you learned. If the same check fails twice for the same reason, stop and report the evidence instead of trying a third fix built on the same assumption.",
+      "meta": true
+    },
+    {
+      "text": "Report in this order:",
+      "meta": true
+    },
+    {
+      "text": "1. Goal, constraints, and success check.",
+      "meta": true
+    },
+    {
+      "text": "2. Playbook used.",
+      "meta": true
+    },
+    {
+      "text": "3. What changed, by file.",
+      "meta": true
+    },
+    {
+      "text": "4. Evidence: commands run and their results, before and after.",
+      "meta": true
+    },
+    {
+      "text": "5. Official sources for each technical statement.",
+      "meta": true
+    },
+    {
+      "text": "6. Risks and open questions.",
+      "meta": true
+    },
+    {
+      "text": "Shipping means committing, pushing, opening a pull request, or merging. It is authorized only when the user said so for this task.",
+      "meta": true
+    },
+    {
+      "text": "- **Yes**: go to Manage review and land verified work.",
+      "meta": true
+    },
+    {
+      "text": "- **No**: go to Hand back for review.",
+      "meta": true
+    },
+    {
+      "text": "Commit only the verified change, open a pull request whose description carries the evidence report, wait for CI, and answer review comments. Merge only if the user authorized merging. Then go to Capture useful lessons.",
+      "meta": true
+    },
+    {
+      "text": "Leave the change uncommitted, or on its own branch if one was already in use, and present the evidence report. Then go to Capture useful lessons.",
+      "meta": true
+    },
+    {
+      "text": "List what you learned that would help next time, such as a documented behavior that surprised you or a check that caught a mistake. Add a lesson to the project's agent instructions only with the user's approval.",
+      "meta": true
+    },
+    {
+      "text": "Reference files, each verified against the official pages it lists:",
       "meta": true
     }
   ]
