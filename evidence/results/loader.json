@@ -1,7 +1,0 @@
-{
-  "harness": "Pi 1.5.2",
-  "activation": "explicit /skill:compose-ui-testing-robolectric-best-practices",
-  "expanded_skill_tag": "<skill name=\"compose-ui-testing-robolectric-best-practices\" location=\"/Users/josh-desktop/src/personal/compose-ui-testing-roboelectric-best-practices/compose-ui-testing-robolectric-best-practices/SKILL.md\">",
-  "expanded_routing_present": true,
-  "response": "Use [references/semantics.md](compose-ui-testing-robolectric-best-practices/references/semantics.md). It covers repeated labels, ambiguous selectors, and merged versus unmerged nodes.\n\nA singular finder must match exactly one node. Disambiguate \u201cOpen\u201d using its semantic context rather than selecting by index\u2014unless order is the behavior under test."
-}

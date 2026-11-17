@@ -1,8 +1,0 @@
-.work/
-TODO.md
-.gradle/
-**/build/
-local.properties
-.DS_Store
-__pycache__/
-*.pyc

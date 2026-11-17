@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="BookingControlsTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-16T21:00:49.700Z" hostname="mac-mini.local" time="3.08">
-  <properties/>
-  <testcase name="selectionsSurviveBackAndReachBookingCallback" classname="BookingControlsTest" time="2.915"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
