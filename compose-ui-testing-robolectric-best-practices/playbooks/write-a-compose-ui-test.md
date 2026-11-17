@@ -4,7 +4,15 @@
 
 Use this playbook when the goal is a new Compose UI test that runs on Robolectric.
 
-## Investigate and establish evidence
+## Delegate
+
+- Delegate to one read-only subagent: read the composable under test, the code that calls it, and the existing tests that cover it, and report what the test should check.
+- Keep for yourself: the module setup checks, the decision between Robolectric and a device test, and writing the test.
+- After verification, delegate the challenge to a fresh reviewer: report any way the new test could pass while the behavior is broken, and check each technical statement against its reference.
+
+## Investigate and design
+
+### Investigate
 
 1. Read the composable under test, the code that calls it, and any existing tests that cover it.
 2. Check that the module declares the Compose UI test dependencies and the Robolectric dependencies. See [configuration.md](../references/core/configuration.md#quick-reference).
@@ -15,14 +23,7 @@ Use this playbook when the goal is a new Compose UI test that runs on Robolectri
 7. Print the semantics tree, which is the main way to solve problems in tests. Developers decide what and how much to expose to it. See [debugging.md](../references/debugging/debugging.md#semantics-tree-printing) and [semantics-finders.md](../references/core/semantics-finders.md#semantics-tree).
 8. Run the existing tests of the module and record the exact command and its result.
 
-## Deliver supported findings
-
-- State the behavior the test will check and the success check.
-- Name the rule or test function, the finders, and the assertions chosen, each with the reference or official page that supports it.
-- Name any behavior that needs a device test, with the evidence.
-- List open questions.
-
-## Design and implement
+### Design
 
 - Build the test from the documented structure: a rule, content set on it, a finder, an action, and an assertion. See [test-suite-structure.md](../references/core/test-suite-structure.md#quick-reference).
 - Use the v2 rule and test functions. The v1 APIs are deprecated, and migrating to the new APIs is strongly recommended. See [test-suite-structure.md](../references/core/test-suite-structure.md#v2-apis).
@@ -32,7 +33,12 @@ Use this playbook when the goal is a new Compose UI test that runs on Robolectri
 - Rely on the documented synchronization: assertions and actions on the rule synchronize with the UI first, and a condition that depends on external work should use a more general concept such as `waitUntil`. See [synchronization.md](../references/core/synchronization.md#automatic-synchronization) and [synchronization.md](../references/core/synchronization.md#waiting-for-conditions).
 - To run under a different SDK, specify the desired SDK(s) using the `sdk`, `minSdk` and `maxSdk` config properties. You can explicitly configure the set of resource qualifiers in effect for a test with `qualifiers`. To configure Robolectric for a single test class or method, use the `@Config` annotation on that class or method. See [configuration.md](../references/core/configuration.md#sdk-level), [configuration.md](../references/core/configuration.md#qualifiers), and [configuration.md](../references/core/configuration.md#config-annotation).
 
-## Verify behavior and challenge findings
+## Implement and clean
+
+- Write only the test the design names.
+- Remove temporary code and output added while investigating.
+
+## Verify actual behavior
 
 - Run the new test and record the exact command and its result.
 - Break the behavior the test checks, confirm the test fails, then restore the behavior.
@@ -40,6 +46,13 @@ Use this playbook when the goal is a new Compose UI test that runs on Robolectri
 - Check whether the test mocks or spies on Android classes that will be acted on by other Android code. The small exceptions are classes with very narrow responsibilities, such as event listeners. See [test-doubles.md](../references/architecture/test-doubles.md#mocking-and-spying-on-android-classes).
 - Check whether the test waits with an external mechanism such as `CountDownLatch` instead of the `waitUntil` APIs. In some cases this could behave unexpectedly, since the test clock won't be advanced. See [synchronization.md](../references/core/synchronization.md#warnings).
 - Ask an independent reviewer to challenge the test and to check each technical statement against its reference.
+
+## Deliver artifact and evidence
+
+- State the behavior the test checks and the success check.
+- Name the rule or test function, the finders, and the assertions chosen, each with the reference or official page that supports it.
+- Name any behavior that needs a device test, with the evidence.
+- List open questions.
 
 ## Sources
 

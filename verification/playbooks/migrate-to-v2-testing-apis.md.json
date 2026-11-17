@@ -109,10 +109,6 @@
       "meta": true
     },
     {
-      "text": "- If the request was only for an explanation or plan, stop here.",
-      "meta": true
-    },
-    {
       "text": "- Make one kind of change at a time, and run the tests after each.",
       "meta": true
     },
@@ -258,7 +254,7 @@
       ]
     },
     {
-      "text": "- When a migrated test newly fails, consider that v1 immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application: [coroutines.md](../testing-patterns/coroutines.md#dispatchers-in-the-v1-and-v2-apis).",
+      "text": "- When a migrated test newly fails, check whether v1 immediate execution had inadvertently masked a real timing issue or race condition that would occur in a live application, and report it as such if so: [coroutines.md](../testing-patterns/coroutines.md#dispatchers-in-the-v1-and-v2-apis).",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
@@ -272,6 +268,26 @@
     },
     {
       "text": "- Re-read every statement against its reference file or official page.",
+      "meta": true
+    },
+    {
+      "text": "- Delegate the survey by module: each read-only subagent lists the old setup functions and patterns in its module, with file and line.",
+      "meta": true
+    },
+    {
+      "text": "- Keep for yourself: the edits, one file at a time, running that file's tests after each.",
+      "meta": true
+    },
+    {
+      "text": "- After verification, delegate the challenge to a fresh reviewer: compare the migrated files with the migration reference and the baseline results.",
+      "meta": true
+    },
+    {
+      "text": "- Migrate one file at a time, in the order the design lists.",
+      "meta": true
+    },
+    {
+      "text": "- Remove temporary code added during the migration.",
       "meta": true
     }
   ]

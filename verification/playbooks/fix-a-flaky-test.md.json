@@ -148,10 +148,6 @@
       "meta": true
     },
     {
-      "text": "- If repeated runs do not reproduce the failure, say the cause is not established.",
-      "meta": true
-    },
-    {
       "text": "- If no official page covers the behavior, say it is not documented.",
       "meta": true
     },
@@ -234,7 +230,7 @@
       ]
     },
     {
-      "text": "- Unexecuted main Looper tasks: if you see test failures like 'Main looper has queued unexecuted runnables.', you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper. See [synchronization.md](../core/synchronization.md#draining-the-main-looper).",
+      "text": "- Unexecuted main Looper tasks: if you see test failures like 'Main looper has queued unexecuted runnables.', insert `shadowOf(getMainLooper()).idle()` calls into your test to drain the main Looper. See [synchronization.md](../references/core/synchronization.md#draining-the-main-looper).",
       "quotes": [
         {
           "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
@@ -287,6 +283,30 @@
     },
     {
       "text": "- Report the result as the record itself, such as the number of failing runs out of the total. A run of passes is not proof that the flakiness is gone; if the record cannot show the cause is removed, mark the check Unresolved.",
+      "meta": true
+    },
+    {
+      "text": "- Delegate to one read-only subagent: run the test repeatedly with one command and return the pass and fail record with each failure message.",
+      "meta": true
+    },
+    {
+      "text": "- Delegate to a second read-only subagent: read the test and the code under test for timing, waiting, and shared state, and report each candidate cause with its location.",
+      "meta": true
+    },
+    {
+      "text": "- Keep for yourself: matching the candidates to the record, naming the cause, and making the fix.",
+      "meta": true
+    },
+    {
+      "text": "- After verification, delegate the challenge to a fresh reviewer: look for a different explanation that fits the same pass and fail record.",
+      "meta": true
+    },
+    {
+      "text": "- Change only what the named cause requires.",
+      "meta": true
+    },
+    {
+      "text": "- Remove the repeat-run scaffolding and temporary output added while investigating.",
       "meta": true
     }
   ]

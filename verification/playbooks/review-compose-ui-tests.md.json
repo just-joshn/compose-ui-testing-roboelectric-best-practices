@@ -178,11 +178,7 @@
       "meta": true
     },
     {
-      "text": "- If the request was only for a review, stop here.",
-      "meta": true
-    },
-    {
-      "text": "- Change only what a finding supports, and keep each change traceable to that finding.",
+      "text": "- Recommend only what a finding supports, and keep each recommendation traceable to that finding. Each item below is a recommendation to report; apply none of them.",
       "meta": true
     },
     {
@@ -254,11 +250,7 @@
       ]
     },
     {
-      "text": "- Run the baseline commands again and compare the results with the baseline.",
-      "meta": true
-    },
-    {
-      "text": "- For each changed test, break the behavior it checks, confirm the failure, then restore it.",
+      "text": "- Run the baseline commands again, compare the results with the baseline, and confirm that no project file changed.",
       "meta": true
     },
     {
@@ -286,6 +278,26 @@
           "quote": "This doesn't mean you should *only* create unit UI tests. UI tests scoping larger parts of your UI are also very important."
         }
       ]
+    },
+    {
+      "text": "- Delegate the review by test file: give each read-only subagent its files and this playbook's checks, and ask for each finding with its file and line and the reference section behind it.",
+      "meta": true
+    },
+    {
+      "text": "- Keep for yourself: running the baseline, merging the findings, and checking every cited reference section before reporting it.",
+      "meta": true
+    },
+    {
+      "text": "- Delegate the challenge to a fresh reviewer: check that each reported finding is supported by its evidence and reference.",
+      "meta": true
+    },
+    {
+      "text": "- Write the findings report. Change no project files.",
+      "meta": true
+    },
+    {
+      "text": "- Remove any files created while reviewing.",
+      "meta": true
     }
   ]
 }

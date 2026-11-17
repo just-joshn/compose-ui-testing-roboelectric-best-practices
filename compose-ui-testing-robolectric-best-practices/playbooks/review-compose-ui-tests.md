@@ -4,7 +4,15 @@
 
 Use when the goal is to check existing Compose UI tests against the official documentation and report which findings the documentation supports.
 
-## Investigate and establish evidence
+## Delegate
+
+- Delegate the review by test file: give each read-only subagent its files and this playbook's checks, and ask for each finding with its file and line and the reference section behind it.
+- Keep for yourself: running the baseline, merging the findings, and checking every cited reference section before reporting it.
+- Delegate the challenge to a fresh reviewer: check that each reported finding is supported by its evidence and reference.
+
+## Investigate and design
+
+### Investigate
 
 1. Read each test, the code under test, and the build files. Run the tests and record the exact command and result as the baseline.
 2. Check the source set. Any UI test present in the `test` source set runs with Robolectric: [test-architecture.md](../references/architecture/test-architecture.md#source-sets).
@@ -21,29 +29,32 @@ Use when the goal is to check existing Compose UI tests against the official doc
 13. Check for `enableAccessibilityChecks` in tests that run on Robolectric. It requires API 34+ and is not supported on Robolectric: [runtime-modes.md](../references/core/runtime-modes.md#accessibility-checks-on-robolectric).
 14. Check for `LooperMode.Mode.LEGACY`. It is deprecated and is not supported on Android SDKs > Baklava: [runtime-modes.md](../references/core/runtime-modes.md#looper-mode).
 
-## Deliver supported findings
+### Design
 
-- Report each finding with the test and line, the documented statement it relies on, and the official page that states it.
-- List separately anything you noticed that no official page covers, and mark it not documented. Do not present it as a finding.
-- Give the baseline command and result, and say which tests were not run.
-- If the request was only for a review, stop here.
-
-## Design and implement
-
-- Change only what a finding supports, and keep each change traceable to that finding.
+- Recommend only what a finding supports, and keep each recommendation traceable to that finding. Each item below is a recommendation to report; apply none of them.
 - For v1 setup functions, follow [migrate-to-v2-testing-apis.md](migrate-to-v2-testing-apis.md).
 - For `createComposeRule` used together with `runTest`, switch to `runComposeUiTest`. The `runComposeUiTest` API automatically executes the test block within its own `runTest` scope, and the test clock is synchronized with the Compose environment: [flaky-tests.md](../references/debugging/flaky-tests.md#migrate-to-runcomposeuitest).
 - Replace `performGesture` with `performTouchInput`, and make multiple `perform...()` calls instead of chaining actions: [assertions-actions.md](../references/core/assertions-actions.md#anti-patterns-to-avoid).
 - A condition that depends on external work, such as data loading or measure or draw external to Compose, should use `waitUntil()`: [debugging.md](../references/debugging/debugging.md#anti-patterns-to-avoid).
 - Replace `LooperMode.Mode.LEGACY` with `LooperMode.PAUSED`: [runtime-modes.md](../references/core/runtime-modes.md#looper-mode).
 
-## Verify behavior and challenge findings
+## Implement and clean
 
-- Run the baseline commands again and compare the results with the baseline.
-- For each changed test, break the behavior it checks, confirm the failure, then restore it.
+- Write the findings report. Change no project files.
+- Remove any files created while reviewing.
+
+## Verify actual behavior
+
+- Run the baseline commands again, compare the results with the baseline, and confirm that no project file changed.
 - Re-read every finding against its reference file or official page, and drop any finding you cannot tie to one.
 - Before reporting a test as needing a device, note that Robolectric provides enough fidelity to run most UI tests, including behavior tests such as a Compose test that verifies the UI has changed after clicking a button: [test-suite-structure.md](../references/core/test-suite-structure.md#robolectric-versus-device-tests).
 - Before reporting a test as too broad, note that the documentation says UI tests scoping larger parts of your UI are also very important: [test-suite-structure.md](../references/core/test-suite-structure.md#test-scope).
+
+## Deliver artifact and evidence
+
+- Report each finding with the test and line, the documented statement it relies on, and the official page that states it.
+- List separately anything you noticed that no official page covers, and mark it not documented. Do not present it as a finding.
+- Give the baseline command and result, and say which tests were not run.
 
 ## Sources
 

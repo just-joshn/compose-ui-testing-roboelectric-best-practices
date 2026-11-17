@@ -138,10 +138,6 @@
       "meta": true
     },
     {
-      "text": "- If the request was only for an explanation or plan, stop here.",
-      "meta": true
-    },
-    {
       "text": "- Change only the settings the findings call for, and keep each change traceable to its finding.",
       "meta": true
     },
@@ -282,6 +278,26 @@
           "quote": "Because of that, you may notice different behaviours when running your app on a device or emulator, and running your tests on the JVM with Robolectric."
         }
       ]
+    },
+    {
+      "text": "- Delegate to one read-only subagent: read the build files and test configuration, run the baseline, and report the current setup with file and line.",
+      "meta": true
+    },
+    {
+      "text": "- Keep for yourself: every change to the build and test configuration.",
+      "meta": true
+    },
+    {
+      "text": "- After verification, delegate the challenge to a fresh reviewer: compare the changed configuration with its reference sections.",
+      "meta": true
+    },
+    {
+      "text": "- Change only the build and test configuration the design names.",
+      "meta": true
+    },
+    {
+      "text": "- Revert any configuration changed only to investigate.",
+      "meta": true
     }
   ]
 }

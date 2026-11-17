@@ -79,7 +79,7 @@
       "meta": true
     },
     {
-      "text": "- State the behavior the test will check and the success check.",
+      "text": "- State the behavior the test checks and the success check.",
       "meta": true
     },
     {
@@ -234,6 +234,26 @@
     },
     {
       "text": "- Ask an independent reviewer to challenge the test and to check each technical statement against its reference.",
+      "meta": true
+    },
+    {
+      "text": "- Delegate to one read-only subagent: read the composable under test, the code that calls it, and the existing tests that cover it, and report what the test should check.",
+      "meta": true
+    },
+    {
+      "text": "- Keep for yourself: the module setup checks, the decision between Robolectric and a device test, and writing the test.",
+      "meta": true
+    },
+    {
+      "text": "- After verification, delegate the challenge to a fresh reviewer: report any way the new test could pass while the behavior is broken, and check each technical statement against its reference.",
+      "meta": true
+    },
+    {
+      "text": "- Write only the test the design names.",
+      "meta": true
+    },
+    {
+      "text": "- Remove temporary code and output added while investigating.",
       "meta": true
     }
   ]

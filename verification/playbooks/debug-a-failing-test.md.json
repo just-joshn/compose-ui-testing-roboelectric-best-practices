@@ -88,7 +88,7 @@
       ]
     },
     {
-      "text": "9. You can automatically capture screenshots and UI hierarchies upon test failure, because debugging UI tests often requires inspecting the screen state and composition hierarchy. See [debugging.md](../debugging/debugging.md#failure-artifacts).",
+      "text": "9. If the project uses version 1.13 or later of ui-test, capture screenshots and UI hierarchies automatically upon test failure, because debugging UI tests often requires inspecting the screen state and composition hierarchy. See [debugging.md](../references/debugging/debugging.md#failure-artifacts).",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
@@ -97,6 +97,14 @@
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
           "quote": "You can automatically capture screenshots and UI hierarchies upon failure"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "The APIs associated with the failure handler pipeline (TestFailurePolicy, TestFailureHandler, and FailureContext) are included in androidx.compose.ui:ui-test:1.13.0-alpha01+"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
+          "quote": "failurePolicy Cmn android Added in 1.13.0-rc01"
         }
       ]
     },
@@ -110,7 +118,7 @@
       ]
     },
     {
-      "text": "11. The Robolectric simulator can be a useful way to preview how your UI would look in a Robolectric environment, which can be helpful when debugging failing Robolectric tests. It is highly experimental and still largely in the proof-of-concept stage, and UI rendered in it may not match an Android emulator or device 100%. See [debugging.md](../debugging/debugging.md#robolectric-simulator).",
+      "text": "11. Use the Robolectric simulator to preview how your UI would look in a Robolectric environment, which can be helpful when debugging failing Robolectric tests. Report what it shows as a preview only, because it is highly experimental and still largely in the proof-of-concept stage, and UI rendered in it may not match an Android emulator or device 100%. See [debugging.md](../references/debugging/debugging.md#robolectric-simulator).",
       "quotes": [
         {
           "url": "https://robolectric.org/simulator",
@@ -217,7 +225,7 @@
       ]
     },
     {
-      "text": "- Unexecuted main Looper tasks: if you see test failures like 'Main looper has queued unexecuted runnables.', you may need to insert `shadowOf(getMainLooper()).idle()` calls to your test to drain the main Looper. See [synchronization.md](../core/synchronization.md#draining-the-main-looper).",
+      "text": "- Unexecuted main Looper tasks: if you see test failures like 'Main looper has queued unexecuted runnables.', insert `shadowOf(getMainLooper()).idle()` calls into your test to drain the main Looper. See [synchronization.md](../references/core/synchronization.md#draining-the-main-looper).",
       "quotes": [
         {
           "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
@@ -270,6 +278,30 @@
     },
     {
       "text": "- Ask an independent reviewer for a different explanation that fits the same evidence.",
+      "meta": true
+    },
+    {
+      "text": "- Delegate to one read-only subagent: run the failing test and capture its full output.",
+      "meta": true
+    },
+    {
+      "text": "- Delegate to a second read-only subagent: read the code under test and the recent changes to it, and report what could produce the failure.",
+      "meta": true
+    },
+    {
+      "text": "- Keep for yourself: printing the semantics tree, comparing the two reports, naming the cause, and making the fix.",
+      "meta": true
+    },
+    {
+      "text": "- After verification, delegate the challenge to a fresh reviewer: look for a different cause that fits the same evidence.",
+      "meta": true
+    },
+    {
+      "text": "- Change only what the named cause requires.",
+      "meta": true
+    },
+    {
+      "text": "- Remove the temporary output and probes added while investigating.",
       "meta": true
     }
   ]
