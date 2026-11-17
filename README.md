@@ -2,7 +2,14 @@
 
 A skill that gives the AI specialized guidance for writing, debugging, and maintaining **Jetpack Compose UI tests** that run locally on the JVM with **Robolectric**, in **Kotlin**. It follows the format of [currents-dev/playwright-best-practices-skill](https://github.com/currents-dev/playwright-best-practices-skill).
 
-Every reference file is grounded only in official documentation from developer.android.com and robolectric.org, read on 2026-11-17. Each file ends with a `Sources` section listing the pages it is based on.
+## Sources of Truth
+
+The skill uses only current official Compose UI testing and Robolectric documentation. [`sources.txt`](sources.txt) defines that boundary:
+
+- **Compose UI testing**: the Testing section of the Compose docs on developer.android.com, the `androidx.compose.ui.test` API reference, and the Compose UI release notes.
+- **Robolectric**: robolectric.org (guides, javadoc, and blog), Robolectric's GitHub releases, and Android's Robolectric page.
+
+Every paragraph, list item, table row, and code block in the reference files has an entry in [`verification/`](verification) that quotes the official page supporting it. A script checks that each quote appears word for word in the current text of that page.
 
 ## Installation
 
@@ -16,50 +23,49 @@ The skill is activity-based. The AI is directed to the right reference for what 
 
 The skill triggers when the AI infers you need help with things like:
 
-- Writing Compose UI tests in `src/test` with `createComposeRule`, `createAndroidComposeRule`, or `runComposeUiTest`
+- Writing Compose UI tests with `createComposeRule`, `createAndroidComposeRule`, or `runComposeUiTest`
 - Finding nodes by semantics, text, test tags, and the unmerged tree
 - Synchronization, idling resources, `waitUntil`, and the Compose test clock
-- Testing animations, ViewModels, StateFlow, and coroutines
-- State restoration and configuration changes
-- Font scale, locale, RTL, dark mode, and window sizes
-- Accessibility semantics and focus navigation
-- Compose and View interop, Espresso, Navigation Compose, and Hilt
+- Testing animations and coroutines with the v2 test APIs
+- State restoration with `StateRestorationTester`
+- Font scale, locale, layout direction, dark mode, and Robolectric qualifiers
+- Accessibility checks and focus navigation
+- Compose with Views, Espresso, and UiAutomator
 - Robolectric `@Config`, `robolectric.properties`, looper, graphics, and SQLite modes
-- Screenshot testing options
 - Fixing flaky tests, debugging failures, and running tests in CI
 
 ## What's Inside
 
-**22 reference documents** organized into 7 categories:
+**20 reference documents** organized into 6 categories:
 
 ### Core (`core/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
-| Test structure | `test-suite-structure.md` | Test anatomy, rules, `src/test`, shared JVM/device tests |
-| Configuration | `configuration.md` | Gradle dependencies, `@Config`, `robolectric.properties`, SDK and JDK |
+| Test structure | `test-suite-structure.md` | Test anatomy, rules, where tests live, shared JVM/device tests |
+| Configuration | `configuration.md` | Dependencies, `@Config`, `robolectric.properties`, JDK, system properties |
 | Semantics & finders | `semantics-finders.md` | Finders, matchers, merged vs unmerged trees, test tags |
-| Assertions & actions | `assertions-actions.md` | Assertions, collections, clicks, text input, gestures |
-| Synchronization | `synchronization.md` | Auto-sync, idling resources, `waitUntil`, v2 dispatcher |
+| Assertions & actions | `assertions-actions.md` | Assertions, actions, touch, key, and text input, scrolling |
+| Synchronization | `synchronization.md` | Auto-sync, idling resources, `waitUntil`, main thread |
 | Runtime modes | `runtime-modes.md` | Robolectric looper, graphics, and SQLite modes |
 
 ### Debugging (`debugging/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
-| Debugging | `debugging.md` | Printing the semantics tree, failure artifacts |
-| Flaky tests | `flaky-tests.md` | Stability causes and fixes |
+| Debugging | `debugging.md` | Printing the semantics tree, failure artifacts, Robolectric logging |
+| Flaky tests | `flaky-tests.md` | Synchronization, coroutine, looper, and thread causes |
 
 ### Testing Patterns (`testing-patterns/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
-| Component testing | `component-testing.md` | Testing composables in isolation, edge cases |
-| Accessibility | `accessibility.md` | Accessibility semantics, checks, focus navigation |
+| Component testing | `component-testing.md` | Testing composables in isolation, custom semantics |
+| Accessibility | `accessibility.md` | Accessibility checks, focus navigation tests |
 | Animations | `animations.md` | Driving animations with the test clock |
-| State restoration | `state-restoration.md` | `StateRestorationTester`, `rememberSaveable` |
-| Visual regression | `visual-regression.md` | Screenshot testing options and limits |
-| Coroutines & ViewModels | `coroutines-viewmodels.md` | `runTest`, test dispatchers, ViewModel state |
+| State restoration | `state-restoration.md` | `StateRestorationTester`, activity recreation |
+| Visual regression | `visual-regression.md` | Native graphics and capturing a node |
+| Coroutines | `coroutines.md` | v1 and v2 dispatchers, `runComposeUiTest`, coroutine contexts |
 
 ### Advanced (`advanced/`)
 
@@ -73,33 +79,37 @@ The skill triggers when the AI infers you need help with things like:
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
-| Test architecture | `test-architecture.md` | Robolectric vs device vs pure JVM |
-| Test doubles | `test-doubles.md` | Fakes, mocks, hermetic tests |
-
-### Frameworks (`frameworks/`)
-
-| Topic | Reference | Use for |
-| --- | --- | --- |
-| Navigation | `navigation.md` | Navigation Compose, `TestNavHostController` |
-| Hilt | `hilt.md` | Hilt on Robolectric, `HiltTestApplication` |
+| Test architecture | `test-architecture.md` | Robolectric or device tests, shared source sets |
+| Test doubles | `test-doubles.md` | Fakes, shadows, not mocking Android classes |
 
 ### Infrastructure (`infrastructure-ci-cd/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
-| CI/CD | `ci-cd.md` | Running local tests in CI, android-all downloads |
+| CI/CD | `ci-cd.md` | Java versions, android-all downloads, mirrors and proxies |
 
 ## Not Covered
 
-The Playwright skill covers these topics, but no official Compose or Robolectric documentation does, so this skill leaves them out: page objects, test tags, test data factories, authentication and multi-user flows, network mocking, GraphQL, WebSockets, file upload and download, security testing, performance budgets, CI provider recipes (GitHub Actions, GitLab, Docker), sharding, coverage, and reporting.
+These topics are in the Playwright skill, but the official Compose UI testing and Robolectric docs don't cover them, so this skill leaves them out:
+
+- Page objects, test tags, test data factories
+- Authentication and multi-user flows
+- Network mocking, GraphQL, WebSockets
+- File upload and download
+- Security testing and performance budgets
+- CI provider recipes (GitHub Actions, GitLab, Docker), sharding, coverage, and reporting
+
+Topics documented only outside that boundary are also left out: Hilt, Navigation, ViewModel and `kotlinx-coroutines-test` guidance, the Compose BOM, and Android Studio's screenshot testing tool.
 
 ## Validation
 
-`sources.txt` lists every official page the skill may cite. The check script verifies frontmatter, links, anchors, required sections, and that every cited URL is on that list:
-
 ```bash
-python3 scripts/check_skill.py
+python3 scripts/check_skill.py      # frontmatter, links, anchors, sections, official-only URLs
+python3 scripts/fetch_sources.py    # download the current text of every cited page into .cache/
+python3 scripts/verify_claims.py    # every unit has quotes found word for word on those pages
 ```
+
+`verify_claims.py` also checks that every API name in the code examples appears on an official page or is declared in the same example. It can't judge whether a quote fully supports its unit. That part was reviewed by hand.
 
 ## License
 
