@@ -7,8 +7,9 @@
 3. [Accessibility Checks](#accessibility-checks)
 4. [Focus Navigation Tests](#focus-navigation-tests)
 5. [Input Mode](#input-mode)
-6. [Related References](#related-references)
-7. [Sources](#sources)
+6. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+7. [Related References](#related-references)
+8. [Sources](#sources)
 
 ## Manual and Automated Testing
 
@@ -22,7 +23,7 @@ Existing Compose testing APIs allow you to write automated tests that interact w
 
 The semantics framework is primarily used for accessibility, so tests take advantage of the information exposed by semantics about the UI hierarchy. Developers decide what and how much to expose.
 
-For example, given a button that consists of an icon and a text element, the default semantics tree only contains the text label "Like". This is because some composables, such as `Text`, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a `Modifier`.
+For example, given a button like this that consists of an icon and a text element, the default semantics tree only contains the text label "Like". This is because some composables, such as `Text`, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a `Modifier`.
 
 ```kotlin
 MyButton(
@@ -32,7 +33,9 @@ MyButton(
 
 ## Accessibility Checks
 
-For automated accessibility testing, you can also use the Accessibility Test Framework, the same underlying framework that powers Accessibility Scanner and accessibility checks in Espresso, to perform some accessibility-related checks automatically, starting with Compose 1.8.0.
+### Enable the Checks
+
+For automated accessibility testing, you can also use the Accessibility Test Framework—the same underlying framework that powers Accessibility Scanner and accessibility checks in Espresso—to perform some accessibility-related checks automatically, starting with Compose 1.8.0.
 
 To enable the checks, add the `ui-test-junit4-accessibility` dependency, call `enableAccessibilityChecks()` in the `AndroidComposeTestRule`, and trigger an action or `tryPerformAccessibilityChecks`:
 
@@ -66,11 +69,32 @@ This specific test fails with an exception and a message that the item may not h
 
 Other available checks look for accessibility issues with color contrast, small touch target size, or elements' traversal order.
 
-`enableAccessibilityChecks` enables accessibility checks that will be run before every action that is expected to change the UI.
+### Requirements and Limits
 
-The API reference for `enableAccessibilityChecks` says: "This requires API 34+ (Android U), and currently does not work on Robolectric."
+`enableAccessibilityChecks`: Enables accessibility checks that will be run before every action that is expected to change the UI. This requires API 34+ (Android U), and currently does not work on Robolectric. Enabling accessibility checks is currently only supported for `AndroidComposeTestRule`. If you have a custom `ComposeTestRule` implementation that delegates to `AndroidComposeTestRule`, make sure to call this function on the `AndroidComposeTestRule` instead.
 
-Enabling accessibility checks is currently only supported for `AndroidComposeTestRule`. If you have a custom `ComposeTestRule` implementation that delegates to `AndroidComposeTestRule`, make sure to call this function on the `AndroidComposeTestRule` instead.
+### Run and Disable the Checks
+
+Accessibility checks are run automatically when performing an action.
+
+```kotlin
+// Enable accessibility checks with default configuration:
+composeTestRule.enableAccessibilityChecks()
+
+// Accessibility checks are run automatically when performing an action:
+composeTestRule.onNodeWithText("Submit").performClick()
+
+// You can also manually run accessibility checks:
+composeTestRule.onRoot().tryPerformAccessibilityChecks()
+
+// When disabling accessibility checks..
+composeTestRule.disableAccessibilityChecks()
+
+// .. they no longer run when performing an action:
+composeTestRule.onNodeWithTag("list").performScrollToIndex(15)
+```
+
+### Configure the AccessibilityValidator
 
 If you're mixing Views with Compose and you're already using an `AccessibilityValidator`, or you need to configure one, you can set it in the rule:
 
@@ -86,13 +110,25 @@ composeTestRule.enableAccessibilityChecks(accessibilityValidator)
 composeTestRule.onRoot().tryPerformAccessibilityChecks()
 ```
 
-The default value of the `accessibilityValidator` parameter is `AccessibilityValidator().setRunChecksFromRootView(true)`.
+`accessibilityValidator: com.google.android.apps.common.testing.accessibility.framework.integrations.espresso.AccessibilityValidator = AccessibilityValidator().setRunChecksFromRootView(true)`
+
+### Share the Configuration with Espresso
+
+If you have a hybrid application with both Compose and Views, and you use both Compose Test and Espresso, then you should set up accessibility checks in both frameworks and share the configuration in the following way:
+
+```kotlin
+// Enable accessibility checks in both Espresso and Compose, and share the configuration
+val accessibilityValidator = AccessibilityChecks.enable()
+androidComposeTestRule.enableAccessibilityChecks(accessibilityValidator)
+```
 
 In combination with manual testing, automated tests using both Compose APIs as well as the Accessibility Test Framework can help you detect possible problems early on in the development process.
 
 ## Focus Navigation Tests
 
 Automating focus navigation tests ensures your app delivers a consistent and predictable user experience across hardware keyboards, D-pads, and accessibility tools. Compose provides built-in testing APIs to simulate key input and verify focus states.
+
+### Set Up Focus Tests
 
 To write focus tests, use `createComposeRule()` from the Compose testing library:
 
@@ -103,7 +139,7 @@ class FocusNavigationTest {
     val composeTestRule = createComposeRule()
 ```
 
-By default, Compose testing environments initialize in touch mode. To configure whether your test environment starts in touch mode or keyboard mode, see the default input mode configuration, described in the [Input Mode](#input-mode) section.
+By default, Compose testing environments initialize in touch mode. To configure whether your test environment starts in touch mode or keyboard mode, see the [default input mode configuration](#input-mode).
 
 ### Verify Focus Targets
 
@@ -242,9 +278,13 @@ fun textField_handlesTabAccordingToLineLimits() {
 
 ## Input Mode
 
-The `ComposeUiTestConfig` class is included, starting in version 1.13, in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact (`androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`).
+The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.
 
-Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup. To resolve this, specify the required input mode in `ComposeUiTestConfig`:
+Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.
+
+### Set the Input Mode for a Test Class
+
+To resolve this, specify the required input mode in `ComposeUiTestConfig`:
 
 ```kotlin
 class FocusTest {
@@ -257,6 +297,8 @@ class FocusTest {
     fun testFocus() {}
 }
 ```
+
+### Set the Input Mode per Test
 
 To configure the input mode for individual test cases instead of the entire test class, pass `ComposeUiTestConfig` to `runComposeUiTest`:
 
@@ -276,6 +318,12 @@ class FocusTest {
 }
 ```
 
+## Anti-Patterns to Avoid
+
+- In conjunction with manual verification, you should also use automated testing to flag any potential issues that could impact user experience as you make continual changes to your app.
+- As a best practice, verify both forward navigation (`Key.Tab`) and reverse navigation (`Key.Tab` with `Key.ShiftLeft` held down) to ensure two-way traversal integrity.
+- `enableAccessibilityChecks`: If you have a custom `ComposeTestRule` implementation that delegates to `AndroidComposeTestRule`, make sure to call this function on the `AndroidComposeTestRule` instead.
+
 ## Related References
 
 - **Selectors**: See [semantics-finders.md](../core/semantics-finders.md) for `contentDescription` finders and merged trees
@@ -290,3 +338,5 @@ class FocusTest {
 - https://developer.android.com/develop/ui/compose/testing/migrate-v2
 - https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/AndroidComposeTestRule
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig

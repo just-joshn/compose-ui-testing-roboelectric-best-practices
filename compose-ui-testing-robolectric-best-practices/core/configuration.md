@@ -2,31 +2,19 @@
 
 ## Table of Contents
 
-1. [Version Reference](#version-reference)
-2. [Gradle Dependencies](#gradle-dependencies)
-3. [Compose Test Environment](#compose-test-environment)
-4. [JDK Requirements](#jdk-requirements)
-5. [Configuring Robolectric](#configuring-robolectric)
-6. [SDK, Qualifiers, and Application](#sdk-qualifiers-and-application)
-7. [System Properties](#system-properties)
-8. [Common Issues & Solutions](#common-issues--solutions)
-9. [Related References](#related-references)
-10. [Sources](#sources)
+1. [Quick Reference](#quick-reference)
+2. [Reference Tables](#reference-tables)
+3. [Patterns](#patterns)
+4. [Deprecations](#deprecations)
+5. [Troubleshooting](#troubleshooting)
+6. [Related References](#related-references)
+7. [Sources](#sources)
 
-## Version Reference
+## Quick Reference
 
-| Component | Version | Source |
-| --- | --- | --- |
-| `androidx.compose.ui:ui-*` | Stable `1.12.1`; release candidate `1.13.0-rc01` | Compose UI release notes (latest update November 04, 2026) |
-| Robolectric | `4.18`, the newest release on the Robolectric GitHub releases page (published 2026-11-13) | GitHub releases |
-| Robolectric `4.18` Android API levels | 24 to 37 | Robolectric compatibility table |
-| JUnit | `junit:junit:4.13.2` | Robolectric Getting Started |
+### Compose UI Test Dependencies
 
-The Android Robolectric page's example uses `org.robolectric:robolectric:4.13`, while Robolectric Getting Started uses `org.robolectric:robolectric:4.18`.
-
-## Gradle Dependencies
-
-The Compose testing page's setup section says to add the following dependencies to the `build.gradle` file of the module containing your UI tests:
+First, add the following dependencies to the `build.gradle` file of the module containing your UI tests:
 
 ```groovy
 // Test rules and transitive dependencies:
@@ -35,7 +23,9 @@ androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
 debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
 ```
 
-The Robolectric Getting Started page says to start by adding the following to your module's `build.gradle`/`build.gradle.kts` file:
+### Robolectric Dependencies
+
+Start by adding the following to your module's `build.gradle`/`build.gradle.kts` file:
 
 ```kotlin
 android {
@@ -52,9 +42,48 @@ dependencies {
 }
 ```
 
-## Compose Test Environment
+## Reference Tables
 
-The `ComposeUiTestConfig` class is included, starting in version 1.13, in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact (`androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`).
+### Versions
+
+#### Compose UI
+
+| Latest Update | Stable Release | Release Candidate | Beta Release | Alpha Release |
+| --- | --- | --- | --- | --- |
+| November 04, 2026 | 1.12.1 | 1.13.0-rc01 | - | - |
+
+#### Robolectric
+
+| Robolectric version | Android API levels |
+| --- | --- |
+| 4.18 | 24 → 37 |
+
+### Android
+
+This table shows the minimum Java version required to run Robolectric tests against a specific version of Android.
+
+| Android version | API level | Java version |
+| --- | --- | --- |
+| Android 17 | 37 | 21 |
+| Android 16 | 36 | 21 |
+| Android 15 | 35 | 17 |
+| Android 14 | 34 | 17 |
+| Android 13 | 33 | 9 |
+| Android 12.1 | 32 | 9 |
+| Android 12 | 31 | 9 |
+| Android 11 | 30 | 9 |
+| Android 10 | 29 | 9 |
+| Android 9 | 28 | 8 |
+| Android 8.1 | 27 | 8 |
+| Android 8.0 | 26 | 8 |
+| Android 7.1 | 25 | 8 |
+| Android 7.0 | 24 | 8 |
+
+## Patterns
+
+### Compose Test Environment
+
+The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.
 
 Compose test v2 APIs use `ComposeUiTestConfig` to customize the test environment. This configuration object consolidates environmental related APIs like `effectContext`, `runTestContext`, and `testTimeout` into a single object.
 
@@ -73,6 +102,8 @@ val rule = createComposeRule(config = testConfig)
 runComposeUiTest(config = testConfig) {}
 ```
 
+### Input Mode
+
 Compose test v2 APIs enforce `InputMode.Touch` by default at the start of each test to ensure determinism and prevent input mode state from leaking between tests. Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. To resolve this, specify the required input mode in `ComposeUiTestConfig`:
 
 ```kotlin
@@ -87,16 +118,25 @@ class FocusTest {
 }
 ```
 
-## JDK Requirements
+To configure the input mode for individual test cases instead of the entire test class, pass `ComposeUiTestConfig` to `runComposeUiTest`:
 
-The Robolectric compatibility table shows the minimum Java version required to run Robolectric tests against a specific version of Android:
+```kotlin
+class FocusTest {
+    @Test
+    fun testTouchMode() = runComposeUiTest {
+        // Runs with the default InputMode.Touch
+    }
 
-| Android API level | Minimum Java version |
-| --- | --- |
-| 37, 36 | 21 |
-| 35, 34 | 17 |
-| 33, 32, 31, 30, 29 | 9 |
-| 28, 27, 26, 25, 24 | 8 |
+    @Test
+    fun testKeyboardMode() = runComposeUiTest(
+        ComposeUiTestConfig(inputMode = InputMode.Keyboard)
+    ) {
+        // Runs with InputMode.Keyboard
+    }
+}
+```
+
+### Java 17 and Higher
 
 When running tests on Java 17 or higher, the JVM requires `--add-opens` flags so that Robolectric can access internal OpenJDK classes and APIs (java.lang, java.io, jdk.internal.access, etc.). Add the following `jvmArgs` to your unit test configuration in `build.gradle` / `build.gradle.kts`:
 
@@ -120,7 +160,7 @@ android {
 }
 ```
 
-## Configuring Robolectric
+### Config Annotation
 
 Several aspects of Robolectric's behavior can be configured at runtime, using either `@Config` annotations for class- or method-level configuration, or `robolectric.properties` files for package-level configuration.
 
@@ -136,17 +176,18 @@ Base classes are also searched for annotations. So if you find yourself specifyi
 class SandwichTest
 ```
 
+### Properties File
+
 To configure all Robolectric tests within a package or group of packages, create a file named `robolectric.properties` in the appropriate package. Generally, this file would be placed within the appropriate package directory under `src/test/resources` in your project tree. Robolectric will search for properties files up the hierarchy of packages (including the unnamed default package at the top level), with values in deeper packages overriding values in more shallow packages. When test classes or methods have `@Config` annotations, those override any config from properties files.
 
 ```properties
-# src/test/resources/com/mycompany/app/robolectric.properties
 sdk=33
 shadows=com.mycompany.ShadowFoo,com.mycompany.ShadowBar
 ```
 
 If you wish to change the default for any configurable value for all your tests, you can provide a `GlobalConfigProvider` service implementation.
 
-## SDK, Qualifiers, and Application
+### SDK Level
 
 By default, Robolectric will run your code against the `targetSdk` specified in your module's `build.gradle`/`build.gradle.kts` or `AndroidManifest.xml` file. If you want to test your code under a different SDK, you can specify the desired SDK(s) using the `sdk`, `minSdk` and `maxSdk` config properties:
 
@@ -174,6 +215,8 @@ class SandwichTest {
 
 Note that `sdk` and `minSdk`/`maxSdk` may not be specified in the same `@Config` annotation or file; however, `minSdk` and `maxSdk` may be specified together. If any of them is present, they override any SDK specification from a less-specific configuration location.
 
+### Application Class
+
 Robolectric will attempt to create an instance of your `Application` class as specified in the AndroidManifest. If you want to provide a custom implementation, you can specify it by setting:
 
 ```kotlin
@@ -185,6 +228,8 @@ class SandwichTest {
   }
 }
 ```
+
+### Qualifiers
 
 You can explicitly configure the set of resource qualifiers in effect for a test:
 
@@ -198,9 +243,11 @@ class SandwichTest {
 }
 ```
 
-The `@Config` Javadoc for 4.18 describes these elements:
+### Config Elements
 
-| Element | Javadoc description |
+Configuration settings that can be used on a per-class or per-test basis.
+
+| Element | Description |
 | --- | --- |
 | `sdk` | The Android SDK level to emulate. This value will also be set as `Build.VERSION.SDK_INT`. |
 | `minSdk` | The minimum Android SDK level to emulate when running tests on multiple API versions. |
@@ -211,7 +258,7 @@ The `@Config` Javadoc for 4.18 describes these elements:
 | `shadows` | A list of shadow classes to enable, in addition to those that are already present. |
 | `instrumentedPackages` | A list of instrumented packages, in addition to those that are already instrumented. |
 
-## System Properties
+### System Properties
 
 Some additional options can be configured globally by setting these system properties:
 
@@ -237,14 +284,17 @@ android {
 }
 ```
 
-## Common Issues & Solutions
+## Deprecations
+
+- Within the overloads for creating setup functions in tests, several overloads that accept individual configuration parameters -- such as `effectContext`, `runTestContext`, or `testTimeout` -- are deprecated. Update your tests to use `ComposeUiTestConfig` instead.
+- Alternatively, you can set `AndroidComposeUiTestFlags.isInputModeSetForDeviceTests = false` to temporarily disable setting the default input mode at the start of each test and retain legacy behavior while migrating your tests. This flag will be removed in the future, so if only a small number of tests fail, it is recommended to resolve the tests directly by changing their configuration instead.
+
+## Troubleshooting
 
 | Issue | Solution |
 | --- | --- |
-| Robolectric needs to access internal OpenJDK classes and APIs on Java 17 or higher. | The JVM requires `--add-opens` flags; add the `jvmArgs` to your unit test configuration. |
-| Running tests against Android API 36 or 37. | The minimum Java version is 21. |
-| `sdk` and `minSdk`/`maxSdk` are specified together. | They may not be specified in the same `@Config` annotation or file. |
-| You are not sure if resources are being loaded for a particular library. | Enable debug logging by setting the system property `robolectric.logging.enabled = true` and run your tests. |
+| Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. | To resolve this, specify the required input mode in `ComposeUiTestConfig` |
+| If you are not sure if resources are being loaded for a particular library | enable debug logging by setting the system property `robolectric.logging.enabled = true` and run your tests. |
 
 ## Related References
 
@@ -258,7 +308,6 @@ android {
 - https://developer.android.com/develop/ui/compose/testing
 - https://developer.android.com/develop/ui/compose/testing/migrate-v2
 - https://developer.android.com/jetpack/androidx/releases/compose-ui
-- https://developer.android.com/training/testing/local-tests/robolectric
 - https://robolectric.org/getting-started/
 - https://robolectric.org/configuring/
 - https://robolectric.org/compatibility_table/

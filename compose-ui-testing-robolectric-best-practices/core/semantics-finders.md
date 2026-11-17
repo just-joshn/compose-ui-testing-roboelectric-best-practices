@@ -7,8 +7,8 @@
 3. [Matchers](#matchers)
 4. [Merged and Unmerged Trees](#merged-and-unmerged-trees)
 5. [Selectors](#selectors)
-6. [Test Tags](#test-tags)
-7. [Custom Semantics Properties](#custom-semantics-properties)
+6. [Custom Semantics Properties](#custom-semantics-properties)
+7. [Test Tags with UiAutomator](#test-tags-with-uiautomator)
 8. [Scope Compose Searches to Views](#scope-compose-searches-to-views)
 9. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
 10. [Related References](#related-references)
@@ -22,7 +22,9 @@ The semantics framework is primarily used for accessibility, so tests take advan
 
 Testing a Compose UI is different from testing a view-based UI. In Compose, because only some composables *emit* UI into the UI hierarchy, you need a different approach to matching UI elements.
 
-Given a button that consists of an icon and a text element, the default semantics tree only contains the text label "Like". This is because some composables, such as `Text`, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a `Modifier`.
+### Add Properties to the Semantics Tree
+
+For example, given a button like this that consists of an icon and a text element, the default semantics tree only contains the text label "Like". This is because some composables, such as `Text`, already expose some properties to the semantics tree. You can add properties to the semantics tree by using a `Modifier`.
 
 ```kotlin
 MyButton(
@@ -38,25 +40,45 @@ Some of these APIs accept a `SemanticsMatcher` to refer to one or more *nodes* i
 
 You can use `onNode` and `onAllNodes` to select one or multiple nodes respectively, but you can also use convenience finders for the most common searches, such as `onNodeWithText`, and `onNodeWithContentDescription`.
 
-Select a single node:
+### Select a Single Node
+
+```kotlin
+composeTestRule.onNode(<<SemanticsMatcher>>, useUnmergedTree = false): SemanticsNodeInteraction
+```
 
 ```kotlin
 composeTestRule
     .onNode(hasText("Button")) // Equivalent to onNodeWithText("Button")
 ```
 
-Select multiple nodes:
+### Select Multiple Nodes
+
+```kotlin
+composeTestRule
+    .onAllNodes(<<SemanticsMatcher>>): SemanticsNodeInteractionCollection
+```
 
 ```kotlin
 composeTestRule
     .onAllNodes(hasText("Button")) // Equivalent to onAllNodesWithText("Button")
 ```
 
-- `onNodeWithTag` finds a semantics node identified by the given tag. The tag to search for looks for an exact match only.
-- `onRoot` finds the root semantics node of the Compose tree.
-- A `SemanticsNodeInteractionCollection` has `filter`, which returns all the nodes matching the given matcher, and `filterToOne`, which expects to return exactly one node matching the given matcher.
-- `onFirst` returns the first node in a collection and `onLast` returns the last node in a collection.
-- `get(index)` retrieves the node at the given index of a collection. Any subsequent operation on its result will expect exactly one element found and will throw `AssertionError` if none or more than one element is found.
+### Finder Reference
+
+| Finder          | Behavior                                                                          |
+| --------------- | --------------------------------------------------------------------------------- |
+| `onNodeWithTag` | Finds a semantics node identified by the given tag. Looks for an exact match only. |
+| `onRoot`        | Finds the root semantics node of the Compose tree.                                |
+
+### Collection Reference
+
+| Member         | Behavior                                                                                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`       | Returns all the nodes matching the given matcher.                                                                                                                                                             |
+| `filterToOne`  | Expects to return exactly one node matching the given matcher.                                                                                                                                               |
+| `onFirst`      | Returns the first node in this collection.                                                                                                                                                                   |
+| `onLast`       | Returns the last node in this collection.                                                                                                                                                                    |
+| `get(index)`   | Retrieve node at the given index of this collection. Any subsequent operation on its result will expect exactly one element found (unless `SemanticsNodeInteraction.assertDoesNotExist` is used) and will throw `AssertionError` if none or more than one element is found. |
 
 ## Matchers
 
@@ -69,31 +91,37 @@ fun hasAnyAncestor(matcher: SemanticsMatcher): SemanticsMatcher
 fun hasAnyDescendant(matcher: SemanticsMatcher):  SemanticsMatcher
 ```
 
-Here are some examples of these matchers being used:
-
 ```kotlin
 composeTestRule.onNode(hasParent(hasText("Button")))
     .assertIsDisplayed()
 ```
 
-- `hasText` returns whether the node's text contains the given text. In the merged semantics tree there can be a list of text items that got merged from the child nodes.
-- `hasTextExactly` returns whether the node's text contains exactly the given values and nothing else. The order does not matter.
-- `hasContentDescription` returns whether the node's content description contains the given value.
-- `hasTestTag` returns whether the node is annotated by the given test tag.
-- `hasClickAction` returns whether the node has a semantics click action defined.
+### Matcher Reference
 
-`SemanticsMatcher` is a wrapper for semantics matcher lambdas that allows to build string explaining to the developer what conditions were being tested. Its constructor and its `and`, `or`, and `not` functions are:
+| Matcher                 | Behavior                                                                                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hasText`               | Returns whether the node's text contains the given text. Note that in merged semantics tree there can be a list of text items that got merged from the child nodes. `text`: Value to match as one of the items in the list of text values. `substring`: Whether to use substring matching. `ignoreCase`: Whether case should be ignored. |
+| `hasTextExactly`        | Returns whether the node's text contains exactly the given `textValues` and nothing else.                                                                                                            |
+| `hasContentDescription` | Returns whether the node's content description contains the given value.                                                                                                                                                  |
+| `hasTestTag`            | Returns whether the node is annotated by the given test tag.                                                                                                                                                              |
+| `hasClickAction`        | Return whether the node has a semantics click action defined.                                                                                                                                                            |
+
+### SemanticsMatcher
+
+`SemanticsMatcher`: Wrapper for semantics matcher lambdas that allows to build string explaining to the developer what conditions were being tested.
 
 ```kotlin
 SemanticsMatcher(description: String, matcher: (SemanticsNode) -> Boolean)
 infix fun and(other: SemanticsMatcher): SemanticsMatcher
-infix fun or(other: SemanticsMatcher): SemanticsMatcher
 operator fun not(): SemanticsMatcher
+infix fun or(other: SemanticsMatcher): SemanticsMatcher
 ```
 
-- `SemanticsMatcher.expectValue` builds a predicate that tests whether the value of the given key is equal to the expected value.
-- `SemanticsMatcher.keyIsDefined` builds a predicate that tests whether the given key is defined in semantics.
-- `SemanticsMatcher.keyNotDefined` builds a predicate that tests whether the given key is NOT defined in semantics.
+| Function                          | Behavior                                                                          |
+| --------------------------------- | --------------------------------------------------------------------------------- |
+| `expectValue`                     | Builds a predicate that tests whether the value of the given key is equal to `expectedValue`. |
+| `keyIsDefined`                    | Builds a predicate that tests whether the given key is defined in semantics.      |
+| `keyNotDefined`                   | Builds a predicate that tests whether the given key is NOT defined in semantics.  |
 
 ## Merged and Unmerged Trees
 
@@ -105,6 +133,8 @@ MyButton {
     Text("World")
 }
 ```
+
+### Print the Merged Tree
 
 From a test, use `printToLog()` to show the semantics tree:
 
@@ -122,6 +152,8 @@ Node #1 at (...)px
    Actions = [OnClick, GetTextLayoutResult]
    MergeDescendants = 'true'
 ```
+
+### Match the Unmerged Tree
 
 If you need to match a node of what would be the *unmerged* tree, you can set `useUnmergedTree` to `true`:
 
@@ -164,38 +196,16 @@ composeTestRule.onNode(hasTestTag("Players"))
     .assert(hasText("John"))
 ```
 
-- `onChildren` returns children of this node at the moment of invocation, it only captures nodes that are currently present in the semantic tree.
-- `onChild` returns exactly one child of this node. Use this only if this node has exactly one child.
-- `onChildAt` returns child of this node at the given index.
-- `onParent` returns a parent of this node.
-- `onSibling` returns exactly one sibling of this node. Use this only if this node has exactly one sibling.
-- `onSiblings` returns all siblings of this node.
-- `onAncestors` returns all the ancestors of this node.
-- `onDescendants` returns all the descendants of this node in Depth-First Search order.
-
-## Test Tags
-
-By default, composables are accessible from UiAutomator only by their convenient descriptors (displayed text, content description, etc.). If you want to access any composable that uses `Modifier.testTag`, you need to enable the semantic property `testTagsAsResourceId` for the particular composable's subtree.
-
-Enable the semantic property only once high in your composables hierarchy to ensure all nested composables with `Modifier.testTag` are accessible from UiAutomator.
-
-```kotlin
-Scaffold(
-    // Enables for all composables in the hierarchy.
-    modifier = Modifier.semantics {
-        testTagsAsResourceId = true
-    }
-){
-    // Modifier.testTag is accessible from UiAutomator for composables nested here.
-    LazyColumn(
-        modifier = Modifier.testTag("myLazyColumn")
-    ){
-        // Content
-    }
-}
-```
-
-This feature is available in Jetpack Compose version 1.2.0-alpha08 and higher.
+| Selector        | Behavior                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `onChildren`    | Returns children of this node at the moment of invocation, it only captures nodes that are currently present in the semantic tree. This is especially relevant for lazy layouts like 'LazyColumn' or 'LazyRow' where only a subset of items are currently composed and exist in the tree. Therefore, this function will only return those currently composed items, not all the items in the backing data set. |
+| `onChild`       | Returns exactly one child of this node. Use this only if this node has exactly one child.                                                                                                                                                                                                                                                                                                       |
+| `onChildAt`     | Returns child of this node at the given index.                                                                                                                                                                                                                                                                                                                                                  |
+| `onParent`      | Returns a parent of this node.                                                                                                                                                                                                                                                                                                                                                                  |
+| `onSibling`     | Returns exactly one sibling of this node. Use this only if this node has exactly one sibling.                                                                                                                                                                                                                                                                                                   |
+| `onSiblings`    | Returns all siblings of this node.                                                                                                                                                                                                                                                                                                                                                              |
+| `onAncestors`   | Returns all the ancestors of this node.                                                                                                                                                                                                                                                                                                                                                         |
+| `onDescendants` | Returns all the descendants of this node in Depth-First Search order. |
 
 ## Custom Semantics Properties
 
@@ -226,6 +236,32 @@ composeTestRule
 
 You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers.
 
+## Test Tags with UiAutomator
+
+By default, composables are accessible from UiAutomator only by their convenient descriptors (displayed text, content description, etc.). If you want to access any composable that uses `Modifier.testTag`, you need to enable the semantic property `testTagsAsResourceId` for the particular composable's subtree.
+
+Enable the semantic property only once high in your composables hierarchy to ensure all nested composables with `Modifier.testTag` are accessible from UiAutomator.
+
+```kotlin
+Scaffold(
+    // Enables for all composables in the hierarchy.
+    modifier = Modifier.semantics {
+        testTagsAsResourceId = true
+    }
+){
+    // Modifier.testTag is accessible from UiAutomator for composables nested here.
+    LazyColumn(
+        modifier = Modifier.testTag("myLazyColumn")
+    ){
+        // Content
+    }
+}
+```
+
+This feature is available in Jetpack Compose version 1.2.0-alpha08 and higher.
+
+Any composable with the `Modifier.testTag(tag)` can be accessible with the use of `By.res(resourceName)` using the same `tag` as the `resourceName`.
+
 ## Scope Compose Searches to Views
 
 The `onRootWithViewInteraction` API is included in `androidx.compose.ui:ui-test-junit4:1.12.0-alpha01+` and `androidx.compose.ui:ui-test:1.12.0-alpha01+`. This API is experimental and subject to change.
@@ -250,7 +286,9 @@ composeTestRule
 ## Anti-Patterns to Avoid
 
 - Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.
-- Instead of modifying your production code to inject dynamic test tags to distinguish these elements, you can scope your Compose test directly to a specific Android View.
+- `onChild`: Use this only if this node has exactly one child.
+- `onSibling`: Use this only if this node has exactly one sibling.
+- Caution: Make sure you don't use `By.res(resourcePackage, resourceId)` as this formats the argument as `$resourcePackage:id/$resourceId`, which is different from `Modifier.testTag`.
 
 ## Related References
 

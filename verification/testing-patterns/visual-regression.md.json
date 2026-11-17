@@ -5,20 +5,20 @@
       "quotes": [
         {
           "url": "https://developer.android.com/training/testing/local-tests/robolectric",
-          "quote": "You can run other UI tests with Robolectric, such as screenshot tests. However the fidelity is lower as different devices render screens slightly differently."
+          "quote": "You can run other UI tests with Robolectric, such as screenshot tests"
+        },
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "However the fidelity is lower as different devices render screens slightly differently"
         }
       ]
     },
     {
-      "text": "You must decide whether Robolectric's implementation is good enough for each use case. Android's recommendation for screenshots: use Robolectric to take screenshots when the pixel accuracy is not critical. For example, to test how a component reacts to different font sizes or themes.",
+      "text": "You must decide whether Robolectric's implementation is good enough for each use case.",
       "quotes": [
         {
           "url": "https://developer.android.com/training/testing/local-tests/robolectric",
           "quote": "You must decide whether Robolectric's implementation is good enough for each use case"
-        },
-        {
-          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
-          "quote": "Use Robolectric to take screenshots when the pixel accuracy is not critical. For example, to test how a component reacts to different font sizes or themes."
         }
       ]
     },
@@ -32,95 +32,109 @@
       ]
     },
     {
-      "text": "`@GraphicsMode` is a Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package. Its modes:",
+      "text": "Use Robolectric to take screenshots when the pixel accuracy is not critical. For example, to test how a component reacts to different font sizes or themes.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Use Robolectric to take screenshots when the pixel accuracy is not critical. For example, to test how a component reacts to different font sizes or themes."
+        }
+      ]
+    },
+    {
+      "text": "A Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package.",
       "quotes": [
         {
           "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.html",
-          "quote": "A Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package."
+          "quote": "A Configurer annotation for controlling which graphics shadow implementation is used for the android.graphics package"
         }
       ]
     },
     {
-      "text": "- `GraphicsMode.Mode.NATIVE`: use graphics shadows libraries backed by native Android graphics code.",
+      "text": "| `NATIVE` | Use graphics shadows libraries backed by native Android graphics code. |",
       "quotes": [
         {
           "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.Mode.html",
-          "quote": "Use graphics shadows libraries backed by native Android graphics code."
+          "quote": "Use graphics shadows libraries backed by native Android graphics code"
         }
       ]
     },
     {
-      "text": "- `GraphicsMode.Mode.LEGACY`: use legacy graphics shadows that are no-ops and fakes.",
+      "text": "| `LEGACY` | Use legacy graphics shadows that are no-ops and fakes. |",
       "quotes": [
         {
           "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/GraphicsMode.Mode.html",
-          "quote": "Use legacy graphics shadows that are no-ops and fakes."
+          "quote": "Use legacy graphics shadows that are no-ops and fakes"
         }
       ]
     },
     {
-      "text": "The Robolectric simulator page's example test class is annotated with `@GraphicsMode(GraphicsMode.Mode.NATIVE)`.",
+      "text": "The following example sets up an Activity and subsequently starts the simulator to preview the Activity.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "The following example sets up an Activity and subsequently starts the simulator to preview the Activity."
+        }
+      ]
+    },
+    {
+      "text": "@RunWith(RobolectricTestRunner::class)\n@Config(sdk = [VANILLA_ICE_CREAM])\n@GraphicsMode(GraphicsMode.Mode.NATIVE)\nclass MainActivityTest {\n    @Test\n    fun simulateMainActivity() {\n        Robolectric.setupActivity(MainActivity::class.java)\n        Simulator().start()\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "@RunWith(RobolectricTestRunner::class) @Config(sdk = [VANILLA_ICE_CREAM]) @GraphicsMode(GraphicsMode.Mode.NATIVE) class MainActivityTest { @Test fun simulateMainActivity() { Robolectric.setupActivity(MainActivity::class.java) Simulator().start() } }"
+        }
+      ]
+    },
+    {
+      "text": "Robolectric's native runtime now includes Linux arm64 (aarch64) native libraries, so tests that use native SQLite (the default) and native graphics (`@GraphicsMode(NATIVE)`) can run on Linux arm64 environments, such as GitHub's `ubuntu-24.04-arm` runners, AWS Graviton machines, and arm64 Docker containers on Apple silicon. No configuration is needed.",
+      "quotes": [
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "Robolectric's native runtime now includes Linux arm64 (aarch64) native libraries, so tests that use native SQLite (the default) and native graphics (@GraphicsMode(NATIVE)) can run on Linux arm64 environments, such as GitHub's ubuntu-24.04-arm runners, AWS Graviton machines, and arm64 Docker containers on Apple silicon"
+        },
+        {
+          "url": "https://github.com/robolectric/robolectric/releases",
+          "quote": "No configuration is needed"
+        }
+      ]
+    },
+    {
+      "text": "Starting with Robolectric 4.15, it's possible to launch an interactive preview of your app or tests in a Robolectric environment.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "Starting with Robolectric 4.15, it's possible to launch an interactive preview of your app or tests in a Robolectric environment."
+        }
+      ]
+    },
+    {
+      "text": "The Robolectric simulator can be a useful way to preview how your UI would look in a Robolectric environment. This can be helpful, for instance, when debugging failing Robolectric tests.",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/simulator",
+          "quote": "The Robolectric simulator can be a useful way to preview how your UI would look in a Robolectric environment. This can be helpful, for instance, when debugging failing Robolectric tests."
+        }
+      ]
+    },
+    {
+      "text": "UI rendered in the Robolectric simulator may not match an Android emulator or device 100%. Note that the Robolectric simulator is highly experimental and is still largely in the proof-of-concept stage.",
       "quotes": [
         {
           "url": "https://robolectric.org/simulator/",
-          "quote": "@GraphicsMode(GraphicsMode.Mode.NATIVE)"
-        }
-      ]
-    },
-    {
-      "text": "Robolectric 4.10 added support for native Android graphics. The 4.10 release notes say it can be enabled using `@GraphicsMode(NATIVE)`. When native graphics is enabled, interactions with Android graphics classes use real native Android graphics code and are much higher fidelity.",
-      "quotes": [
-        {
-          "url": "https://github.com/robolectric/robolectric/releases",
-          "quote": "can be enabled using @GraphicsMode(NATIVE)"
+          "quote": "UI rendered in the Robolectric simulator may not match an Android emulator or device 100%"
         },
         {
-          "url": "https://github.com/robolectric/robolectric/releases",
-          "quote": "When native graphics is enabled, interactions with Android graphics classes use real native Android graphics code and are much higher fidelity"
+          "url": "https://robolectric.org/simulator/",
+          "quote": "Note that the Robolectric simulator is highly experimental and is still largely in the proof-of-concept stage"
         }
       ]
     },
     {
-      "text": "The Robolectric blog post \"Designing local testing libraries\" describes itself as \"an outside read of the code as it stands in mid-2026, not an official AndroidX position\". In its section on Jetpack Compose UI test, the post says screenshot tests use Robolectric's native-graphics PixelCopy shadow.",
-      "quotes": [
-        {
-          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/",
-          "quote": "This is an outside read of the code as it stands in mid-2026, not an official AndroidX position"
-        },
-        {
-          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/",
-          "quote": "screenshot tests use Robolectric's native-graphics PixelCopy shadow"
-        }
-      ]
-    },
-    {
-      "text": "Robolectric 4.12.2 release notes: in order to use HW rendering with PixelCopy, you must set the `robolectric.pixelCopyRenderMode=hardware` system property.",
-      "quotes": [
-        {
-          "url": "https://github.com/robolectric/robolectric/releases",
-          "quote": "In order to use HW rendering with PixelCopy, you must set the robolectric.pixelCopyRenderMode=hardware system property"
-        }
-      ]
-    },
-    {
-      "text": "Robolectric 4.13 release notes: better support for HW rendering in Robolectric Native Graphics (RNG), and HW rendering is now supported all the way down to Android P.",
-      "quotes": [
-        {
-          "url": "https://github.com/robolectric/robolectric/releases",
-          "quote": "Better support for HW rendering in Robolectric Native Graphics (RNG)"
-        },
-        {
-          "url": "https://github.com/robolectric/robolectric/releases",
-          "quote": "HW rendering is now supported all the way down to Android P."
-        }
-      ]
-    },
-    {
-      "text": "`SemanticsNodeInteraction.captureToImage` captures the underlying semantics node's surface into an `ImageBitmap`. Its signature:",
+      "text": "Captures the underlying semantics node's surface into an `ImageBitmap`.",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Captures the underlying semantics node's surface into an"
+          "quote": "Captures the underlying semantics node's surface into an ImageBitmap"
         }
       ]
     },
@@ -129,25 +143,50 @@
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "@RequiresApi(value = 26) fun SemanticsNodeInteraction.captureToImage(timeoutMillis: Long): ImageBitmap"
+          "quote": "@RequiresApi(value = 26)\nfun SemanticsNodeInteraction.captureToImage(timeoutMillis: Long): ImageBitmap"
         }
       ]
     },
     {
-      "text": "`timeoutMillis` is the maximum time (in ms) to wait for the drawing to complete. Default is 2000 ms.",
+      "text": "`timeoutMillis: Long` The maximum time (in ms) to wait for the drawing to complete. Default is 2000 ms.",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "The maximum time (in ms) to wait for the drawing to complete. Default is 2000 ms."
+          "quote": "Long The maximum time (in ms) to wait for the drawing to complete"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Default is 2000 ms"
         }
       ]
     },
     {
-      "text": "The release notes list: added a `timeoutMillis` parameter (defaulting to 2000 ms) to `SemanticsNodeInteraction.captureToImage()` to allow configuring a custom timeout when waiting for redraw passes.",
+      "text": "`captureToImage` can be used to capture nodes in a normal composable, as well as across multiple roots. Popups and Dialogs (if API >= 28) are specific cases of this, where they can be captured together with their anchor.",
       "quotes": [
         {
-          "url": "https://developer.android.com/jetpack/androidx/releases/compose-ui",
-          "quote": "Added a timeoutMillis parameter (defaulting to 2000 ms) to SemanticsNodeInteraction.captureToImage() to allow configuring a custom timeout when waiting for redraw passes."
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This can be used to capture nodes in a normal composable, as well as across multiple roots."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "are specific cases of this, where they can be captured together with their anchor"
+        }
+      ]
+    },
+    {
+      "text": "For example, selecting the root node (via `onRoot()`) when a popup or dialog is present will detect multiple roots. In this scenario, the resulting image is cropped to the combined bounding box of all nodes across the different roots. If a Dialog is present among the roots, the image is cropped to the window's visible display frame.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "For example, selecting the root node (via onRoot()) when a popup or dialog is present will detect multiple roots"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "In this scenario, the resulting image is cropped to the combined bounding box of all nodes across the different roots"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "If a Dialog is present among the roots, the image is cropped to the window's visible display frame"
         }
       ]
     },
@@ -156,7 +195,7 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/animation/testing",
-          "quote": "ComposeTestRule exposes its test clock as mainClock. You can set the autoAdvance property to false to control the clock in your test code. After initiating the animation you want to test, the clock can be moved forward with advanceTimeBy."
+          "quote": "`ComposeTestRule` exposes its test clock as `mainClock`. You can set the `autoAdvance` property to false to control the clock in your test code. After initiating the animation you want to test, the clock can be moved forward with `advanceTimeBy`."
         }
       ]
     },
@@ -170,20 +209,72 @@
       ]
     },
     {
-      "text": "In that sample, the comment says `assertAgainGolden` needs to be implemented in your code.",
+      "text": "If, after any call to `advanceTimeBy`, you want to assert anything related to rendering (e.g. `SemanticsNodeInteraction.captureToImage`), you will need a call to `androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle` or `androidx.compose.ui.test.junit4.ComposeTestRule.runOnIdle` to make sure that any triggered draw pass has been completed.",
       "quotes": [
         {
-          "url": "https://developer.android.com/develop/ui/compose/animation/testing",
-          "quote": "assertAgainGolden needs to be implemented in your code."
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "If, after any call to advanceTimeBy, you want to assert anything related to rendering (e.g"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "SemanticsNodeInteraction.captureToImage), you will need a call to androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle or androidx.compose.ui.test.junit4.ComposeTestRule.runOnIdle to make sure that any triggered draw pass has been completed"
         }
       ]
     },
     {
-      "text": "The `MainTestClock` page says that if, after any call to `advanceTimeBy`, you want to assert anything related to rendering (for example `SemanticsNodeInteraction.captureToImage`), you will need a call to `ComposeTestRule.waitForIdle` or `ComposeTestRule.runOnIdle`.",
+      "text": "| `ComposeTimeoutException` | if drawing does not complete within `timeoutMillis`. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "ComposeTimeoutException"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "if drawing does not complete within timeoutMillis"
+        }
+      ]
+    },
+    {
+      "text": "| `IllegalArgumentException` | if an attempt is made to capture a bitmap of a dialog before API 28. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "IllegalArgumentException"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "if an attempt is made to capture a bitmap of a dialog before API 28"
+        }
+      ]
+    },
+    {
+      "text": "If you change a state variable that is read during draw, calling `advanceTimeBy` will not produce the desired update to the UI. Use `androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle` for this case.",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
-          "quote": "you want to assert anything related to rendering (e.g. SemanticsNodeInteraction.captureToImage), you will need a call to androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle or androidx.compose.ui.test.junit4.ComposeTestRule.runOnIdle"
+          "quote": "If you change a state variable that is read during draw, calling advanceTimeBy will not produce the desired update to the UI"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock",
+          "quote": "Use androidx.compose.ui.test.junit4.ComposeTestRule.waitForIdle for this case"
+        }
+      ]
+    },
+    {
+      "text": "Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find."
+        }
+      ]
+    },
+    {
+      "text": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like `WebView`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like WebView."
         }
       ]
     }

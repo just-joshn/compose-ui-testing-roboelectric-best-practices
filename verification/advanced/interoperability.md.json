@@ -18,7 +18,7 @@
         },
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "and Compose elements with the"
+          "quote": "and Compose elements with the `ComposeTestRule`."
         }
       ]
     },
@@ -32,10 +32,19 @@
       ]
     },
     {
+      "text": "Robolectric can also run UI tests such as Espresso or Compose tests.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric can also run UI tests such as Espresso or Compose tests."
+        }
+      ]
+    },
+    {
       "text": "Espresso is the View matching and interaction library of choice for instrumentation tests. Since Robolectric 4.0, Espresso APIs are now supported in Robolectric tests.",
       "quotes": [
         {
-          "url": "https://robolectric.org/androidx_test/",
+          "url": "https://robolectric.org/androidx_test",
           "quote": "Espresso is the View matching and interaction library of choice for instrumentation tests. Since Robolectric 4.0, Espresso APIs are now supported in Robolectric tests."
         }
       ]
@@ -44,7 +53,7 @@
       "text": "Robolectric has very limited APIs for View interaction. In most cases, test writers can just use Android APIs, such as `Activity.findViewById()` which was safe since Robolectric tests do not have to worry about synchronization between test and UI threads.",
       "quotes": [
         {
-          "url": "https://robolectric.org/androidx_test/",
+          "url": "https://robolectric.org/androidx_test",
           "quote": "Robolectric has very limited APIs for View interaction. In most cases, test writers can just use Android APIs, such as Activity.findViewById() which was safe since Robolectric tests do not have to worry about synchronization between test and UI threads."
         }
       ]
@@ -54,20 +63,20 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "The onRootWithViewInteraction API is included in androidx.compose.ui:ui-test-junit4:1.12.0-alpha01+ and androidx.compose.ui:ui-test:1.12.0-alpha01+. This API is experimental and subject to change."
+          "quote": "The `onRootWithViewInteraction` API is included in `androidx.compose.ui:ui-test-junit4:1.12.0-alpha01+` and `androidx.compose.ui:ui-test:1.12.0-alpha01+`. This API is experimental and subject to change."
         }
       ]
     },
     {
-      "text": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views, such as within a `RecyclerView` or a `ViewPager`. In these scenarios, a standard Compose search like `onNodeWithText(\"Save\")` might fail with a \"Multiple nodes found\" error.",
+      "text": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views—such as within a `RecyclerView` or a `ViewPager`. In these scenarios, a standard Compose search like `onNodeWithText(\"Save\")` might fail with a \"Multiple nodes found\" error.",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views"
+          "quote": "When migrating complex UIs to Compose, you might encounter identical Compose elements nested inside multiple traditional Android Views—such as within a RecyclerView or a ViewPager"
         },
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "such as within a RecyclerView or a ViewPager. In these scenarios, a standard Compose search like onNodeWithText(\"Save\") might fail with a \"Multiple nodes found\" error."
+          "quote": "In these scenarios, a standard Compose search like onNodeWithText(\"Save\") might fail with a \"Multiple nodes found\" error"
         }
       ]
     },
@@ -85,7 +94,7 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "Use the onRootWithViewInteraction API on your test rule. This function accepts an Espresso ViewInteraction, allowing you to leverage Espresso to isolate a specific container View and perform Compose interactions exclusively within that scoped hierarchy."
+          "quote": "Use the `onRootWithViewInteraction` API on your test rule. This function accepts an Espresso `ViewInteraction`, allowing you to leverage Espresso to isolate a specific container View and perform Compose interactions exclusively within that scoped hierarchy."
         }
       ]
     },
@@ -99,11 +108,65 @@
       ]
     },
     {
+      "text": "| `ComposeTestRule.onRootWithViewInteraction` | `androidx.compose.ui:ui-test-junit4` |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "ComposeTestRule.onRootWithViewInteraction android Artifact: androidx.compose.ui:ui-test-junit4 View Source"
+        }
+      ]
+    },
+    {
+      "text": "| `ComposeUiTest.onRootWithViewInteraction` | `androidx.compose.ui:ui-test` |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTest",
+          "quote": "ComposeUiTest.onRootWithViewInteraction android Artifact: androidx.compose.ui:ui-test View Source"
+        }
+      ]
+    },
+    {
+      "text": "fun ComposeTestRule.onRootWithViewInteraction(\n    interaction: ViewInteraction\n): SemanticsNodeInteractionsProvider",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "fun ComposeTestRule.onRootWithViewInteraction(\n    interaction: ViewInteraction\n): SemanticsNodeInteractionsProvider"
+        }
+      ]
+    },
+    {
+      "text": "`onRootWithViewInteraction` resolves the View from the Espresso interaction, locates all Compose roots within that view hierarchy, and creates a new, scoped `SemanticsNodeInteractionsProvider`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "resolves the View from the Espresso interaction, locates all Compose roots within that view hierarchy, and creates a new, scoped SemanticsNodeInteractionsProvider."
+        }
+      ]
+    },
+    {
+      "text": "Scopes the Compose interaction to the View hierarchy matched by the provided Espresso `ViewInteraction`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "Scopes the Compose interaction to the View hierarchy matched by the provided Espresso ViewInteraction"
+        }
+      ]
+    },
+    {
+      "text": "// Select the \"Header\" View container\nval headerInteraction = onView(withId(header_id))\n\n// Scope the Compose interaction to only the Header\ncomposeTestRule\n    .onRootWithViewInteraction(headerInteraction)\n    .onNodeWithContentDescription(\"Settings\")\n    .performClick()",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "// Select the \"Header\" View container\nval headerInteraction = onView(withId(header_id))\n\n// Scope the Compose interaction to only the Header\ncomposeTestRule\n    .onRootWithViewInteraction(headerInteraction)\n    .onNodeWithContentDescription(\"Settings\")\n    .performClick()"
+        }
+      ]
+    },
+    {
       "text": "If you need to interact with a Compose element inside a specific `RecyclerView` row, use Espresso to locate the row, then scope your Compose interaction to it. This ignores identical Compose elements in all other rows.",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "If you need to interact with a Compose element inside a specific RecyclerView row, use Espresso to locate the row, then scope your Compose interaction to it. This ignores identical Compose elements in all other rows."
+          "quote": "If you need to interact with a Compose element inside a specific `RecyclerView` row, use Espresso to locate the row, then scope your Compose interaction to it. This ignores identical Compose elements in all other rows."
         }
       ]
     },
@@ -135,68 +198,54 @@
       ]
     },
     {
-      "text": "`onRootWithViewInteraction` scopes Compose interactions to the View hierarchy matched by an Espresso `ViewInteraction`.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
-          "quote": "Scopes Compose interactions to the"
-        },
-        {
-          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "This function accepts an Espresso ViewInteraction, allowing you to leverage Espresso to isolate a specific container View and perform Compose interactions exclusively within that scoped hierarchy."
-        }
-      ]
-    },
-    {
-      "text": "// Select the \"Header\" View container\nval headerInteraction = onView(withId(header_id))\n\n// Scope the Compose interaction to only the Header\ncomposeTestRule\n    .onRootWithViewInteraction(headerInteraction)\n    .onNodeWithContentDescription(\"Settings\")\n    .performClick()",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
-          "quote": "// Select the \"Header\" View container\nval headerInteraction = onView(withId(header_id))\n\n// Scope the Compose interaction to only the Header\ncomposeTestRule\n    .onRootWithViewInteraction(headerInteraction)\n    .onNodeWithContentDescription(\"Settings\")\n    .performClick()"
-        }
-      ]
-    },
-    {
       "text": "Compose tests are synchronized by default with your UI. When you call an assertion or an action with the `ComposeTestRule`, the test is synchronized beforehand, waiting until the UI tree is idle.",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "Compose tests are synchronized by default with your UI. When you call an assertion or an action with the ComposeTestRule, the test is synchronized beforehand, waiting until the UI tree is idle."
-        }
-      ]
-    },
-    {
-      "text": "Compose testing now supports main thread synchronization, allowing you to safely call `waitForIdle` and by extension, Compose UI actions and assertions, directly from the main thread. Changes to support main thread synchronization are included in `androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "Compose testing now supports main thread synchronization, allowing you to safely call waitForIdle"
+          "quote": "Compose tests are synchronized by default with your UI. When you call an assertion or an action with the"
         },
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "and by extension, Compose UI actions and assertions"
+          "quote": "the test is synchronized beforehand, waiting until the UI tree is idle."
+        }
+      ]
+    },
+    {
+      "text": "Compose testing now supports main thread synchronization, allowing you to safely call `waitForIdle`— and by extension, Compose UI actions and assertions — directly from the main thread. Changes to support main thread synchronization are included in `androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Compose testing now supports main thread synchronization, allowing you to safely call waitForIdle— and by extension, Compose UI actions and assertions — directly from the main thread"
         },
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "Changes to support main thread synchronization are included in androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+ and androidx.compose.ui:ui-test:1.13.0-alpha01+."
+          "quote": "Changes to support main thread synchronization are included in androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+ and androidx.compose.ui:ui-test:1.13.0-alpha01+"
         }
       ]
     },
     {
-      "text": "Previously, calling synchronization methods like `waitForIdle` or `runOnIdle` from the main thread (for example, inside a `runOnUiThread` block) would throw an `IllegalStateException`.",
+      "text": "Previously, Compose testing strictly enforced a two-thread model: test execution occurred on a background test thread, while UI updates happened on the main thread. Calling synchronization methods like `waitForIdle` or `runOnIdle` from the main thread (for example, inside a `runOnUiThread` block) would throw an `IllegalStateException` because the framework enforced strict thread checks to prevent main-thread synchronization. With main thread synchronization enabled, the Compose test framework can now advance the clock and process pending work even when blocking calls are made on the main thread.",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "Calling synchronization methods like waitForIdle or runOnIdle from the main thread (for example, inside a runOnUiThread block) would throw an IllegalStateException"
+          "quote": "Previously, Compose testing strictly enforced a two-thread model: test execution occurred on a background test thread, while UI updates happened on the main thread"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Calling synchronization methods like waitForIdle or runOnIdle from the main thread (for example, inside a runOnUiThread block) would throw an IllegalStateException because the framework enforced strict thread checks to prevent main-thread synchronization"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "With main thread synchronization enabled, the Compose test framework can now advance the clock and process pending work even when blocking calls are made on the main thread"
         }
       ]
     },
     {
-      "text": "Main thread synchronization is highly advantageous in a few specific scenarios:",
+      "text": "While keeping tests on the background thread remains the standard for pure Compose tests, main thread synchronization is highly advantageous in a few specific scenarios:",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "main thread synchronization is highly advantageous in a few specific scenarios:"
+          "quote": "While keeping tests on the background thread remains the standard for pure Compose tests, main thread synchronization is highly advantageous in a few specific scenarios:"
         }
       ]
     },
@@ -205,7 +254,7 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "When testing hybrid UIs containing both Compose and legacy Android Views, manipulating Views often requires running on the main thread. You can now interact with Views and assert on Compose nodes sequentially without constantly switching thread contexts."
+          "quote": "**Complex View interoperability**: When testing hybrid UIs containing both Compose and legacy Android Views, manipulating Views often requires running on the main thread. You can now interact with Views and assert on Compose nodes sequentially without constantly switching thread contexts."
         }
       ]
     },
@@ -214,7 +263,7 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "If your architecture relies on strictly main-thread-bound state holders, you can now mutate state and immediately wait for the Compose UI to settle without leaving the main thread."
+          "quote": "**Synchronous state mutations**: If your architecture relies on strictly main-thread-bound state holders, you can now mutate state and immediately wait for the Compose UI to settle without leaving the main thread."
         }
       ]
     },
@@ -223,7 +272,7 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
-          "quote": "If you are building custom testing infrastructure or utilizing environments where the test runner inherently executes on the main thread, Compose tests now execute cleanly without requiring background-thread delegation."
+          "quote": "**Custom test runners**: If you are building custom testing infrastructure or utilizing environments where the test runner inherently executes on the main thread, Compose tests now execute cleanly without requiring background-thread delegation."
         }
       ]
     },
@@ -237,23 +286,38 @@
       ]
     },
     {
-      "text": "The Robolectric `LooperMode` javadoc says Robolectric currently defaults to `LooperMode.Mode.PAUSED` behavior. A 2019 Robolectric blog post about `PAUSED` mode says AndroidX Test APIs, like `ActivityScenario`, `FragmentScenario` and Espresso will automatically idle the main Looper, that tasks posted to the main Looper are not automatically executed inline, and its example uses `shadowOf(getMainLooper()).idle()` to execute all tasks posted to the main Looper.",
+      "text": "Historically, because synchronization was strictly prohibited on the main thread, developers had to bounce back-and-forth between the background test runner thread and the UI thread, leading to disjointed tests:",
       "quotes": [
         {
-          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.html",
-          "quote": "Currently Robolectric will default to LooperMode.Mode.PAUSED behavior"
-        },
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Historically, because synchronization was strictly prohibited on the main thread, developers had to bounce back-and-forth between the background test runner thread and the UI thread, leading to disjointed tests:"
+        }
+      ]
+    },
+    {
+      "text": "@Test\nfun testBidirectionalInteropUIUpdates_old() {\n    val scenario = launchFragmentInContainer<InteropFragment>()\n    composeTestRule.waitForIdle()\n    scenario.onFragment { fragment ->\n        fragment.legacyButton.performClick()\n    }\n    // Jump to Test Thread to verify state settles inside compose\n    composeTestRule.waitForIdle()\n    composeTestRule.onNodeWithText(\"Legacy Clicks: 1\").assertIsDisplayed()\n    composeTestRule.onNodeWithText(\"Increment Legacy TextView\").performClick()\n    composeTestRule.waitForIdle()\n    // Jump back to Main Thread to verify target view state settles\n    scenario.onFragment { fragment ->\n        assert(fragment.legacyTextView.text.toString() == \"Compose Clicks: 1\")\n    }\n}",
+      "quotes": [
         {
-          "url": "https://robolectric.org/blog/2019/06/04/paused-looper/",
-          "quote": "AndroidX Test APIs, like ActivityScenario, FragmentScenario and Espresso will automatically idle the main Looper."
-        },
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "@Test\nfun testBidirectionalInteropUIUpdates_old() {\n    val scenario = launchFragmentInContainer<InteropFragment>()\n    composeTestRule.waitForIdle()\n    scenario.onFragment { fragment ->\n        fragment.legacyButton.performClick()\n    }\n    // Jump to Test Thread to verify state settles inside compose\n    composeTestRule.waitForIdle()\n    composeTestRule.onNodeWithText(\"Legacy Clicks: 1\").assertIsDisplayed()\n    composeTestRule.onNodeWithText(\"Increment Legacy TextView\").performClick()\n    composeTestRule.waitForIdle()\n    // Jump back to Main Thread to verify target view state settles\n    scenario.onFragment { fragment ->\n        assert(fragment.legacyTextView.text.toString() == \"Compose Clicks: 1\")\n    }\n}"
+        }
+      ]
+    },
+    {
+      "text": "With main thread synchronization enabled, the assertions for Compose and View hierarchies can be executed in the same block:",
+      "quotes": [
         {
-          "url": "https://robolectric.org/blog/2019/06/04/paused-looper/",
-          "quote": "Tasks posted to the main Looper are not automatically executed inline."
-        },
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "With main thread synchronization enabled, the assertions for Compose and View hierarchies can be executed in the same block:"
+        }
+      ]
+    },
+    {
+      "text": "@Test\nfun testBidirectionalInteropUIUpdates_new() {\n    val scenario = launchFragmentInContainer<InteropFragment>()\n    composeTestRule.waitForIdle()\n    scenario.onFragment { fragment ->\n        fragment.legacyButton.performClick()\n        composeTestRule.waitForIdle()\n        composeTestRule.onNodeWithText(\"Legacy Clicks: 1\").assertIsDisplayed()\n        composeTestRule.onNodeWithText(\"Increment Legacy TextView\").performClick()\n        composeTestRule.waitForIdle()\n        assert(fragment.legacyTextView.text.toString() == \"Compose Clicks: 1\")\n    }\n}",
+      "quotes": [
         {
-          "url": "https://robolectric.org/blog/2019/06/04/paused-looper/",
-          "quote": "// execute all tasks posted to main Looper shadowOf(getMainLooper()).idle();"
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "@Test\nfun testBidirectionalInteropUIUpdates_new() {\n    val scenario = launchFragmentInContainer<InteropFragment>()\n    composeTestRule.waitForIdle()\n    scenario.onFragment { fragment ->\n        fragment.legacyButton.performClick()\n        composeTestRule.waitForIdle()\n        composeTestRule.onNodeWithText(\"Legacy Clicks: 1\").assertIsDisplayed()\n        composeTestRule.onNodeWithText(\"Increment Legacy TextView\").performClick()\n        composeTestRule.waitForIdle()\n        assert(fragment.legacyTextView.text.toString() == \"Compose Clicks: 1\")\n    }\n}"
         }
       ]
     },
@@ -262,11 +326,15 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "By default, composables are accessible from UiAutomator only by their convenient descriptors (displayed text, content description, etc.). If you want to access any composable that uses"
+          "quote": "By default, composables are accessible from"
         },
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "you need to enable the semantic property testTagsAsResourceId for the particular composable's subtree. Enabling this behavior is useful for composables that don't have any other unique handle, such as scrollable composables (for example, LazyColumn)."
+          "quote": "only by their convenient descriptors (displayed text, content description, etc.). If you want"
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "you need to enable the semantic property `testTagsAsResourceId` for the particular composable's subtree. Enabling this behavior is useful for composables that don't have any other unique handle, such as scrollable composables (for example, `LazyColumn`)."
         }
       ]
     },
@@ -284,7 +352,7 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "Enable the semantic property only once high in your composables hierarchy to ensure all nested composables with Modifier.testTag are accessible from UiAutomator."
+          "quote": "Enable the semantic property only once high in your composables hierarchy to ensure all nested composables with `Modifier.testTag` are accessible from UiAutomator."
         }
       ]
     },
@@ -302,16 +370,11 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "Any composable with the Modifier.testTag(tag) can be accessible with the use of By.res(resourceName) using the same tag as the resourceName."
-        }
-      ]
-    },
-    {
-      "text": "Make sure you don't use `By.res(resourcePackage, resourceId)` as this formats the argument as `$resourcePackage:id/$resourceId`, which is different from `Modifier.testTag`.",
-      "quotes": [
+          "quote": "Any composable with the `Modifier.testTag(tag)` can be accessible with the use of"
+        },
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
-          "quote": "Make sure you don't use By.res(resourcePackage, resourceId) as this formats the argument as $resourcePackage:id/$resourceId, which is different from Modifier.testTag."
+          "quote": "using the same `tag` as the `resourceName`."
         }
       ]
     },
@@ -325,28 +388,11 @@
       ]
     },
     {
-      "text": "Robolectric is not a complete replacement for an emulator because it doesn't support all the features and APIs. For example, Robolectric doesn't have a screen like an emulator does, and some APIs are only partially supported.",
+      "text": "Make sure you don't use `By.res(resourcePackage, resourceId)` as this formats the argument as `$resourcePackage:id/$resourceId`, which is different from `Modifier.testTag`.",
       "quotes": [
         {
-          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
-          "quote": "Robolectric is not a complete replacement for an emulator because it doesn't support all the features and APIs. For example, Robolectric doesn't have a screen like an emulator does, and some APIs are only partially supported."
-        }
-      ]
-    },
-    {
-      "text": "A Robolectric blog post that calls itself an outside read, not an official AndroidX position, says Robolectric is not a full emulator, and that anything that truly needs real hardware or cross-process IPC still belongs in an instrumented test.",
-      "quotes": [
-        {
-          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/",
-          "quote": "This is an outside read of the code as it stands in mid-2026, not an official AndroidX position"
-        },
-        {
-          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/",
-          "quote": "It is not a full emulator, and that is the point."
-        },
-        {
-          "url": "https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries/",
-          "quote": "anything that truly needs real hardware or cross-process IPC still belongs in an instrumented test."
+          "url": "https://developer.android.com/develop/ui/compose/testing/interoperability",
+          "quote": "Make sure you don't use By.res(resourcePackage, resourceId) as this formats the argument as $resourcePackage:id/$resourceId, which is different from Modifier.testTag."
         }
       ]
     }

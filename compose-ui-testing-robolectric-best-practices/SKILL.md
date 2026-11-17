@@ -1,6 +1,6 @@
 ---
 name: compose-ui-testing-robolectric-best-practices
-description: Use when writing, reviewing, or debugging Jetpack Compose UI tests that run locally on the JVM with Robolectric. Covers compose test rules (createComposeRule, createAndroidComposeRule, runComposeUiTest), semantics finders and matchers, merged vs unmerged trees, assertions and actions, synchronization and idling resources, waitUntil, the MainTestClock and animations, coroutines in the v2 test APIs, state restoration (StateRestorationTester), device configuration (DeviceConfigurationOverride, Robolectric qualifiers), accessibility checks and focus tests, View, Espresso and UiAutomator interoperability, fakes and shadows, Robolectric @Config, robolectric.properties, LooperMode, GraphicsMode, SQLiteMode, screenshots, flaky tests, debugging with printToLog, choosing Robolectric or device tests, and CI.
+description: Use when writing, reviewing, or debugging Jetpack Compose UI tests that run locally on the JVM with Robolectric. Covers compose test rules (createComposeRule, createAndroidComposeRule, runComposeUiTest), semantics finders and matchers, merged vs unmerged trees, assertions and actions, synchronization and idling resources, waitUntil, the MainTestClock and animations, coroutines in the v2 test APIs, state restoration (StateRestorationTester), device configuration (DeviceConfigurationOverride, Robolectric qualifiers), accessibility checks and focus tests, View, Espresso and UiAutomator interoperability, shadows and mocks, Robolectric @Config, robolectric.properties, LooperMode, GraphicsMode, SQLiteMode, screenshots, flaky tests, debugging with printToLog, choosing Robolectric or device tests, and CI.
 license: MIT
 compatibility: Robolectric 4.18 supports Android API 24 → 37. Compose ui-test stable release 1.12.1, release candidate 1.13.0-rc01.
 metadata:
@@ -56,7 +56,7 @@ Consult these references based on what you're doing:
 
 ### Debugging & Troubleshooting
 
-**When to use**: Test failures, node not found, idle timeouts, unexpected behavior
+**When to use**: Test failures, node not found, timeouts, unexpected behavior
 
 | Activity | Reference Files |
 | --- | --- |
@@ -64,7 +64,7 @@ Consult these references based on what you're doing:
 | **Printing the semantics tree** | [debugging.md](debugging/debugging.md) |
 | **Node not found or matched multiple nodes** | [semantics-finders.md](core/semantics-finders.md), [debugging.md](debugging/debugging.md) |
 | **Fixing flaky tests** | [flaky-tests.md](debugging/flaky-tests.md), [synchronization.md](core/synchronization.md) |
-| **Idle timeouts and infinite animations** | [synchronization.md](core/synchronization.md), [clock-control.md](advanced/clock-control.md) |
+| **Timeouts and waiting for conditions** | [synchronization.md](core/synchronization.md), [clock-control.md](advanced/clock-control.md) |
 | **Work the test doesn't wait for** | [synchronization.md](core/synchronization.md), [coroutines.md](testing-patterns/coroutines.md) |
 | **Robolectric behaves differently from a device** | [runtime-modes.md](core/runtime-modes.md), [test-architecture.md](architecture/test-architecture.md), [ci-cd.md](infrastructure-ci-cd/ci-cd.md) |
 
@@ -75,8 +75,7 @@ Consult these references based on what you're doing:
 | Activity | Reference Files |
 | --- | --- |
 | **Robolectric or device test** | [test-architecture.md](architecture/test-architecture.md) |
-| **Fakes, shadows, and not mocking Android classes** | [test-doubles.md](architecture/test-doubles.md) |
-| **Sharing tests between JVM and device** | [test-suite-structure.md](core/test-suite-structure.md), [test-architecture.md](architecture/test-architecture.md) |
+| **Shadows and mocking Android classes** | [test-doubles.md](architecture/test-doubles.md) |
 
 ### Refactoring & Maintenance
 
@@ -84,7 +83,7 @@ Consult these references based on what you're doing:
 
 | Activity | Reference Files |
 | --- | --- |
-| **Replacing brittle finders** | [semantics-finders.md](core/semantics-finders.md) |
+| **Choosing finders and matchers** | [semantics-finders.md](core/semantics-finders.md) |
 | **Replacing manual waits with conditions** | [synchronization.md](core/synchronization.md), [flaky-tests.md](debugging/flaky-tests.md) |
 | **Migrating to the v2 test APIs** | [coroutines.md](testing-patterns/coroutines.md), [test-suite-structure.md](core/test-suite-structure.md) |
 
@@ -118,7 +117,7 @@ What are you doing?
 │
 ├─ Test is failing?
 │  ├─ Node not found / multiple nodes → core/semantics-finders.md, debugging/debugging.md
-│  ├─ Idle timeout / never settles → core/synchronization.md, advanced/clock-control.md
+│  ├─ Timeout waiting for a condition → core/synchronization.md, advanced/clock-control.md
 │  ├─ Passes sometimes → debugging/flaky-tests.md
 │  └─ Differs from device → core/runtime-modes.md, architecture/test-architecture.md
 │
@@ -129,14 +128,14 @@ What are you doing?
 │
 └─ Deciding approach?
    ├─ Robolectric or device → architecture/test-architecture.md
-   └─ Fakes and shadows → architecture/test-doubles.md
+   └─ Shadows and mocks → architecture/test-doubles.md
 ```
 
 ## Test Validation Loop
 
 After writing or modifying tests:
 
-1. **Run the tests**: `./gradlew test`. Robolectric's sharedTest post says to "test it with ./gradlew test for local tests on Robolectric".
+1. **Run the tests**.
 2. **Look at the semantics tree**, the main way to solve problems in your tests: `composeTestRule.onRoot().printToLog()` → [debugging.md](debugging/debugging.md)
 3. **Match unmerged nodes when needed**: set `useUnmergedTree` to `true` → [semantics-finders.md](core/semantics-finders.md)
 4. **Conditions that depend on external work**: use a more general concept such as `waitUntil()` → [synchronization.md](core/synchronization.md)

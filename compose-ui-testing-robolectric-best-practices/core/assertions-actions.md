@@ -10,13 +10,16 @@
 6. [Key Input and Focus](#key-input-and-focus)
 7. [Text Input](#text-input)
 8. [Scrolling](#scrolling)
-9. [Chaining and Return Values](#chaining-and-return-values)
-10. [Related References](#related-references)
-11. [Sources](#sources)
+9. [Chaining Actions and Assertions](#chaining-actions-and-assertions)
+10. [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
+11. [Related References](#related-references)
+12. [Sources](#sources)
 
 ## Assertions
 
 Assertions are used to verify that the elements exist or have certain attributes.
+
+### Assert with Matchers
 
 Check assertions by calling `assert()` on the `SemanticsNodeInteraction` returned by a finder with one or multiple matchers:
 
@@ -31,36 +34,72 @@ composeTestRule
     .onNode(matcher).assert(hasText("Button") or hasText("Button2"))
 ```
 
-`assert` throws `AssertionError` if the matcher does not match or the node can no longer be found.
+`assert`: Throws `AssertionError` if the matcher does not match or the node can no longer be found.
+
+### Convenience Assertions
 
 You can also use convenience functions for the most common assertions, such as `assertExists`, `assertIsDisplayed`, and `assertTextEquals`.
 
-- `assertExists` asserts that the component was found and is part of the component tree.
-- `assertDoesNotExist` asserts that no item was found or that the item is no longer in the hierarchy.
-- `assertIsEnabled` asserts that the current semantics node is enabled, and `assertIsNotEnabled` asserts that it is not enabled.
-- `assertHasClickAction` asserts that the current semantics node has a click action, and `assertHasNoClickAction` asserts that it doesn't have one.
-- `assertIsFocused` asserts that the current semantics node has a focus.
-- `assertIsSelected` asserts that the current semantics node is selected.
-- `assertValueEquals` asserts the node's value equals the given value.
+| Assertion                | Behavior                                                                    |
+| ------------------------ | --------------------------------------------------------------------------- |
+| `assertExists`           | Asserts that the component was found and is part of the component tree.     |
+| `assertDoesNotExist`     | Asserts that no item was found or that the item is no longer in the hierarchy. |
+| `assertIsEnabled`        | Asserts that the current semantics node is enabled.                         |
+| `assertIsNotEnabled`     | Asserts that the current semantics node is not enabled.                     |
+| `assertHasClickAction`   | Asserts that the current semantics node has a click action.                 |
+| `assertHasNoClickAction` | Asserts that the current semantics node has doesn't have a click action.    |
+| `assertIsFocused`        | Asserts that the current semantics node has a focus.                        |
+| `assertIsNotFocused`     | Asserts that the current semantics node does not have a focus.              |
+| `assertIsSelected`       | Asserts that the current semantics node is selected.                        |
+| `assertIsOn`             | Asserts that the current semantics node is checked.                         |
+| `assertValueEquals`      | Asserts the node's value equals the given value.                            |
 
-`assertIsDisplayed` asserts that the current semantics node is displayed on screen. Specifically, the node must be composed, placed and at least a portion of its bounds must be visible on screen after clipping is applied. It throws `AssertionError` if the node is not displayed.
+### Display State
 
-`assertTextEquals` asserts that the node's list of text values contains exactly the given values and nothing else. The order of the elements does not matter.
-
-In the merged semantics tree (the default in Compose testing), the `Text` property's list often contains multiple text items merged from child nodes. `assertTextEquals` evaluates the entire list.
-
-To also evaluate `InputText`, which holds the raw user input of fields like passwords, bypassing visual transformations, set `includeInputText` to `true`.
-
-`assertTextContains` asserts that the node's list of text values contains the given value. By default, this requires an exact string match with at least one complete item in the list.
-
-`isDisplayed()` returns true if the matched node is displayed on screen. If no matching node is found, returns false. If multiple nodes match, throws an `AssertionError`.
+| Function               | Behavior                                                                                                                                                                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `assertIsDisplayed`    | Asserts that the current semantics node is displayed on screen. Specifically, the node must be composed, placed and at least a portion of its bounds must be visible on screen after clipping is applied. Throws `AssertionError` if the node is not displayed. |
+| `assertIsNotDisplayed` | Asserts that the current semantics node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied. Throws `AssertionError` If the node is displayed. |
+| `isDisplayed()`        | Returns true if the matched node is displayed on screen. If no matching node is found, returns false. If multiple nodes match, throws an `AssertionError`. Added in 1.6.0.                                                                                       |
+| `isNotDisplayed()`     | Returns true if the matched node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied. Returns false if a matching node is currently displayed. Added in 1.6.0. |
 
 ```kotlin
 val interaction = composeTestRule.onNodeWithTag("test")
 composeTestRule.waitUntil { interaction.isDisplayed() }
 ```
 
-`isNotDisplayed()` returns true if the matched node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied.
+### Text Content
+
+| Function            | Behavior                                                                                                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `assertTextEquals`  | Asserts that the node's list of text values contains exactly the given values and nothing else. Note that the order of the elements does not matter.                                           |
+| `assertTextContains` | Asserts that the node's list of text values contains the given value. By default, this requires an exact string match with at least one complete item in the list.                             |
+
+The `Text` property is represented as a list of strings. In the merged semantics tree (the default in Compose testing), this list often contains multiple text items merged from child nodes. `assertTextEquals`: This function evaluates the entire list.
+
+To also evaluate `SemanticsProperties.InputText` (which holds the raw user input of fields like passwords, bypassing visual transformations), set `includeInputText` to `true`.
+
+- `value`: Value to match against the items in the list of text values.
+- `substring`: Whether this can be satisfied as a substring match of an item in the list of text. Defaults to `false`.
+- `ignoreCase`: Whether case should be ignored. Defaults to `false`.
+
+```kotlin
+composeTestRule.setContent {
+    // Explicitly merging descendants to demonstrate list semantics
+    Row(Modifier.semantics(mergeDescendants = true) { testTag = "textRow" }) {
+        Text("Hello")
+        Text("World")
+    }
+}
+
+// The merged text list is: ["Hello", "World"]
+
+// "Hello" is an exact match for one of the items in the list.
+composeTestRule.onNodeWithTag("textRow").assertTextContains("Hello")
+
+// "Hel" is a substring of an item in the list, and we explicitly enable substring matching.
+composeTestRule.onNodeWithTag("textRow").assertTextContains("Hel", substring = true)
+```
 
 ## Collection Assertions
 
@@ -78,15 +117,18 @@ composeTestRule
     .onAllNodesWithContentDescription("Beatle").assertAll(hasClickAction())
 ```
 
-`assertAll` passes also for empty collections.
-
-`assertCountEquals` provides a detailed error message on failure.
+| Function           | Behavior                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `assertCountEquals` | Check number of matched nodes. Provides a detailed error message on failure.                                     |
+| `assertAny`        | Asserts that this collection contains at least one element that satisfies the given matcher.                     |
+| `assertAll`        | Asserts that all the nodes in this collection satisfy the given matcher. This passes also for empty collections. |
 
 ## Bounds Assertions
 
-`assertHeightIsAtLeast` asserts that the layout of this node has height that is greater than or equal to the expected minimum height.
-
-`assertPositionInRootIsEqualTo` asserts that the layout of this node has position in the root composable that is equal to the expected left and top values. Its `tolerance` parameter is the tolerance within which the values should be treated as equal. It defaults to the tolerance configured in `ComposeUiTestConfig`, or `0.5.dp` if unspecified.
+| Function                         | Behavior                                                                                                                                                                                                                                         |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `assertHeightIsAtLeast`          | Asserts that the layout of this node has height that is greater than or equal to `expectedMinHeight`. Added in 1.10.0.                                                                                                                  |
+| `assertPositionInRootIsEqualTo`  | Asserts that the layout of this node has position in the root composable that is equal to the `expectedLeft` and `expectedTop` within the given `tolerance`. `tolerance`: The tolerance within which the values should be treated as equal. Defaults to the tolerance configured in `ComposeUiTestConfig`, or `0.5.dp` if unspecified. |
 
 ```kotlin
 composeTestRule
@@ -107,26 +149,27 @@ composeTestRule.onNode(...).performClick()
 
 You cannot chain actions inside a perform function. Instead, make multiple `perform...()` calls.
 
-- `performClick` performs a click action on the element represented by the given semantics node. Depending on the platform this may be implemented by a touch click (tap), a mouse click, or another more appropriate method for that platform.
-- `performSemanticsAction(key)` provides support to call custom semantics actions on this node. This method is for calling actions that have no parameters. It throws `AssertionError` if the semantics action is not defined on this node.
-- `performKeyPress(keyEvent)` sends the specified `KeyEvent` to the focused component. It returns true if the event was consumed and false otherwise.
-- `performGesture` is deprecated: it is replaced by `performTouchInput`.
+| Action                        | Behavior                                                                                                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `performClick`                | Performs a click action on the element represented by the given semantics node. Depending on the platform this may be implemented by a touch click (tap), a mouse click, or another more appropriate method for that platform. |
+| `performSemanticsAction(key)` | Provides support to call custom semantics actions on this node. This method is for calling actions that have no parameters. Throws `AssertionError` If the semantics action is not defined on this node. |
+| `performKeyPress(keyEvent)`   | Send the specified `KeyEvent` to the focused component. Returns `Boolean` `true` if the event was consumed. False otherwise. Added in 1.10.0.                                                                 |
 
 ## Touch Input
 
-`performTouchInput` executes the touch gesture specified in the given block. The gesture doesn't need to be complete and can be resumed in a later invocation of one of the `perform.*Input` methods. The event time is initialized to the current time of the `MainTestClock`.
+`performTouchInput`: Executes the touch gesture specified in the given block. The gesture doesn't need to be complete and can be resumed in a later invocation of one of the `perform.*Input` methods. The event time is initialized to the current time of the `MainTestClock`.
 
 Be aware that if you split a gesture over multiple invocations of `perform.*Input`, everything that happens in between will run as if the gesture is still ongoing (imagine a finger still touching the screen).
 
 Due to the batching of events, all events in a block are sent together and no recomposition will take place in between events.
 
-Example of performing a swipe up:
+### Swipe Up
 
 ```kotlin
 composeTestRule.onNodeWithTag("myComponent").performTouchInput { swipeUp() }
 ```
 
-Example of performing an off-center click:
+### Click Off-Center
 
 ```kotlin
 composeTestRule.onNodeWithTag("myComponent").performTouchInput {
@@ -134,7 +177,7 @@ composeTestRule.onNodeWithTag("myComponent").performTouchInput {
 }
 ```
 
-Example of doing an assertion during a click:
+### Assert During a Click
 
 ```kotlin
 composeTestRule
@@ -144,7 +187,7 @@ composeTestRule
     .performTouchInput { up() }
 ```
 
-Example of performing a click-and-drag:
+### Click and Drag
 
 ```kotlin
 composeTestRule.onNodeWithTag("myComponent").performTouchInput {
@@ -164,6 +207,8 @@ class FocusNavigationTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 ```
+
+### Verify Focus Targets
 
 You can verify whether a UI element can receive focus by performing a click or requesting focus, and then asserting its state using `assertIsFocused()` and `assertIsNotFocused()`.
 
@@ -185,6 +230,8 @@ fun interactiveElement_isFocusTarget() {
     secondCard.assertIsNotFocused()
 }
 ```
+
+### Verify Tab Traversal
 
 As a best practice, verify both forward navigation (`Key.Tab`) and reverse navigation (`Key.Tab` with `Key.ShiftLeft` held down) to ensure two-way traversal integrity:
 
@@ -227,9 +274,13 @@ fun tabKey_navigatesInAppearanceOrder() {
 }
 ```
 
-Arrow keys or D-pad directional keys are simulated using `Key.DirectionDown`, `Key.DirectionUp`, `Key.DirectionRight`, and `Key.DirectionLeft`.
+### Arrow and D-Pad Keys
 
-When migrating to the v2 APIs, tests can fail if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.
+Simulate arrow keys or D-pad directional keys using `Key.DirectionDown`, `Key.DirectionUp`, `Key.DirectionRight`, and `Key.DirectionLeft`.
+
+### Input Mode
+
+Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.
 
 To resolve this, specify the required input mode in `ComposeUiTestConfig`:
 
@@ -245,24 +296,45 @@ class FocusTest {
 }
 ```
 
-The `ComposeUiTestConfig` class is included, starting in version 1.13, in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact (`androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`).
+To configure the input mode for individual test cases instead of the entire test class, pass `ComposeUiTestConfig` to `runComposeUiTest`:
+
+```kotlin
+class FocusTest {
+    @Test
+    fun testTouchMode() = runComposeUiTest {
+        // Runs with the default InputMode.Touch
+    }
+
+    @Test
+    fun testKeyboardMode() = runComposeUiTest(
+        ComposeUiTestConfig(inputMode = InputMode.Keyboard)
+    ) {
+        // Runs with InputMode.Keyboard
+    }
+}
+```
+
+The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.
 
 ## Text Input
 
-- `performTextInput(text)` sends the given text to this node in similar way to IME.
-- `performTextClearance()` clears the text in this node in similar way to IME.
-- `performTextReplacement(text)` replaces existing text with the given text in this node in similar way to IME. This does not reflect text selection. All the text gets cleared out and new inserted.
-- `performImeAction()` sends to this node the IME action associated with it in a similar way to the IME. The node needs to define its IME action in semantics via `onImeAction`.
+| Action                       | Behavior                                                                                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `performTextInput`           | Sends the given text to this node in similar way to IME.                                                                                                           |
+| `performTextClearance()`     | Clears the text in this node in similar way to IME.                                                                                                                |
+| `performTextReplacement`   | Replaces existing text with the given text in this node in similar way to IME. This does not reflect text selection. All the text gets cleared out and new inserted. |
+| `performImeAction()`         | Sends to this node the IME action associated with it in a similar way to the IME. The node needs to define its IME action in semantics via `SemanticsPropertyReceiver.onImeAction`.          |
 
 ## Scrolling
 
-- `performScrollTo` scrolls the closest enclosing scroll parent by the smallest amount such that this node is fully visible in its viewport. This action should be performed on the `SemanticsNodeInteraction` that is part of the scrollable content, not on the scrollable container.
-- `performScrollTo` throws `AssertionError` if there is no scroll parent, or if a scroll is needed but `MainTestClock#autoAdvance()` is set to `false`. Compose scroll actions rely on clock frames to execute scroll animations, so scrolling cannot make progress when clock auto-advancement is disabled.
-- `performScrollToIndex(index)` scrolls a scrollable container with items to the item with the given index. This action should be performed on a `SemanticsNodeInteraction` that is a scrollable container, not on a node that is part of the content of that container.
-- `performScrollToKey(key)` scrolls a scrollable container with keyed items to the item with the given key.
-- `performScrollToNode(matcher)` scrolls a scrollable container to the content that matches the given matcher.
+| Action                       | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `performScrollTo`            | Scrolls the closest enclosing scroll parent by the smallest amount such that this node is fully visible in its viewport. This action should be performed on the node that is part of the scrollable content, not on the scrollable container. Throws `AssertionError` if there is no scroll parent, or if a scroll is needed but `mainClock.autoAdvance` is set to `false`. Compose scroll actions rely on clock frames to execute scroll animations, so scrolling cannot make progress when clock auto-advancement is disabled. |
+| `performScrollToIndex` | Scrolls a scrollable container with items to the item with the given index. Note that not all scrollable containers have item indices. For example, a scrollable doesn't have items with an index, while `LazyColumn` does. This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container.                                                                                                                       |
+| `performScrollToKey`    | Scrolls a scrollable container with keyed items to the item with the given key, such as `LazyColumn` or `LazyRow`. This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container.                                                                                                                                                                              |
+| `performScrollToNode` | Scrolls a scrollable container to the content that matches the given matcher. If the content isn't yet visible, the scrollable container will be scrolled from the start till the end till it finds the content we're looking for. Added in 1.1.0.                                                                                                                                                                       |
 
-## Chaining and Return Values
+## Chaining Actions and Assertions
 
 Here you can see how you can locate a checkbox, click it and verify that it's checked:
 
@@ -270,7 +342,14 @@ Here you can see how you can locate a checkbox, click it and verify that it's ch
 composeTestRule.onNode(isToggleable()).performClick().assertIsOn()
 ```
 
-`performTextInput` and `performImeAction` return `Unit`.
+## Anti-Patterns to Avoid
+
+- You cannot chain actions inside a perform function. Instead, make multiple `perform...()` calls.
+- `performGesture`: This function is deprecated. Replaced by performTouchInput, use this instead: performTouchInput(block)
+- `assertExists`: If you are using fetchSemanticsNode you don't need to call this. In fact you would just introduce additional overhead.
+- `performScrollTo`: This action should be performed on the node that is part of the scrollable content, not on the scrollable container.
+- `performScrollToIndex`: This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container.
+- `performScrollToKey`: This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container.
 
 ## Related References
 
@@ -284,5 +363,6 @@ composeTestRule.onNode(isToggleable()).performClick().assertIsOn()
 - https://developer.android.com/develop/ui/compose/testing/apis
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction
 - https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection
+- https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary
 - https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus
 - https://developer.android.com/develop/ui/compose/testing/migrate-v2

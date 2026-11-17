@@ -5,25 +5,15 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "are now available to improve control over coroutine execution. This update does not duplicate the entire API surface; only the APIs that establish the test environment have been updated."
-    }
-   ]
-  },
-  {
-   "text": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs. Migrating verifies your tests align with standard coroutine behavior and avoids future compatibility issues.",
-   "quotes": [
+     "quote": "v2 versions of the Compose testing APIs (createComposeRule, createAndroidComposeRule, runComposeUiTest, runAndroidComposeUiTest, etc) are now available to improve control over coroutine execution"
+    },
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs. Migrating verifies your tests align with standard coroutine behavior and avoids future compatibility issues."
-    }
-   ]
-  },
-  {
-   "text": "While the v1 APIs relied on the `UnconfinedTestDispatcher`, the v2 APIs use the `StandardTestDispatcher` by default for the running composition. This change aligns Compose test behavior with the standard `runTest` APIs and provides explicit control over coroutine execution order.",
-   "quotes": [
+     "quote": "This update does not duplicate the entire API surface; only the APIs that establish the test environment have been updated"
+    },
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "While the v1 APIs relied on the UnconfinedTestDispatcher, the v2 APIs use the StandardTestDispatcher by default for the running composition. This change aligns Compose test behavior with the standard runTest APIs and provides explicit control over coroutine execution order."
+     "quote": "v2 versions of the Compose testing APIs (createComposeRule), createAndroidComposeRule), runComposeUiTest), runAndroidComposeUiTest), etc) are now available to improve control over coroutine execution. This update does not duplicate the entire API surface; only the APIs that establish the test environment have been updated."
     }
    ]
   },
@@ -46,38 +36,70 @@
    ]
   },
   {
-   "text": "- **v1 APIs** (`UnconfinedTestDispatcher`): When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran. Unlike production behavior, this immediate execution could **inadvertently mask real timing issues or race conditions** that would occur in a live application.",
+   "text": "- v1 APIs (`UnconfinedTestDispatcher`): When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran. Unlike production behavior, this immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application.",
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "v1 APIs (UnconfinedTestDispatcher): When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran. Unlike production behavior, this immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application."
+     "quote": "v1 APIs (UnconfinedTestDispatcher)"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "When a coroutine was launched, it executed immediately on the current thread, often finishing before the next line of test code ran"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Unlike production behavior, this immediate execution could inadvertently mask real timing issues or race conditions that would occur in a live application"
     }
    ]
   },
   {
-   "text": "- **v2 APIs** (`StandardTestDispatcher`): When a coroutine is launched, it is queued and does not execute until the test explicitly advances the virtual clock. Standard Compose test APIs (such as `waitForIdle()`) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes.",
+   "text": "- v2 APIs (`StandardTestDispatcher`): When a coroutine is launched, it is queued and does not execute until the test explicitly advances the virtual clock. Standard Compose test APIs (such as `waitForIdle()`) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes.",
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "v2 APIs (StandardTestDispatcher): When a coroutine is launched, it is queued and does not execute until the test explicitly advances the virtual clock. Standard Compose test APIs (such as waitForIdle()) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes."
+     "quote": "v2 APIs (StandardTestDispatcher)"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "When a coroutine is launched, it is queued and does not execute until the test explicitly advances the virtual clock"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Standard Compose test APIs (such as waitForIdle()) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "change aligns Compose test behavior with the standard runTest APIs and provides explicit control over coroutine execution order."
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Standard Compose test APIs (such as waitForIdle()) already handle this synchronization, so most tests relying on these standard APIs should continue to work with no changes."
     }
    ]
   },
   {
-   "text": "The existing v1 APIs are now deprecated, but continue to use `UnconfinedTestDispatcher` to maintain existing behavior and prevent breaking changes.",
+   "text": "While the v1 APIs relied on the `UnconfinedTestDispatcher`, the v2 APIs use the `StandardTestDispatcher` by default for the running composition. This change aligns Compose test behavior with the standard `runTest` APIs and provides explicit control over coroutine execution order.",
    "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "While the v1 APIs relied on the UnconfinedTestDispatcher, the v2 APIs use the StandardTestDispatcher by default for the running composition"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "This change aligns Compose test behavior with the standard runTest APIs and provides explicit control over coroutine execution order"
+    }
+   ]
+  },
+  {
+   "text": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs. Migrating verifies your tests align with standard coroutine behavior and avoids future compatibility issues. The existing v1 APIs are now deprecated, but continue to use `UnconfinedTestDispatcher` to maintain existing behavior and prevent breaking changes.",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs. Migrating verifies your tests align with standard coroutine behavior and avoids future compatibility issues."
+    },
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
      "quote": "The existing v1 APIs are now deprecated, but continue to use UnconfinedTestDispatcher to maintain existing behavior and prevent breaking changes."
-    }
-   ]
-  },
-  {
-   "text": "The only exception where the default behavior has changed: the default test dispatcher used for running composition in the `AndroidComposeUiTestEnvironment` class has switched from `UnconfinedTestDispatcher` to `StandardTestDispatcher`. This affects cases where you create an instance using the constructor, or subclass `AndroidComposeUiTestEnvironment`, and call that constructor.",
-   "quotes": [
-    {
-     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "The following is the only exception where the default behavior has changed: The default test dispatcher used for running composition in the AndroidComposeUiTestEnvironment class has switched from UnconfinedTestDispatcher to StandardTestDispatcher. This affects cases where you create an instance using the constructor, or subclass AndroidComposeUiTestEnvironment, and call that constructor."
     }
    ]
   },
@@ -104,7 +126,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "| androidx.compose.ui.test.junit4.createComposeRule | androidx.compose.ui.test.junit4.v2.createComposeRule"
+     "quote": "androidx.compose.ui.test.junit4.createComposeRule | androidx.compose.ui.test.junit4.v2.createComposeRule"
     }
    ]
   },
@@ -113,7 +135,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "| androidx.compose.ui.test.junit4.createAndroidComposeRule | androidx.compose.ui.test.junit4.v2.createAndroidComposeRule"
+     "quote": "androidx.compose.ui.test.junit4.createAndroidComposeRule | androidx.compose.ui.test.junit4.v2.createAndroidComposeRule"
     }
    ]
   },
@@ -122,7 +144,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "| androidx.compose.ui.test.junit4.createEmptyComposeRule | androidx.compose.ui.test.junit4.v2.createEmptyComposeRule"
+     "quote": "androidx.compose.ui.test.junit4.createEmptyComposeRule | androidx.compose.ui.test.junit4.v2.createEmptyComposeRule"
     }
    ]
   },
@@ -131,7 +153,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "| androidx.compose.ui.test.junit4.AndroidComposeTestRule | androidx.compose.ui.test.junit4.v2.AndroidComposeTestRule"
+     "quote": "androidx.compose.ui.test.junit4.AndroidComposeTestRule | androidx.compose.ui.test.junit4.v2.AndroidComposeTestRule"
     }
    ]
   },
@@ -140,7 +162,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "| androidx.compose.ui.test.runComposeUiTest | androidx.compose.ui.test.v2.runComposeUiTest"
+     "quote": "androidx.compose.ui.test.runComposeUiTest | androidx.compose.ui.test.v2.runComposeUiTest"
     }
    ]
   },
@@ -149,7 +171,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "| androidx.compose.ui.test.runAndroidComposeUiTest | androidx.compose.ui.test.v2.runAndroidComposeUiTest"
+     "quote": "androidx.compose.ui.test.runAndroidComposeUiTest | androidx.compose.ui.test.v2.runAndroidComposeUiTest"
     }
    ]
   },
@@ -158,7 +180,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "| androidx.compose.ui.test.runEmptyComposeUiTest | androidx.compose.ui.test.v2.runEmptyComposeUiTest"
+     "quote": "androidx.compose.ui.test.runEmptyComposeUiTest | androidx.compose.ui.test.v2.runEmptyComposeUiTest"
     }
    ]
   },
@@ -167,13 +189,26 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "| androidx.compose.ui.test.AndroidComposeUiTestEnvironment | androidx.compose.ui.test.v2.AndroidComposeUiTestEnvironment"
+     "quote": "androidx.compose.ui.test.AndroidComposeUiTestEnvironment | androidx.compose.ui.test.v2.AndroidComposeUiTestEnvironment"
     }
    ]
   },
   {
-   "text": "If your tests fail after upgrading to v2, they likely exhibit the following pattern:",
+   "text": "The default test dispatcher used for running composition in the `AndroidComposeUiTestEnvironment` class has switched from `UnconfinedTestDispatcher` to `StandardTestDispatcher`. This affects cases where you create an instance using the constructor, or subclass `AndroidComposeUiTestEnvironment`, and call that constructor.",
    "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "The default test dispatcher used for running composition in the AndroidComposeUiTestEnvironment class has switched from UnconfinedTestDispatcher to StandardTestDispatcher. This affects cases where you create an instance using the constructor, or subclass AndroidComposeUiTestEnvironment, and call that constructor."
+    }
+   ]
+  },
+  {
+   "text": "With the v2 APIs, coroutines are queued rather than executed immediately. If your tests fail after upgrading to v2, they likely exhibit the following pattern:",
+   "quotes": [
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "With the v2 APIs, coroutines are queued rather than executed immediately."
+    },
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
      "quote": "If your tests fail after upgrading to v2, they likely exhibit the following pattern:"
@@ -208,15 +243,6 @@
    ]
   },
   {
-   "text": "In v1, the task launched and finished immediately. In v2, the following code fails because `loadData()` hasn't actually run yet.",
-   "quotes": [
-    {
-     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "In v1, the task launched and finished immediately. In v2, the following code fails because loadData() hasn't actually run yet."
-    }
-   ]
-  },
-  {
    "text": "// In v1, this launched and finished immediately.\nviewModel.loadData()\n\n// In v2, this fails because loadData() hasn't actually run yet!\nassertEquals(Success, viewModel.state.value)",
    "quotes": [
     {
@@ -230,7 +256,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "to execute queued tasks before asserting."
+     "quote": "Use waitForIdle) or runOnIdle) to execute queued tasks before asserting."
     }
    ]
   },
@@ -239,7 +265,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "advances the clock until the UI is idle, verifying the coroutine has run."
+     "quote": "Using waitForIdle advances the clock until the UI is idle, verifying the coroutine has run."
     }
    ]
   },
@@ -257,7 +283,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "executes the code block on the UI thread after the UI has become idle."
+     "quote": "Using runOnIdle executes the code block on the UI thread after the UI has become idle."
     }
    ]
   },
@@ -311,7 +337,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "If you're using Compose test APIs alongside the Kotlin runTest API, it's strongly recommended to switch to"
+     "quote": "If you're using Compose test APIs alongside the Kotlin runTest API, it's strongly recommended to switch to runComposeUiTest."
     }
    ]
   },
@@ -338,7 +364,7 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "API automatically executes your test block within its own runTest scope. The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually."
+     "quote": "The runComposeUiTest API automatically executes your test block within its own runTest scope. The test clock is synchronized with the Compose environment, so you no longer need to manage the scheduler manually."
     }
    ]
   },
@@ -356,33 +382,24 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "Compose test v2 APIs use ComposeUiTestConfig to customize the test environment. APIs that create setup functions for tests, such as"
-    },
-    {
-     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "and other related APIs, accept ComposeUiTestConfig. This configuration object consolidates environmental related APIs like"
+     "quote": "Compose test v2 APIs use ComposeUiTestConfig to customize the test environment. APIs that create setup functions for tests, such as createComposeRule), runComposeUiTest), and other related APIs, accept ComposeUiTestConfig. This configuration object consolidates environmental related APIs like effectContext), runTestContext), and testTimeout) into a single object."
     }
    ]
   },
   {
-   "text": "The `ComposeUiTestConfig` class is included, starting in version 1.13, in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact (`androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`).",
+   "text": "Within the overloads for creating setup functions in tests, several overloads that accept individual configuration parameters -- such as `effectContext`, `runTestContext`, or `testTimeout` -- are deprecated. Update your tests to use `ComposeUiTestConfig` instead, as shown in the following example:",
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "class is included, starting in version 1.13, in the junit4 and ui-test parts of the androidx.compose.ui AndroidX artifact (androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+ and androidx.compose.ui:ui-test:1.13.0-alpha01+)."
-    }
-   ]
-  },
-  {
-   "text": "Within the overloads for creating setup functions in tests, several overloads that accept individual configuration parameters, such as `effectContext`, `runTestContext`, or `testTimeout`, are deprecated. Update your tests to use `ComposeUiTestConfig` instead, as shown in the following example:",
-   "quotes": [
-    {
-     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "Within the overloads for creating setup functions in tests, several overloads that accept individual configuration parameters"
+     "quote": "Within the overloads for creating setup functions in tests, several overloads that accept individual configuration parameters -- such as effectContext, runTestContext, or testTimeout -- are deprecated"
     },
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "are deprecated. Update your tests to use ComposeUiTestConfig instead, as shown in the following example:"
+     "quote": "Update your tests to use ComposeUiTestConfig instead, as shown in the following example"
+    },
+    {
+     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+     "quote": "Within the overloads for creating setup functions in tests, several overloads that accept individual configuration parameters -- such as effectContext, runTestContext, or testTimeout -- are deprecated. Update your tests to use ComposeUiTestConfig instead, as shown in the following example:"
     }
    ]
   },
@@ -391,71 +408,70 @@
    "quotes": [
     {
      "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "val testConfig = ComposeUiTestConfig( effectContext = EmptyCoroutineContext, runTestContext = EmptyCoroutineContext, testTimeout = 30.seconds ) @get:Rule val rule = createComposeRule(config = testConfig) // OR"
-    },
-    {
-     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "runComposeUiTest(config = testConfig) {}"
+     "quote": "val testConfig = ComposeUiTestConfig( effectContext = EmptyCoroutineContext, runTestContext = EmptyCoroutineContext, testTimeout = 30.seconds ) @get:Rule val rule = createComposeRule(config = testConfig) // OR runComposeUiTest(config = testConfig) {}"
     }
    ]
   },
   {
-   "text": "`effectContext` is the `CoroutineContext` used to run the composition. The context for `LaunchedEffect`s and `rememberCoroutineScope` will be derived from this context. If this context contains a `TestDispatcher` or `TestCoroutineScheduler` (in that order), it will be used for composition and the `MainTestClock`. It defaults to `EmptyCoroutineContext`.",
+   "text": "| `effectContext` | The `CoroutineContext` used to run the composition. The context for `LaunchedEffect`s and `rememberCoroutineScope` will be derived from this context. If this context contains a TestDispatcher or TestCoroutineScheduler (in that order), it will be used for composition and the `androidx.compose.ui.test.MainTestClock`. Defaults to `EmptyCoroutineContext`. |",
    "quotes": [
     {
      "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
-     "quote": "used to run the composition. The context for LaunchedEffects and rememberCoroutineScope will be derived from this context. If this context contains a"
+     "quote": "The CoroutineContext used to run the composition"
     },
     {
      "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
-     "quote": "(in that order), it will be used for composition and the"
+     "quote": "The context for LaunchedEffects and rememberCoroutineScope will be derived from this context"
     },
     {
      "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
-     "quote": "effectContext: CoroutineContext = EmptyCoroutineContext,"
+     "quote": "If this context contains a TestDispatcher or TestCoroutineScheduler (in that order), it will be used for composition and the androidx.compose.ui.test.MainTestClock"
+    },
+    {
+     "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
+     "quote": "Defaults to EmptyCoroutineContext"
+    },
+    {
+     "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
+     "quote": "The https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.coroutines/-coroutine-context/index.html used to run the composition. The context for LaunchedEffects and rememberCoroutineScope will be derived from this context. If this context contains a https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/kotlinx.coroutines.test/-test-dispatcher/index.html or https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/kotlinx.coroutines.test/-test-coroutine-scheduler/index.html (in that order), it will be used for composition and the https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock. Defaults to https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.coroutines/-empty-coroutine-context/index.html."
+    },
+    {
+     "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
+     "quote": "effectContext: CoroutineContext = EmptyCoroutineContext"
     }
    ]
   },
   {
-   "text": "`runTestContext` is the `CoroutineContext` used to create the context to run the test block. `effectContext` and `runTestContext` must not share a `TestCoroutineScheduler`. It defaults to `EmptyCoroutineContext`.",
+   "text": "| `runTestContext` | The `CoroutineContext` used to create the context to run the test block. `runTestContext` and `effectContext` must not share `TestCoroutineScheduler`. Defaults to `EmptyCoroutineContext`. |",
    "quotes": [
     {
      "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
-     "quote": "used to create the context to run the test block."
+     "quote": "The https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.coroutines/-coroutine-context/index.html used to create the context to run the test block. By default, test block will run using https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/kotlinx.coroutines.test/index.html. https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig#(kotlin.coroutines.CoroutineContext,kotlin.coroutines.CoroutineContext,kotlin.time.Duration,androidx.compose.ui.input.InputMode,androidx.compose.ui.test.TestFailurePolicy,androidx.compose.ui.unit.Dp) and https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig#(kotlin.coroutines.CoroutineContext,kotlin.coroutines.CoroutineContext,kotlin.time.Duration,androidx.compose.ui.input.InputMode,androidx.compose.ui.test.TestFailurePolicy,androidx.compose.ui.unit.Dp) must not share https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/kotlinx.coroutines.test/-test-coroutine-scheduler/index.html. Defaults to https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.coroutines/-empty-coroutine-context/index.html."
     },
     {
      "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
-     "quote": "must not share https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/kotlinx.coroutines.test/-test-coroutine-scheduler/index.html. Defaults to"
-    },
-    {
-     "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
-     "quote": "runTestContext: CoroutineContext = EmptyCoroutineContext,"
+     "quote": "runTestContext: CoroutineContext = EmptyCoroutineContext"
     }
    ]
   },
   {
-   "text": "`testTimeout` is the duration within which the test is expected to complete, otherwise a platform specific timeout exception will be thrown. It defaults to 60 seconds.",
+   "text": "| `testTimeout` | The `Duration` within which the test is expected to complete, otherwise a platform specific timeout exception will be thrown. Defaults to 60 seconds. |",
    "quotes": [
+    {
+     "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
+     "quote": "The Duration within which the test is expected to complete, otherwise a platform specific timeout exception will be thrown"
+    },
+    {
+     "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
+     "quote": "Defaults to 60 seconds"
+    },
     {
      "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
      "quote": "within which the test is expected to complete, otherwise a platform specific timeout exception will be thrown. Defaults to 60 seconds."
-    }
-   ]
-  },
-  {
-   "text": "- Using `createComposeRule` in conjunction with `runTest`. This creates two separate clocks: one for Compose, and one for the test coroutine scope. The migration guide marks this approach as NOT RECOMMENDED and recommends `runComposeUiTest`.",
-   "quotes": [
-    {
-     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "Using createComposeRule in conjunction with runTest creates two separate clocks: one for Compose, and one for the test coroutine scope."
     },
     {
-     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "NOT RECOMMENDED // Fails: runTest creates a new, separate scheduler."
-    },
-    {
-     "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-     "quote": "it's strongly recommended to switch to"
+     "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig",
+     "quote": "testTimeout: Duration = 60.seconds"
     }
    ]
   }

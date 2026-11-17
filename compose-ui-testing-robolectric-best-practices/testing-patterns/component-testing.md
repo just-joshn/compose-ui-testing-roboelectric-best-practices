@@ -7,12 +7,15 @@
 3. [Access the Activity and Resources After Setting Your Own Content](#access-the-activity-and-resources-after-setting-your-own-content)
 4. [Custom Semantics Properties](#custom-semantics-properties)
 5. [Running Compose Tests on Robolectric](#running-compose-tests-on-robolectric)
-6. [Related References](#related-references)
-7. [Sources](#sources)
+6. [Best Practices](#best-practices)
+7. [Related References](#related-references)
+8. [Sources](#sources)
 
 ## Setup
 
-The Compose testing page adds the following dependencies, using `androidTestImplementation` and `debugImplementation`, to the `build.gradle` file of the module containing your UI tests:
+### Add the Dependencies
+
+First, add the following dependencies to the `build.gradle` file of the module containing your UI tests:
 
 ```groovy
 // Test rules and transitive dependencies:
@@ -21,7 +24,11 @@ androidTestImplementation("androidx.compose.ui:ui-test-junit4:$compose_version")
 debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
 ```
 
-This module includes a `ComposeTestRule` and an implementation for Android called `AndroidComposeTestRule`. Through this rule you can set Compose content or access the activity. You construct the rules using factory functions, either `createComposeRule` or, if you need access to an activity, `createAndroidComposeRule`. A typical UI test for Compose looks like this:
+This module includes a `ComposeTestRule` and an implementation for Android called `AndroidComposeTestRule`. Through this rule you can set Compose content or access the activity.
+
+### Write a Test
+
+You construct the rules using factory functions, either `createComposeRule` or, if you need access to an activity, `createAndroidComposeRule`. A typical UI test for Compose looks like this:
 
 ```kotlin
 class MyComposeTest {
@@ -48,9 +55,11 @@ class MyComposeTest {
 
 ## Test in Isolation
 
-`ComposeTestRule` lets you start an activity displaying any composable: your full application, a single screen, or a small element. It's also a good practice to check that your composables are correctly encapsulated and they work independently, allowing for easier and more focused UI testing.
+`ComposeTestRule` lets you start an activity displaying any composable: your full application, a single screen, or a small element.
 
-This doesn't mean you should only create unit UI tests. UI tests scoping larger parts of your UI are also very important.
+It's also a good practice to check that your composables are correctly encapsulated and they work independently, allowing for easier and more focused UI testing.
+
+This doesn't mean you should *only* create unit UI tests. UI tests scoping larger parts of your UI are also very important.
 
 ## Access the Activity and Resources After Setting Your Own Content
 
@@ -78,13 +87,15 @@ class MyComposeTest {
 }
 ```
 
-Note that `ComponentActivity` needs to be added to your app's `AndroidManifest.xml` file. Enable that by adding this dependency to your module:
+`ComponentActivity` needs to be added to your app's `AndroidManifest.xml` file. Enable that by adding this dependency to your module:
 
 ```kotlin
 debugImplementation("androidx.compose.ui:ui-test-manifest:$compose_version")
 ```
 
 ## Custom Semantics Properties
+
+### Define the Property
 
 You can create custom semantics properties to expose information to tests. To do this, define a new `SemanticsPropertyKey` and make it available using the `SemanticsPropertyReceiver`.
 
@@ -93,6 +104,8 @@ You can create custom semantics properties to expose information to tests. To do
 val PickedDateKey = SemanticsPropertyKey<Long>("PickedDate")
 var SemanticsPropertyReceiver.pickedDate by PickedDateKey
 ```
+
+### Set the Property in the Modifier
 
 Now use that property in the `semantics` modifier:
 
@@ -103,6 +116,8 @@ MyCustomDatePicker(
 )
 ```
 
+### Assert the Property in a Test
+
 From tests, use `SemanticsMatcher.expectValue` to assert the value of the property:
 
 ```kotlin
@@ -111,9 +126,15 @@ composeTestRule
     .assertExists()
 ```
 
-You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers. Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.
+### When to Use Custom Semantics Properties
+
+You should only use custom Semantics properties when it's hard to match a specific item using the given finders and matchers.
+
+Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find.
 
 ## Running Compose Tests on Robolectric
+
+### Convert an Instrumented Test
 
 Robolectric can also run UI tests such as Espresso or Compose tests. You can convert an instrumented test to Robolectric by moving it to the `test` source set and setting up the Robolectric dependencies.
 
@@ -125,24 +146,23 @@ android {
     }
   }
 }
-
-dependencies {
-  testImplementation("junit:junit:4.18.2")
-  testImplementation("org.robolectric:robolectric:4.18")
-}
 ```
 
 Any UI test present in the `test` source set runs with Robolectric.
 
+### Robolectric Versus Device Tests
+
 You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button.
 
-Use Robolectric for isolated UI behavior tests for components, feature or application tests. In general these tests check the state management and behavior of the UIs and don't interact with external dependencies.
+You must decide whether Robolectric's implementation is good enough for each use case, but here are some recommendations:
 
-You must decide whether Robolectric's implementation is good enough for each use case.
+- Use Robolectric for isolated UI behavior tests for components, feature or application tests. In general these tests check the state management and behavior of the UIs and don't interact with external dependencies.
 
-A Robolectric blog post, which describes itself as "an outside read of the code as it stands in mid-2026, not an official AndroidX position", says the same `createAndroidComposeRule<ComponentActivity>()` / `runComposeUiTest { }` code runs on a device and on the JVM from one binary, with no Robolectric-specific source set.
+In summary, Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like `WebView`.
 
-Don't mock or spy on Android classes that will be acted on by other Android code (e.g. `Context`, `SharedPreferences`, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades.
+## Best Practices
+
+DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. `Context`, `SharedPreferences`, and many others). Stubbing is very brittle and can lead to breakages on Robolectric or Android Platform upgrades. The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners.
 
 ## Related References
 
@@ -158,5 +178,5 @@ Don't mock or spy on Android classes that will be acted on by other Android code
 - https://developer.android.com/develop/ui/compose/testing
 - https://developer.android.com/develop/ui/compose/testing/common-patterns
 - https://developer.android.com/training/testing/local-tests/robolectric
+- https://robolectric.org/getting-started
 - https://robolectric.org/best-practices
-- https://robolectric.org/blog/2026/07/03/designing-local-testing-libraries

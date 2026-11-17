@@ -28,11 +28,15 @@
       ]
     },
     {
-      "text": "`assert` throws `AssertionError` if the matcher does not match or the node can no longer be found.",
+      "text": "`assert`: Throws `AssertionError` if the matcher does not match or the node can no longer be found.",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "if the matcher does not match or the node can no longer be found."
+          "quote": "https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-assertion-error/index.html | if the matcher does not match or the node can no longer be found."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Throws AssertionError if the matcher does not match or the node can no longer be found"
         }
       ]
     },
@@ -41,12 +45,16 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/apis",
-          "quote": "You can also use convenience functions for the most common assertions, such as"
+          "quote": "You can also use convenience functions for the most common assertions, such as assertExists), assertIsDisplayed.assertIsDisplayed()), and assertTextEquals.assertTextEquals(kotlin.Array,kotlin.Boolean))."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "You can also use convenience functions for the most common assertions, such as assertExists, assertIsDisplayed, and assertTextEquals"
         }
       ]
     },
     {
-      "text": "- `assertExists` asserts that the component was found and is part of the component tree.",
+      "text": "| `assertExists`           | Asserts that the component was found and is part of the component tree.     |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
@@ -55,16 +63,20 @@
       ]
     },
     {
-      "text": "- `assertDoesNotExist` asserts that no item was found or that the item is no longer in the hierarchy.",
+      "text": "| `assertDoesNotExist`     | Asserts that no item was found or that the item is no longer in the hierarchy. |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "Asserts that no item was found or that the item is no longer in the hierarchy."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "assertDoesNotExist"
         }
       ]
     },
     {
-      "text": "- `assertIsEnabled` asserts that the current semantics node is enabled, and `assertIsNotEnabled` asserts that it is not enabled.",
+      "text": "| `assertIsEnabled`        | Asserts that the current semantics node is enabled.                         |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
@@ -72,12 +84,25 @@
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Asserts that the current semantics node is not enabled."
+          "quote": "assertIsEnabled"
         }
       ]
     },
     {
-      "text": "- `assertHasClickAction` asserts that the current semantics node has a click action, and `assertHasNoClickAction` asserts that it doesn't have one.",
+      "text": "| `assertIsNotEnabled`     | Asserts that the current semantics node is not enabled.                     |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Asserts that the current semantics node is not enabled."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "assertIsNotEnabled"
+        }
+      ]
+    },
+    {
+      "text": "| `assertHasClickAction`   | Asserts that the current semantics node has a click action.                 |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
@@ -85,104 +110,120 @@
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Asserts that the current semantics node has doesn't have a click action."
+          "quote": "assertHasClickAction"
         }
       ]
     },
     {
-      "text": "- `assertIsFocused` asserts that the current semantics node has a focus.",
+      "text": "| `assertHasNoClickAction` | Asserts that the current semantics node has doesn't have a click action.    |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Asserts that the current semantics node has doesn't have a click action."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "assertHasNoClickAction"
+        }
+      ]
+    },
+    {
+      "text": "| `assertIsFocused`        | Asserts that the current semantics node has a focus.                        |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "Asserts that the current semantics node has a focus."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "assertIsFocused"
         }
       ]
     },
     {
-      "text": "- `assertIsSelected` asserts that the current semantics node is selected.",
+      "text": "| `assertIsNotFocused`     | Asserts that the current semantics node does not have a focus.              |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Asserts that the current semantics node does not have a focus."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "assertIsNotFocused"
+        }
+      ]
+    },
+    {
+      "text": "| `assertIsSelected`       | Asserts that the current semantics node is selected.                        |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "Asserts that the current semantics node is selected."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "assertIsSelected"
         }
       ]
     },
     {
-      "text": "- `assertValueEquals` asserts the node's value equals the given value.",
+      "text": "| `assertIsOn`             | Asserts that the current semantics node is checked.                         |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Asserts that the current semantics node is checked."
+        }
+      ]
+    },
+    {
+      "text": "| `assertValueEquals`      | Asserts the node's value equals the given value.                            |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "Asserts the node's value equals the given value."
-        }
-      ]
-    },
-    {
-      "text": "`assertIsDisplayed` asserts that the current semantics node is displayed on screen. Specifically, the node must be composed, placed and at least a portion of its bounds must be visible on screen after clipping is applied. It throws `AssertionError` if the node is not displayed.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Asserts that the current semantics node is displayed on screen."
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Specifically, the node must be composed, placed and at least a portion of its bounds must be visible on screen after clipping is applied."
-        },
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "if the node is not displayed."
+          "quote": "assertValueEquals"
         }
       ]
     },
     {
-      "text": "`assertTextEquals` asserts that the node's list of text values contains exactly the given values and nothing else. The order of the elements does not matter.",
+      "text": "| `assertIsDisplayed`    | Asserts that the current semantics node is displayed on screen. Specifically, the node must be composed, placed and at least a portion of its bounds must be visible on screen after clipping is applied. Throws `AssertionError` if the node is not displayed. |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Asserts that the node's list of text values contains exactly the given"
+          "quote": "Asserts that the current semantics node is displayed on screen. Specifically, the node must be composed, placed and at least a portion of its bounds must be visible on screen after clipping is applied. Throws https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-assertion-error/index.html if the node is not displayed."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "assertIsDisplayed"
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Note that the order of the elements does not matter."
+          "quote": "Throws AssertionError if the node is not displayed"
         }
       ]
     },
     {
-      "text": "In the merged semantics tree (the default in Compose testing), the `Text` property's list often contains multiple text items merged from child nodes. `assertTextEquals` evaluates the entire list.",
+      "text": "| `assertIsNotDisplayed` | Asserts that the current semantics node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied. Throws `AssertionError` If the node is displayed. |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "In the merged semantics tree (the default in Compose testing), this list often contains multiple text items merged from child nodes. This function evaluates the entire list."
-        }
-      ]
-    },
-    {
-      "text": "To also evaluate `InputText`, which holds the raw user input of fields like passwords, bypassing visual transformations, set `includeInputText` to `true`.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "(which holds the raw user input of fields like passwords, bypassing visual transformations)"
+          "quote": "Asserts that the current semantics node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied. | Throws | |---|---| | https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-assertion-error/index.html | If the node is displayed."
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "includeInputText: Boolean = false"
-        }
-      ]
-    },
-    {
-      "text": "`assertTextContains` asserts that the node's list of text values contains the given value. By default, this requires an exact string match with at least one complete item in the list.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Asserts that the node's list of text values contains the given"
+          "quote": "assertIsNotDisplayed"
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "By default, this requires an exact string match with at least one complete item in the list."
+          "quote": "Throws AssertionError If the node is displayed"
         }
       ]
     },
     {
-      "text": "`isDisplayed()` returns true if the matched node is displayed on screen. If no matching node is found, returns false. If multiple nodes match, throws an `AssertionError`.",
+      "text": "| `isDisplayed()`        | Returns true if the matched node is displayed on screen. If no matching node is found, returns false. If multiple nodes match, throws an `AssertionError`. Added in 1.6.0.                                                                                       |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
@@ -194,7 +235,32 @@
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "If multiple nodes match, throws an"
+          "quote": "If multiple nodes match, throws an https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-assertion-error/index.html"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Added in 1.6.0 fun SemanticsNodeInteraction.isDisplayed("
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "If multiple nodes match, throws an AssertionError"
+        }
+      ]
+    },
+    {
+      "text": "| `isNotDisplayed()`     | Returns true if the matched node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied. Returns false if a matching node is currently displayed. Added in 1.6.0. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Returns true if the matched node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied. Returns false if a matching node is currently displayed."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Added in 1.6.0 fun SemanticsNodeInteraction.isNotDisplayed("
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "isNotDisplayed()"
         }
       ]
     },
@@ -208,11 +274,114 @@
       ]
     },
     {
-      "text": "`isNotDisplayed()` returns true if the matched node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied.",
+      "text": "| `assertTextEquals`  | Asserts that the node's list of text values contains exactly the given values and nothing else. Note that the order of the elements does not matter.                                           |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Returns true if the matched node is not displayed on screen, including when the node is not composed, composed but not placed, or when none of its bounds are visible on screen after clipping is applied."
+          "quote": "Asserts that the node's list of text values contains exactly the given https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary#(androidx.compose.ui.test.SemanticsNodeInteraction).assertTextEquals(kotlin.Array,kotlin.Boolean,kotlin.Boolean) and nothing else."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Note that the order of the elements does not matter."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Asserts that the node's list of text values contains exactly the given values and nothing else"
+        }
+      ]
+    },
+    {
+      "text": "| `assertTextContains` | Asserts that the node's list of text values contains the given value. By default, this requires an exact string match with at least one complete item in the list.                             |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Value to match against the items in the list of text values."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "By default, this requires an exact string match with at least one complete item in the list."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Asserts that the node's list of text values contains the given https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary#(androidx.compose.ui.test.SemanticsNodeInteraction).assertTextContains(kotlin.String,kotlin.Boolean,kotlin.Boolean). This will also search in"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Asserts that the node's list of text values contains the given value"
+        }
+      ]
+    },
+    {
+      "text": "The `Text` property is represented as a list of strings. In the merged semantics tree (the default in Compose testing), this list often contains multiple text items merged from child nodes. `assertTextEquals`: This function evaluates the entire list.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "The Text property is represented as a list of strings. In the merged semantics tree (the default in Compose testing), this list often contains multiple text items merged from child nodes. This function evaluates the entire list."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "assertTextEquals"
+        }
+      ]
+    },
+    {
+      "text": "To also evaluate `SemanticsProperties.InputText` (which holds the raw user input of fields like passwords, bypassing visual transformations), set `includeInputText` to `true`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "To also evaluate https://developer.android.com/reference/kotlin/androidx/compose/ui/semantics/SemanticsProperties#InputText() (which holds the raw user input of fields like passwords, bypassing visual transformations), set https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary#(androidx.compose.ui.test.SemanticsNodeInteraction).assertTextEquals(kotlin.Array,kotlin.Boolean,kotlin.Boolean) to true."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "includeInputText: https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html = false | Whether to also assert against the un-transformed input text. Defaults to false."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "To also evaluate SemanticsProperties.InputText (which holds the raw user input of fields like passwords, bypassing visual transformations), set includeInputText to true"
+        }
+      ]
+    },
+    {
+      "text": "- `value`: Value to match against the items in the list of text values.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Value to match against the items in the list of text values"
+        }
+      ]
+    },
+    {
+      "text": "- `substring`: Whether this can be satisfied as a substring match of an item in the list of text. Defaults to `false`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Whether this can be satisfied as a substring match of an item in the list of text. Defaults to false."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Whether case should be ignored. Defaults to false."
+        }
+      ]
+    },
+    {
+      "text": "- `ignoreCase`: Whether case should be ignored. Defaults to `false`.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Whether case should be ignored"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Defaults to false"
+        }
+      ]
+    },
+    {
+      "text": "composeTestRule.setContent {\n    // Explicitly merging descendants to demonstrate list semantics\n    Row(Modifier.semantics(mergeDescendants = true) { testTag = \"textRow\" }) {\n        Text(\"Hello\")\n        Text(\"World\")\n    }\n}\n\n// The merged text list is: [\"Hello\", \"World\"]\n\n// \"Hello\" is an exact match for one of the items in the list.\ncomposeTestRule.onNodeWithTag(\"textRow\").assertTextContains(\"Hello\")\n\n// \"Hel\" is a substring of an item in the list, and we explicitly enable substring matching.\ncomposeTestRule.onNodeWithTag(\"textRow\").assertTextContains(\"Hel\", substring = true)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "composeTestRule.setContent { // Explicitly merging descendants to demonstrate list semantics Row(Modifier.semantics(mergeDescendants = true) { testTag = \"textRow\" }) { Text(\"Hello\") Text(\"World\") } } // The merged text list is: [\"Hello\", \"World\"] // \"Hello\" is an exact match for one of the items in the list. composeTestRule.onNodeWithTag(\"textRow\").assertTextContains(\"Hello\") // \"Hel\" is a substring of an item in the list, and we explicitly enable substring matching. composeTestRule.onNodeWithTag(\"textRow\").assertTextContains(\"Hel\", substring = true)"
         }
       ]
     },
@@ -235,17 +404,12 @@
       ]
     },
     {
-      "text": "`assertAll` passes also for empty collections.",
+      "text": "| `assertCountEquals` | Check number of matched nodes. Provides a detailed error message on failure.                                     |",
       "quotes": [
         {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
-          "quote": "This passes also for empty collections."
-        }
-      ]
-    },
-    {
-      "text": "`assertCountEquals` provides a detailed error message on failure.",
-      "quotes": [
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "// Check number of matched nodes composeTestRule .onAllNodesWithContentDescription(\"Beatle\").assertCountEquals(4)"
+        },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
           "quote": "Provides a detailed error message on failure."
@@ -253,32 +417,78 @@
       ]
     },
     {
-      "text": "`assertHeightIsAtLeast` asserts that the layout of this node has height that is greater than or equal to the expected minimum height.",
+      "text": "| `assertAny`        | Asserts that this collection contains at least one element that satisfies the given matcher.                     |",
       "quotes": [
         {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Asserts that the layout of this node has height that is greater than or equal to"
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
+          "quote": "Asserts that this collection contains at least one element that satisfies the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
+          "quote": "Matcher that has to be satisfied by at least one of the nodes in the collection."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Asserts that this collection contains at least one element that satisfies the given matcher"
         }
       ]
     },
     {
-      "text": "`assertPositionInRootIsEqualTo` asserts that the layout of this node has position in the root composable that is equal to the expected left and top values. Its `tolerance` parameter is the tolerance within which the values should be treated as equal. It defaults to the tolerance configured in `ComposeUiTestConfig`, or `0.5.dp` if unspecified.",
+      "text": "| `assertAll`        | Asserts that all the nodes in this collection satisfy the given matcher. This passes also for empty collections. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
+          "quote": "Asserts that all the nodes in this collection satisfy the given"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
+          "quote": "Matcher that has to be satisfied by all the nodes in the collection."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteractionCollection",
+          "quote": "This passes also for empty collections."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Asserts that all the nodes in this collection satisfy the given matcher"
+        }
+      ]
+    },
+    {
+      "text": "| `assertHeightIsAtLeast`          | Asserts that the layout of this node has height that is greater than or equal to `expectedMinHeight`. Added in 1.10.0.                                                                                                                  |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Asserts that the layout of this node has position in the root composable that is equal to the"
+          "quote": "assertHeightIsAtLeast(expectedMinHeight: Dp): SemanticsNodeInteraction Asserts that the layout of this node has height that is greater than or equal to https://"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Added in 1.10.0 fun SemanticsNodeInteraction.assertHeightIsAtLeast("
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "The tolerance within which the values should be treated as equal."
+          "quote": "Asserts that the layout of this node has height that is greater than or equal to expectedMinHeight"
+        }
+      ]
+    },
+    {
+      "text": "| `assertPositionInRootIsEqualTo`  | Asserts that the layout of this node has position in the root composable that is equal to the `expectedLeft` and `expectedTop` within the given `tolerance`. `tolerance`: The tolerance within which the values should be treated as equal. Defaults to the tolerance configured in `ComposeUiTestConfig`, or `0.5.dp` if unspecified. |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "assertPositionInRootIsEqualTo( expectedLeft: Dp, expectedTop: Dp, tolerance: Dp = Dp.Unspecified ): SemanticsNodeInteraction Asserts that the layout of this node has position in the root composable that is equal to the https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary#(androidx.compose.ui.test.SemanticsNodeInteraction).assertPositionInRootIsEqualTo(androidx.compose.ui.unit.Dp,androidx.compose.ui.unit.Dp,androidx.compose.ui.unit.Dp) and https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary#(androidx.compose.ui.test.SemanticsNodeInteraction).assertPositionInRootIsEqualTo(androidx.compose.ui.unit.Dp,androidx.compose.ui.unit.Dp,androidx.compose.ui.unit.Dp) within the given"
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Defaults to the tolerance configured in"
+          "quote": "The tolerance within which the values should be treated as equal. Defaults to the tolerance configured in https://developer.android.com/reference/kotlin/androidx/compose/ui/test/ComposeUiTestConfig, or 0.5.dp if unspecified."
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": ", or 0.5.dp if unspecified."
+          "quote": "Asserts that the layout of this node has position in the root composable that is equal to the expectedLeft and expectedTop within the given tolerance"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Defaults to the tolerance configured in ComposeUiTestConfig, or 0.5.dp if unspecified"
         }
       ]
     },
@@ -328,7 +538,7 @@
       ]
     },
     {
-      "text": "- `performClick` performs a click action on the element represented by the given semantics node. Depending on the platform this may be implemented by a touch click (tap), a mouse click, or another more appropriate method for that platform.",
+      "text": "| `performClick`                | Performs a click action on the element represented by the given semantics node. Depending on the platform this may be implemented by a touch click (tap), a mouse click, or another more appropriate method for that platform. |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
@@ -337,58 +547,81 @@
       ]
     },
     {
-      "text": "- `performSemanticsAction(key)` provides support to call custom semantics actions on this node. This method is for calling actions that have no parameters. It throws `AssertionError` if the semantics action is not defined on this node.",
+      "text": "| `performSemanticsAction(key)` | Provides support to call custom semantics actions on this node. This method is for calling actions that have no parameters. Throws `AssertionError` If the semantics action is not defined on this node. |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Provides support to call custom semantics actions on this node."
+          "quote": "Provides support to call custom semantics actions on this node. This method is for calling actions that have no parameters."
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "This method is for calling actions that have no parameters."
+          "quote": "https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-assertion-error/index.html | If the semantics action is not defined on this node."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "performSemanticsAction(key)"
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "If the semantics action is not defined on this node."
+          "quote": "Throws AssertionError If the semantics action is not defined on this node"
         }
       ]
     },
     {
-      "text": "- `performKeyPress(keyEvent)` sends the specified `KeyEvent` to the focused component. It returns true if the event was consumed and false otherwise.",
+      "text": "| `performKeyPress(keyEvent)`   | Send the specified `KeyEvent` to the focused component. Returns `Boolean` `true` if the event was consumed. False otherwise. Added in 1.10.0.                                                                 |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "to the focused component."
+          "quote": "Send the specified https://developer.android.com/reference/kotlin/androidx/compose/ui/input/key/KeyEvent to the focused component."
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "true if the event was consumed. False otherwise."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Added in 1.10.0 fun SemanticsNodeInteraction.performKeyPress("
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "performKeyPress(keyEvent)"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Send the specified KeyEvent to the focused component"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Returns Boolean true if the event was consumed"
         }
       ]
     },
     {
-      "text": "- `performGesture` is deprecated: it is replaced by `performTouchInput`.",
+      "text": "`performTouchInput`: Executes the touch gesture specified in the given block. The gesture doesn't need to be complete and can be resumed in a later invocation of one of the `perform.*Input` methods. The event time is initialized to the current time of the `MainTestClock`.",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "This function is deprecated."
+          "quote": "Executes the touch gesture specified in the given"
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Replaced by performTouchInput, use this instead:"
-        }
-      ]
-    },
-    {
-      "text": "`performTouchInput` executes the touch gesture specified in the given block. The gesture doesn't need to be complete and can be resumed in a later invocation of one of the `perform.*Input` methods. The event time is initialized to the current time of the `MainTestClock`.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "The gesture doesn't need to be complete and can be resumed in a later invocation of one of the"
+          "quote": "The gesture doesn't need to be complete and can be resumed in a later invocation of one of the perform.*Input methods."
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "The event time is initialized to the current time of the"
+          "quote": "The event time is initialized to the current time of the https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "performTouchInput"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Executes the touch gesture specified in the given block"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "The event time is initialized to the current time of the MainTestClock"
         }
       ]
     },
@@ -411,29 +644,11 @@
       ]
     },
     {
-      "text": "Example of performing a swipe up:",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Example of performing a swipe up:"
-        }
-      ]
-    },
-    {
       "text": "composeTestRule.onNodeWithTag(\"myComponent\").performTouchInput { swipeUp() }",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "composeTestRule.onNodeWithTag(\"myComponent\").performTouchInput { swipeUp() }"
-        }
-      ]
-    },
-    {
-      "text": "Example of performing an off-center click:",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Example of performing an off-center click:"
         }
       ]
     },
@@ -447,29 +662,11 @@
       ]
     },
     {
-      "text": "Example of doing an assertion during a click:",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Example of doing an assertion during a click:"
-        }
-      ]
-    },
-    {
       "text": "composeTestRule\n    .onNodeWithTag(\"myComponent\")\n    .performTouchInput { down(topLeft) }\n    .assertHasClickAction()\n    .performTouchInput { up() }",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "composeTestRule .onNodeWithTag(\"myComponent\") .performTouchInput { down(topLeft) } .assertHasClickAction() .performTouchInput { up() }"
-        }
-      ]
-    },
-    {
-      "text": "Example of performing a click-and-drag:",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Example of performing a click-and-drag:"
         }
       ]
     },
@@ -505,7 +702,11 @@
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
-          "quote": "You can verify whether a UI element can receive focus by performing a click or requesting focus, and then asserting its state using"
+          "quote": "You can verify whether a UI element can receive focus by performing a click or requesting focus, and then asserting its state using assertIsFocused().assertIsFocused()) and assertIsNotFocused().assertIsNotFocused())."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "You can verify whether a UI element can receive focus by performing a click or requesting focus, and then asserting its state using assertIsFocused() and assertIsNotFocused()"
         }
       ]
     },
@@ -537,16 +738,20 @@
       ]
     },
     {
-      "text": "Arrow keys or D-pad directional keys are simulated using `Key.DirectionDown`, `Key.DirectionUp`, `Key.DirectionRight`, and `Key.DirectionLeft`.",
+      "text": "Simulate arrow keys or D-pad directional keys using `Key.DirectionDown`, `Key.DirectionUp`, `Key.DirectionRight`, and `Key.DirectionLeft`.",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
-          "quote": "Simulate arrow keys or D-pad directional keys using"
+          "quote": "Simulate arrow keys or D-pad directional keys using Key.DirectionDown), Key.DirectionUp), Key.DirectionRight), and Key.DirectionLeft)."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/touch-input/focus/testing-focus",
+          "quote": "Simulate arrow keys or D-pad directional keys using Key.DirectionDown, Key.DirectionUp, Key.DirectionRight, and Key.DirectionLeft"
         }
       ]
     },
     {
-      "text": "When migrating to the v2 APIs, tests can fail if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.",
+      "text": "Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
@@ -577,34 +782,64 @@
       ]
     },
     {
-      "text": "The `ComposeUiTestConfig` class is included, starting in version 1.13, in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact (`androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+` and `androidx.compose.ui:ui-test:1.13.0-alpha01+`).",
+      "text": "To configure the input mode for individual test cases instead of the entire test class, pass `ComposeUiTestConfig` to `runComposeUiTest`:",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
-          "quote": "class is included, starting in version 1.13, in the junit4 and ui-test parts of the androidx.compose.ui AndroidX artifact (androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+ and androidx.compose.ui:ui-test:1.13.0-alpha01+)"
+          "quote": "To configure the input mode for individual test cases instead of the entire test class, pass ComposeUiTestConfig to runComposeUiTest:"
         }
       ]
     },
     {
-      "text": "- `performTextInput(text)` sends the given text to this node in similar way to IME.",
+      "text": "class FocusTest {\n    @Test\n    fun testTouchMode() = runComposeUiTest {\n        // Runs with the default InputMode.Touch\n    }\n\n    @Test\n    fun testKeyboardMode() = runComposeUiTest(\n        ComposeUiTestConfig(inputMode = InputMode.Keyboard)\n    ) {\n        // Runs with InputMode.Keyboard\n    }\n}",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "class FocusTest { @Test fun testTouchMode() = runComposeUiTest { // Runs with the default InputMode.Touch } @Test fun testKeyboardMode() = runComposeUiTest( ComposeUiTestConfig(inputMode = InputMode.Keyboard) ) { // Runs with InputMode.Keyboard } }"
+        }
+      ]
+    },
+    {
+      "text": "The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "class is included, starting in version 1.13, in the junit4 and ui-test parts of the androidx.compose.ui AndroidX artifact (androidx.compose.ui:ui-test-junit4:1.13.0-alpha01+ and androidx.compose.ui:ui-test:1.13.0-alpha01+)."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "The ComposeUiTestConfig class is included, starting in version 1.13, in the junit4 and ui-test parts of the androidx.compose.ui AndroidX artifact"
+        }
+      ]
+    },
+    {
+      "text": "| `performTextInput`           | Sends the given text to this node in similar way to IME.                                                                                                           |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "Sends the given text to this node in similar way to IME."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "performTextInput"
         }
       ]
     },
     {
-      "text": "- `performTextClearance()` clears the text in this node in similar way to IME.",
+      "text": "| `performTextClearance()`     | Clears the text in this node in similar way to IME.                                                                                                                |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "Clears the text in this node in similar way to IME."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "performTextClearance()"
         }
       ]
     },
     {
-      "text": "- `performTextReplacement(text)` replaces existing text with the given text in this node in similar way to IME. This does not reflect text selection. All the text gets cleared out and new inserted.",
+      "text": "| `performTextReplacement`   | Replaces existing text with the given text in this node in similar way to IME. This does not reflect text selection. All the text gets cleared out and new inserted. |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
@@ -613,24 +848,32 @@
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "This does not reflect text selection. All the text gets cleared out and new inserted."
-        }
-      ]
-    },
-    {
-      "text": "- `performImeAction()` sends to this node the IME action associated with it in a similar way to the IME. The node needs to define its IME action in semantics via `onImeAction`.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Sends to this node the IME action associated with it in a similar way to the IME."
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "The node needs to define its IME action in semantics via"
+          "quote": "performTextReplacement"
         }
       ]
     },
     {
-      "text": "- `performScrollTo` scrolls the closest enclosing scroll parent by the smallest amount such that this node is fully visible in its viewport. This action should be performed on the `SemanticsNodeInteraction` that is part of the scrollable content, not on the scrollable container.",
+      "text": "| `performImeAction()`         | Sends to this node the IME action associated with it in a similar way to the IME. The node needs to define its IME action in semantics via `SemanticsPropertyReceiver.onImeAction`.          |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Sends to this node the IME action associated with it in a similar way to the IME. The node needs to define its IME action in semantics via https://developer.android.com/reference/kotlin/androidx/compose/ui/semantics/package-summary#(androidx.compose.ui.semantics.SemanticsPropertyReceiver).onImeAction(androidx.compose.ui.text.input.ImeAction,kotlin.String,kotlin.Function0)."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "performImeAction()"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "The node needs to define its IME action in semantics via SemanticsPropertyReceiver.onImeAction"
+        }
+      ]
+    },
+    {
+      "text": "| `performScrollTo`            | Scrolls the closest enclosing scroll parent by the smallest amount such that this node is fully visible in its viewport. This action should be performed on the node that is part of the scrollable content, not on the scrollable container. Throws `AssertionError` if there is no scroll parent, or if a scroll is needed but `mainClock.autoAdvance` is set to `false`. Compose scroll actions rely on clock frames to execute scroll animations, so scrolling cannot make progress when clock auto-advancement is disabled. |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
@@ -638,51 +881,90 @@
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "that is part of the scrollable content, not on the scrollable container."
-        }
-      ]
-    },
-    {
-      "text": "- `performScrollTo` throws `AssertionError` if there is no scroll parent, or if a scroll is needed but `MainTestClock#autoAdvance()` is set to `false`. Compose scroll actions rely on clock frames to execute scroll animations, so scrolling cannot make progress when clock auto-advancement is disabled.",
-      "quotes": [
+          "quote": "This action should be performed on the https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction that is part of the scrollable content, not on the scrollable container."
+        },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "if there is no scroll parent, or if a scroll is needed but"
+          "quote": "https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-assertion-error/index.html | if there is no scroll parent, or if a scroll is needed but https://developer.android.com/reference/kotlin/androidx/compose/ui/test/MainTestClock#autoAdvance() is set to false."
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
           "quote": "Compose scroll actions rely on clock frames to execute scroll animations, so scrolling cannot make progress when clock auto-advancement is disabled."
-        }
-      ]
-    },
-    {
-      "text": "- `performScrollToIndex(index)` scrolls a scrollable container with items to the item with the given index. This action should be performed on a `SemanticsNodeInteraction` that is a scrollable container, not on a node that is part of the content of that container.",
-      "quotes": [
-        {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Scrolls a scrollable container with items to the item with the given"
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "that is a scrollable container, not on a node that is part of the content of that container."
+          "quote": "performScrollTo"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on the node that is part of the scrollable content, not on the scrollable container"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Throws AssertionError if there is no scroll parent, or if a scroll is needed but mainClock.autoAdvance is set to false"
         }
       ]
     },
     {
-      "text": "- `performScrollToKey(key)` scrolls a scrollable container with keyed items to the item with the given key.",
+      "text": "| `performScrollToIndex` | Scrolls a scrollable container with items to the item with the given index. Note that not all scrollable containers have item indices. For example, a scrollable doesn't have items with an index, while `LazyColumn` does. This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container.                                                                                                                       |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Scrolls a scrollable container with keyed items to the item with the given"
+          "quote": "Scrolls a scrollable container with items to the item with the given https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary#(androidx.compose.ui.test.SemanticsNodeInteraction).performScrollToIndex(kotlin.Int). Note that not all scrollable containers have item indices."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on a https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction that is a scrollable container, not on a node that is part of the content of that container."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "The index of the item to scroll to"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Scrolls a scrollable container with items to the item with the given index"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "For example, a scrollable doesn't have items with an index, while LazyColumn does"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container"
         }
       ]
     },
     {
-      "text": "- `performScrollToNode(matcher)` scrolls a scrollable container to the content that matches the given matcher.",
+      "text": "| `performScrollToKey`    | Scrolls a scrollable container with keyed items to the item with the given key, such as `LazyColumn` or `LazyRow`. This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container.                                                                                                                                                                              |",
       "quotes": [
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "Scrolls a scrollable container to the content that matches the given"
+          "quote": "performScrollToKey"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Scrolls a scrollable container with keyed items to the item with the given key, such as LazyColumn or LazyRow"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container"
+        }
+      ]
+    },
+    {
+      "text": "| `performScrollToNode` | Scrolls a scrollable container to the content that matches the given matcher. If the content isn't yet visible, the scrollable container will be scrolled from the start till the end till it finds the content we're looking for. Added in 1.1.0.                                                                                                                                                                       |",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Scrolls a scrollable container to the content that matches the given https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary#(androidx.compose.ui.test.SemanticsNodeInteraction).performScrollToNode(androidx.compose.ui.test.SemanticsMatcher). If the content isn't yet visible, the scrollable container will be scrolled from the start till the end till it finds the content we're looking for."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "Added in 1.1.0 fun SemanticsNodeInteraction.performScrollToNode("
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "Scrolls a scrollable container to the content that matches the given matcher"
         }
       ]
     },
@@ -705,15 +987,84 @@
       ]
     },
     {
-      "text": "`performTextInput` and `performImeAction` return `Unit`.",
+      "text": "- You cannot chain actions inside a perform function. Instead, make multiple `perform...()` calls.",
       "quotes": [
         {
-          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "fun SemanticsNodeInteraction.performTextInput(text: String): Unit"
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "You cannot chain actions inside a perform function. Instead, make multiple perform...() calls."
+        }
+      ]
+    },
+    {
+      "text": "- `performGesture`: This function is deprecated. Replaced by performTouchInput, use this instead: performTouchInput(block)",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/package-summary",
+          "quote": "This function is deprecated. > Replaced by performTouchInput, use this instead: > > kotlin > performTouchInput(block)"
         },
         {
           "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
-          "quote": "fun SemanticsNodeInteraction.performImeAction(): Unit"
+          "quote": "Replaced by performTouchInput, use this instead: performTouchInput(block)"
+        }
+      ]
+    },
+    {
+      "text": "- `assertExists`: If you are using fetchSemanticsNode you don't need to call this. In fact you would just introduce additional overhead.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "If you are using https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction#fetchSemanticsNode(kotlin.String) you don't need to call this. In fact you would just introduce additional overhead."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "If you are using fetchSemanticsNode you don't need to call this"
+        }
+      ]
+    },
+    {
+      "text": "- `performScrollTo`: This action should be performed on the node that is part of the scrollable content, not on the scrollable container.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on a https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction that is a scrollable container, not on a node that is part of the content of that container."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "performScrollTo"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on the node that is part of the scrollable content, not on the scrollable container"
+        }
+      ]
+    },
+    {
+      "text": "- `performScrollToIndex`: This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on the https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction that is part of the scrollable content, not on the scrollable container."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "performScrollToIndex"
+        }
+      ]
+    },
+    {
+      "text": "- `performScrollToKey`: This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container.",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "performScrollToKey"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "This action should be performed on a node that is a scrollable container, not on a node that is part of the content of that container"
         }
       ]
     }

@@ -1,7 +1,7 @@
 {
   "units": [
     {
-      "text": " Use when writing, reviewing, or debugging Jetpack Compose UI tests that run locally on the JVM with Robolectric. Covers compose test rules (createComposeRule, createAndroidComposeRule, runComposeUiTest), semantics finders and matchers, merged vs unmerged trees, assertions and actions, synchronization and idling resources, waitUntil, the MainTestClock and animations, coroutines in the v2 test APIs, state restoration (StateRestorationTester), device configuration (DeviceConfigurationOverride, Robolectric qualifiers), accessibility checks and focus tests, View, Espresso and UiAutomator interoperability, fakes and shadows, Robolectric @Config, robolectric.properties, LooperMode, GraphicsMode, SQLiteMode, screenshots, flaky tests, debugging with printToLog, choosing Robolectric or device tests, and CI.",
+      "text": " Use when writing, reviewing, or debugging Jetpack Compose UI tests that run locally on the JVM with Robolectric. Covers compose test rules (createComposeRule, createAndroidComposeRule, runComposeUiTest), semantics finders and matchers, merged vs unmerged trees, assertions and actions, synchronization and idling resources, waitUntil, the MainTestClock and animations, coroutines in the v2 test APIs, state restoration (StateRestorationTester), device configuration (DeviceConfigurationOverride, Robolectric qualifiers), accessibility checks and focus tests, View, Espresso and UiAutomator interoperability, shadows and mocks, Robolectric @Config, robolectric.properties, LooperMode, GraphicsMode, SQLiteMode, screenshots, flaky tests, debugging with printToLog, choosing Robolectric or device tests, and CI.",
       "meta": true
     },
     {
@@ -42,7 +42,7 @@
       "meta": true
     },
     {
-      "text": "**When to use**: Test failures, node not found, idle timeouts, unexpected behavior",
+      "text": "**When to use**: Test failures, node not found, timeouts, unexpected behavior",
       "meta": true
     },
     {
@@ -62,13 +62,8 @@
       "meta": true
     },
     {
-      "text": "1. **Run the tests**: `./gradlew test`. Robolectric's sharedTest post says to \"test it with ./gradlew test for local tests on Robolectric\".",
-      "quotes": [
-        {
-          "url": "https://robolectric.org/blog/2021/10/06/sharedTest",
-          "quote": "test it with ./gradlew test for local tests on Robolectric"
-        }
-      ]
+      "text": "1. **Run the tests**.",
+      "meta": true
     },
     {
       "text": "2. **Look at the semantics tree**, the main way to solve problems in your tests: `composeTestRule.onRoot().printToLog()` → [debugging.md](debugging/debugging.md)",
