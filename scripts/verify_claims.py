@@ -5,6 +5,7 @@ Each prose unit (paragraph, list item, table row) and each code block of a refer
 an entry in verification/<file>.json whose quotes appear word for word in an allowed official page.
 SKILL.md units that only describe the skill itself may be marked "meta": true instead.
 Every API-shaped identifier in code must appear in those pages or be declared in the same code block.
+A prose unit that gives advice (should, avoid, prefer, ...) needs a quote that gives that advice too.
 Run scripts/fetch_sources.py first.
 
 Usage: verify_claims.py [skill-relative file ...]
@@ -13,10 +14,12 @@ import json
 import re
 import sys
 
-from official import LEDGER, SKILL, cache_file, canonical, is_allowed, normalize, page_text
+from official import LEDGER, SKILL, cache_file, canonical, is_allowed, normalize, page_texts
 
 EXEMPT_SECTIONS = {"Table of Contents", "Related References", "Sources"}
 MIN_QUOTE = 15
+DIRECTIVE = re.compile(r"(?i)\b(should|must|avoid|never|always|prefer|recommend\w*|discourag\w*|encourag\w*|"
+                       r"don't|do not|best practice\w*|anti-pattern\w*|instead)\b")
 IDENT = re.compile(r"(?<![\w@])@?[A-Za-z_][A-Za-z0-9_]*")
 DECL = re.compile(r"\b(?:fun|val|var|class|object|interface|typealias)\s+(?:<[^>]*>\s*)?(?:[A-Za-z_][\w.]*\.)?([A-Za-z_]\w*)")
 PARAM = re.compile(r"[({,]\s*([a-z_]\w*)\s*(?::|->)")
@@ -122,13 +125,16 @@ def check_file(rel, corpus):
         if not entry or not entry.get("quotes"):
             problems.append(f"{rel}: unsupported {kind}: {short}")
             continue
+        if kind == "prose" and DIRECTIVE.search(normalize(text)) and not any(
+                DIRECTIVE.search(normalize(q["quote"])) for q in entry["quotes"]):
+            problems.append(f"{rel}: directive with no directive in its quotes: {short}")
         for q in entry["quotes"]:
             url, quote = canonical(q["url"]), normalize(q["quote"])
             if not is_allowed(url):
                 problems.append(f"{rel}: quote from non-official URL {url}")
-            elif page_text(url) is None:
+            elif not page_texts(url):
                 problems.append(f"{rel}: page not fetched {url}")
-            elif len(quote) < MIN_QUOTE or quote not in normalize(page_text(url)):
+            elif len(quote) < MIN_QUOTE or not any(quote in normalize(t) for t in page_texts(url)):
                 problems.append(f"{rel}: quote not on page {url}: {quote[:90]}")
     for key in by_text.keys() - seen:
         problems.append(f"{rel}: stale ledger entry: {key[:90]}")
@@ -137,7 +143,7 @@ def check_file(rel, corpus):
 
 def main(argv):
     files = argv or sorted(str(p.relative_to(SKILL)) for p in SKILL.rglob("*.md"))
-    corpus = "\n".join(p.read_text() for p in cache_file("x").parent.glob("*.txt"))
+    corpus = "\n".join(p.read_text() for p in cache_file("x").parent.glob("*.txt"))  # includes rendered text
     problems = []
     for rel in files:
         problems += check_file(rel, corpus)

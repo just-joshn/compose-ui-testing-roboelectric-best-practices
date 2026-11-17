@@ -8,11 +8,9 @@ ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "compose-ui-testing-robolectric-best-practices"
 LEDGER = ROOT / "verification"
 CACHE = ROOT / ".cache" / "sources"
-PREFIXES = [
-    line.strip().rstrip("/")
-    for line in (ROOT / "sources.txt").read_text().splitlines()
-    if line.strip() and not line.startswith("#")
-]
+_LINES = [l.strip() for l in (ROOT / "sources.txt").read_text().splitlines() if l.strip() and not l.startswith("#")]
+PREFIXES = [l.rstrip("/") for l in _LINES if not l.startswith("!")]
+EXCLUDED = [l[1:].rstrip("/") for l in _LINES if l.startswith("!")]
 
 
 def canonical(url):
@@ -21,16 +19,27 @@ def canonical(url):
 
 def is_allowed(url):
     url = canonical(url)
-    return any(url == p or url.startswith(p + "/") for p in PREFIXES)
+    def under(prefixes):
+        return any(url == p or url.startswith(p + "/") for p in prefixes)
+    return under(PREFIXES) and not under(EXCLUDED)
 
 
 def cache_file(url):
     return CACHE / (hashlib.sha1(canonical(url).encode()).hexdigest() + ".txt")
 
 
+def rendered_file(url):
+    return cache_file(url).with_suffix(".html.txt")
+
+
 def page_text(url):
     path = cache_file(url)
     return path.read_text() if path.exists() else None
+
+
+def page_texts(url):
+    """The page as markdown source and, where saved, as rendered article text (keeps link words)."""
+    return [p.read_text() for p in (cache_file(url), rendered_file(url)) if p.exists()]
 
 
 def normalize(text):

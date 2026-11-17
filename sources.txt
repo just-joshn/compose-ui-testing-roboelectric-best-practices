@@ -11,7 +11,9 @@ https://developer.android.com/develop/ui/compose/system/predictive-back-test
 https://developer.android.com/develop/ui/compose/system/test-cutouts
 https://developer.android.com/reference/kotlin/androidx/compose/ui/test
 https://developer.android.com/jetpack/androidx/releases/compose-ui
-# Robolectric: robolectric.org, its GitHub releases, and Android's Robolectric page.
+# Robolectric: robolectric.org, its latest GitHub release, and Android's Robolectric page.
 https://robolectric.org
 https://github.com/robolectric/robolectric/releases
 https://developer.android.com/training/testing/local-tests/robolectric
+# Excluded: blog posts are dated or self-described as unofficial, so they are not current documentation.
+!https://robolectric.org/blog

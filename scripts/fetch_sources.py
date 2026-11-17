@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Fetch the current text of every official page the skill cites into .cache/sources/.
 
+Release notes are cut to current releases: the latest Robolectric release and the current
+stable and newer Compose UI lines.
+
 Usage: fetch_sources.py [URL ...]   (no arguments: every URL cited by the skill or its ledgers)
 """
 import html
@@ -9,9 +12,9 @@ import re
 import sys
 import urllib.request
 
-from official import CACHE, cache_file, canonical, cited_urls, is_allowed
+from official import CACHE, cache_file, canonical, cited_urls, is_allowed, rendered_file
 
-RELEASES_API = "https://api.github.com/repos/robolectric/robolectric/releases?per_page=100"
+LATEST_RELEASE_API = "https://api.github.com/repos/robolectric/robolectric/releases/latest"
 
 
 def get(url):
@@ -26,10 +29,26 @@ def html_to_text(raw):
     return html.unescape(re.sub(r"<[^>]+>", "", raw))
 
 
+def article_text(raw):
+    """The rendered article, so link text that the markdown export drops is kept."""
+    m = re.search(r"(?is)<article\b.*?</article>", raw)
+    return html_to_text(m.group(0) if m else raw)
+
+
+def current_release_notes(text):
+    """Keep the version table and the notes for the current stable and newer lines only."""
+    stable = re.search(r"\|\s*\w+ \d+, \d{4}\s*\|\s*\[?(\d+\.\d+)\.\d+", text).group(1)
+    start = text.index(f"\n## Version {stable}\n")
+    nxt = text.find("\n## Version ", start + 1)
+    return text if nxt < 0 else text[:nxt]
+
+
 def fetch(url):
     if url.startswith("https://github.com/robolectric/robolectric/releases"):
-        releases = json.loads(get(RELEASES_API))
-        return "\n\n".join(f"# {r['name'] or r['tag_name']} ({r['published_at']})\n{r['body'] or ''}" for r in releases)
+        r = json.loads(get(LATEST_RELEASE_API))
+        return f"# {r['name'] or r['tag_name']} ({r['published_at']})\n{r['body'] or ''}"
+    if url.startswith("https://developer.android.com/jetpack/androidx/releases/"):
+        return current_release_notes(get(url + ".md.txt"))
     if url.startswith("https://developer.android.com/"):
         return get(url + ".md.txt")
     return html_to_text(get(url))
@@ -45,6 +64,8 @@ def main(argv):
             continue
         try:
             cache_file(url).write_text(fetch(url))
+            if url.startswith("https://developer.android.com/"):
+                rendered_file(url).write_text(article_text(get(url)))
         except Exception as exc:  # report every failed page, then exit non-zero
             failed.append(f"{url}: {exc}")
     for line in failed:
