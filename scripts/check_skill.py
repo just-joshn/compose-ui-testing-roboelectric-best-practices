@@ -11,27 +11,41 @@ SKILL = ROOT / "compose-ui-testing-robolectric-best-practices"
 REQUIRED = ["## Table of Contents", "## Related References", "## Sources"]
 # The workflow's flow chart: SKILL.md has one "## " heading per node, in this order.
 FLOW = [
-    "Goal, constraints, and success check",
-    "Select a playbook",
-    "Investigate and establish evidence",
-    "Requested outcome",
-    "Deliver supported findings",
-    "Design and implement",
-    "Verify behavior and challenge findings",
-    "Acceptance checks satisfied?",
-    "Deliver the change and evidence",
-    "Shipping authorized?",
-    "Manage review and land verified work",
-    "Hand back for review",
-    "Capture useful lessons",
+    "Goal, constraints, and acceptance checks",
+    "Choose playbook; investigate and design",
+    "Implement and clean",
+    "Verify actual behavior",
+    "Evidence",
+    "Authorized endpoint",
+    "Deliver artifact and evidence",
+    "Meet independent shipping gates",
+    "Merge and confirm actual state",
+    "Report limits and remaining work",
 ]
+# The flow chart's edges: (from, label, to). SKILL.md's Mermaid block must have exactly these.
+EDGES = {
+    ("Goal, constraints, and acceptance checks", "", "Choose playbook; investigate and design"),
+    ("Choose playbook; investigate and design", "", "Implement and clean"),
+    ("Implement and clean", "", "Verify actual behavior"),
+    ("Verify actual behavior", "", "Evidence"),
+    ("Evidence", "Correctable failure", "Choose playbook; investigate and design"),
+    ("Evidence", "Verified", "Authorized endpoint"),
+    ("Evidence", "Blocked or inconclusive", "Report limits and remaining work"),
+    ("Authorized endpoint", "Handoff", "Deliver artifact and evidence"),
+    ("Authorized endpoint", "Merge", "Meet independent shipping gates"),
+    ("Meet independent shipping gates", "", "Merge and confirm actual state"),
+    ("Meet independent shipping gates", "Gate cannot be met", "Report limits and remaining work"),
+}
+# SKILL.md states how the agent works before the flow chart: its principles, defaults, and delegation rules.
+SKILL_REQUIRED = ["## Engineering Principles", "## Preferred and Rejected Practices", "## Delegation"]
 # Each playbook supplies the task-specific part of these workflow stages.
 PLAYBOOK_REQUIRED = [
     "## When to use",
-    "## Investigate and establish evidence",
-    "## Deliver supported findings",
-    "## Design and implement",
-    "## Verify behavior and challenge findings",
+    "## Delegate",
+    "## Investigate and design",
+    "## Implement and clean",
+    "## Verify actual behavior",
+    "## Deliver artifact and evidence",
     "## Sources",
 ]
 
@@ -51,6 +65,18 @@ def anchors(path):
     return {slug(m.group(1)) for m in re.finditer(r"^#{1,6} (.+)$", text, re.M)}
 
 
+def mermaid_edges(text):
+    block = re.search(r"```mermaid\n(.*?)```", text, re.S)
+    if not block:
+        return set()
+    names = dict(re.findall(r'(\w+)[\[{]"([^"]+)"[\]}]', block.group(1)))
+    body = re.sub(r'(\w+)[\[{]"[^"]+"[\]}]', r"\1", block.group(1))
+    edges = set()
+    for src, label, dst in re.findall(r'^\s*(\w+)\s*(?:-- "([^"]+)" )?-->\s*(\w+)', body, re.M):
+        edges.add((names.get(src, src), label, names.get(dst, dst)))
+    return edges
+
+
 def main():
     errors = []
     skill_md = SKILL / "SKILL.md"
@@ -66,6 +92,11 @@ def main():
             errors.append("SKILL.md: missing description")
 
     headings = re.findall(r"^## (.+)$", FENCE.sub("", skill_md.read_text()), re.M)
+    for section in SKILL_REQUIRED:
+        if section[3:] not in headings:
+            errors.append(f"SKILL.md: missing '{section}'")
+    if mermaid_edges(skill_md.read_text()) != EDGES:
+        errors.append("SKILL.md: Mermaid edges do not match the flow chart")
     flow = [h for h in headings if h in FLOW]
     if flow != FLOW:
         errors.append(f"SKILL.md: flow chart headings missing or out of order: {[h for h in FLOW if h not in flow] or flow}")
