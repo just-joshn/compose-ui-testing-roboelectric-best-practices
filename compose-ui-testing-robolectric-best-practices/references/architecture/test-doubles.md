@@ -37,7 +37,7 @@ Robolectric fills these gaps with a set of classes known as Shadows. Each shadow
 
 You can also use Robolectric's fakes (called shadows) as dependencies for unit tests. For example, if your class uses a Bundle or you need to fake a Bluetooth connection.
 
-Shadow classes are associated to the class that they Shadow with an `@Implements` annotation on the class declaration. Shadow methods must be marked with the `@Implementation` annotation.
+Shadow classes always need a public no-arg constructor so that the Robolectric framework can instantiate them. They are associated to the class that they Shadow with an `@Implements` annotation on the class declaration. Shadow methods must be marked with the `@Implementation` annotation.
 
 ```kotlin
 @Implements(ImageView::class)

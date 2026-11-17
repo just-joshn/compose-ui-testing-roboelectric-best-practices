@@ -69,7 +69,7 @@ fun SemanticsNodeInteraction.captureToImage(timeoutMillis: Long): ImageBitmap
 
 `timeoutMillis: Long` The maximum time (in ms) to wait for the drawing to complete. Default is 2000 ms.
 
-`captureToImage` can be used to capture nodes in a normal composable, as well as across multiple roots. Popups and Dialogs (if API >= 28) are specific cases of this, where they can be captured together with their anchor.
+`captureToImage`: This can be used to capture nodes in a normal composable, as well as across multiple roots. Popups and Dialogs (if API >= 28) are specific cases of this, where they can be captured together with their anchor.
 
 For example, selecting the root node (via `onRoot()`) when a popup or dialog is present will detect multiple roots. In this scenario, the resulting image is cropped to the combined bounding box of all nodes across the different roots. If a Dialog is present among the roots, the image is cropped to the window's visible display frame.
 

@@ -1,6 +1,48 @@
 # Compose UI Testing with Robolectric Best Practices Skill
 
-A skill that gives the AI specialized guidance for writing, debugging, and maintaining **Jetpack Compose UI tests** that run locally on the JVM with **Robolectric**, in **Kotlin**. It follows the format of [currents-dev/playwright-best-practices-skill](https://github.com/currents-dev/playwright-best-practices-skill).
+An opinionated, instruction-driven engineering workflow for **Jetpack Compose UI tests** that run on the JVM with **Robolectric**. You supply the desired result and constraints. The agent takes responsibility for organizing the engineering work: it establishes the goal, selects a playbook, applies the skill's engineering principles, delegates as that playbook directs, verifies the outcome, and reports the evidence.
+
+Opinionated means the skill does not leave the method to the agent. `SKILL.md` encodes engineering judgments:
+
+- **Engineering principles** every task follows, such as the smallest sufficient change, verifying the real result, and reporting an unproven check as Unresolved rather than a pass.
+- **Preferred, required, and rejected practices** for Compose testing and Robolectric, each taken from the official documentation.
+- **Delegation rules**: read-only delegated investigation, a single owner for edits, and a fresh reviewer.
+
+## How It Works
+
+`SKILL.md` coordinates this flow:
+
+```mermaid
+flowchart TD
+    A["Goal, constraints, and acceptance checks"] --> B["Choose playbook; investigate and design"]
+    B --> C["Implement and clean"]
+    C --> D["Verify actual behavior"]
+    D --> E{"Evidence"}
+    E -- "Correctable failure" --> B
+    E -- "Verified" --> F{"Authorized endpoint"}
+    E -- "Blocked or inconclusive" --> K["Report limits and remaining work"]
+    F -- "Handoff" --> G["Deliver artifact and evidence"]
+    F -- "Merge" --> H["Meet independent shipping gates"]
+    H --> I["Merge and confirm actual state"]
+    H -- "Gate cannot be met" --> K
+```
+
+The playbooks supply the task-specific steps:
+
+| Playbook | Use for |
+| --- | --- |
+| `write-a-compose-ui-test.md` | Writing a new Compose UI test that runs on Robolectric |
+| `debug-a-failing-test.md` | A test that fails for an unknown reason |
+| `fix-a-flaky-test.md` | A test that passes and fails without code changes |
+| `review-compose-ui-tests.md` | Reviewing existing tests against the documentation |
+| `configure-robolectric.md` | Setting up Robolectric, the JDK, or CI |
+| `migrate-to-v2-testing-apis.md` | Migrating tests to the v2 testing APIs |
+
+Each playbook step cites a file in `references/`, a library whose sentences and code are taken word for word from current official documentation.
+
+Example request:
+
+> Goal: add a test that the checkout button is disabled until the form is valid. Constraints: no production code changes. Success: the new test passes, and fails when the validation is removed.
 
 ## Sources of Truth
 
@@ -9,7 +51,7 @@ The skill uses only current official Compose UI testing and Robolectric document
 - **Compose UI testing**: the Testing section of the Compose docs on developer.android.com, the `androidx.compose.ui.test` API reference, and the Compose UI release notes for the current stable and newer releases.
 - **Robolectric**: robolectric.org guides and javadoc, the latest Robolectric release notes, and Android's Robolectric page. Blog posts are excluded, because they are dated or describe themselves as unofficial.
 
-Every paragraph, list item, table row, and code block in the reference files has an entry in [`verification/`](verification) that quotes the official page supporting it. A script checks that each quote appears word for word in the current text of that page.
+Every technical statement in the playbooks and reference files has an entry in [`verification/`](verification) that quotes the official page supporting it. A script checks that each quote appears word for word in the current text of that page, and that every sentence and code line in `references/` does too. Workflow instructions, such as "record the command and its result", are marked as workflow and may not name an API.
 
 ## Installation
 
@@ -17,28 +59,11 @@ Every paragraph, list item, table row, and code block in the reference files has
 npx skills add https://github.com/just-joshn/compose-ui-testing-robolectric-best-practices-skill
 ```
 
-The skill is activity-based. The AI is directed to the right reference for what you're doing, so it gets focused advice without loading everything at once.
+## Reference Files
 
-## When the Skill Is Used
+**20 reference documents** in `references/`, organized into 6 categories, hold the documented facts the playbooks cite. Every sentence and code line in them appears word for word on the official page it is quoted from:
 
-The skill triggers when the AI infers you need help with things like:
-
-- Writing Compose UI tests with `createComposeRule`, `createAndroidComposeRule`, or `runComposeUiTest`
-- Finding nodes by semantics, text, test tags, and the unmerged tree
-- Synchronization, idling resources, `waitUntil`, and the Compose test clock
-- Testing animations and coroutines with the v2 test APIs
-- State restoration with `StateRestorationTester`
-- Font scale, locale, layout direction, dark mode, and Robolectric qualifiers
-- Accessibility checks and focus navigation
-- Compose with Views, Espresso, and UiAutomator
-- Robolectric `@Config`, `robolectric.properties`, looper, graphics, and SQLite modes
-- Fixing flaky tests, debugging failures, and running tests in CI
-
-## What's Inside
-
-**20 reference documents** organized into 6 categories:
-
-### Core (`core/`)
+### Core (`references/core/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
@@ -49,14 +74,14 @@ The skill triggers when the AI infers you need help with things like:
 | Synchronization | `synchronization.md` | Auto-sync, idling resources, `waitUntil`, main thread |
 | Runtime modes | `runtime-modes.md` | Robolectric looper, graphics, and SQLite modes |
 
-### Debugging (`debugging/`)
+### Debugging (`references/debugging/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
 | Debugging | `debugging.md` | Printing the semantics tree, failure artifacts, Robolectric logging |
 | Flaky tests | `flaky-tests.md` | Synchronization, coroutine, looper, and thread causes |
 
-### Testing Patterns (`testing-patterns/`)
+### Testing Patterns (`references/testing-patterns/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
@@ -67,7 +92,7 @@ The skill triggers when the AI infers you need help with things like:
 | Visual regression | `visual-regression.md` | Native graphics and capturing a node |
 | Coroutines | `coroutines.md` | v1 and v2 dispatchers, `runComposeUiTest`, coroutine contexts |
 
-### Advanced (`advanced/`)
+### Advanced (`references/advanced/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
@@ -75,14 +100,14 @@ The skill triggers when the AI infers you need help with things like:
 | Device configuration | `device-configuration.md` | `DeviceConfigurationOverride`, Robolectric qualifiers |
 | Interoperability | `interoperability.md` | Views, Espresso, UiAutomator with Compose |
 
-### Architecture (`architecture/`)
+### Architecture (`references/architecture/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
 | Test architecture | `test-architecture.md` | Robolectric or device tests, source sets |
 | Test doubles | `test-doubles.md` | Shadows, mocking and spying on Android classes |
 
-### Infrastructure (`infrastructure-ci-cd/`)
+### Infrastructure (`references/infrastructure-ci-cd/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
@@ -104,7 +129,7 @@ Topics documented only outside that boundary are also left out: Hilt, Navigation
 ## Validation
 
 ```bash
-python3 scripts/check_skill.py      # frontmatter, links, anchors, sections, official-only URLs
+python3 scripts/check_skill.py      # flow chart sections, playbook stages, links, anchors, official-only URLs
 python3 scripts/fetch_sources.py    # download the current text of every cited page into .cache/
 python3 scripts/verify_claims.py    # every unit has quotes found word for word on those pages
 ```

@@ -278,8 +278,6 @@ fun textField_handlesTabAccordingToLineLimits() {
 
 ## Input Mode
 
-The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.
-
 Tests can fail during migration if they rely on non-touch input modes configured through instrumentation APIs before the test starts. Within the setup functions for tests, the system enforces `InputMode.Touch` by default at the start of each test for more determinism and to prevent state leakage, overriding ambient device state and pre-test setup.
 
 ### Set the Input Mode for a Test Class

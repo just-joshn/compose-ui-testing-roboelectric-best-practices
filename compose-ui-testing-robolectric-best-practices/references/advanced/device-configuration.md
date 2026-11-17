@@ -14,11 +14,11 @@
 
 Android apps need to adapt to many changing conditions: window sizes, locales, font sizes, dark and light themes, and more. Most of these conditions are derived from device-level values controlled by the user and exposed with the current `Configuration` instance. Testing different configurations directly in a test is difficult since the test must configure device-level properties.
 
-`DeviceConfigurationOverride` is a test-only API that lets you simulate different device configurations in a localized way for the `@Composable` content under test. Artifact: `androidx.compose.ui:ui-test` Added in 1.7.0
+`DeviceConfigurationOverride` is a test-only API that lets you simulate different device configurations in a localized way for the `@Composable` content under test. Artifact: `androidx.compose.ui:ui-test`. Added in 1.7.0.
 
 To apply a specific override, wrap the content under test in a call to the `DeviceConfigurationOverride()` top-level function, passing the override to apply as a parameter.
 
-`DeviceConfigurationOverride()` can be useful to locally test behavior in isolation that depends on properties that are normally device-wide, such as font scale, screen size and layout direction.
+`DeviceConfigurationOverride()`: This can be useful to locally test behavior in isolation that depends on properties that are normally device-wide, such as font scale, screen size and layout direction.
 
 For example, the following code applies the `DeviceConfigurationOverride.ForcedSize()` override to change the density locally, forcing the `MyScreen` composable to be rendered in a large landscape window, even if the device the test is running on doesn't support that window size directly:
 
@@ -83,7 +83,7 @@ Combines this override with the other override into a single override, by applyi
 
 ### Locales
 
-`Locales()` will change resource resolution for the content under test, and also override the layout direction as specified by the locales.
+`Locales()`: This will change resource resolution for the content under test, and also override the layout direction as specified by the locales.
 
 ```kotlin
 DeviceConfigurationOverride(DeviceConfigurationOverride.Locales(LocaleList("es-ES"))) {
@@ -113,9 +113,9 @@ DeviceConfigurationOverride(DeviceConfigurationOverride.DarkMode(true)) {
 
 ### Forced Size and Window Size
 
-`DeviceConfigurationOverride.Companion.ForcedSize` is only suitable for tests, since this will override `LocalDensity` to ensure that the size is met (as opposed to `Modifier.requiredSize` which will result in clipping).
+`DeviceConfigurationOverride.Companion.ForcedSize`: This is only suitable for tests, since this will override `LocalDensity` to ensure that the size is met (as opposed to `Modifier.requiredSize` which will result in clipping).
 
-`WindowSize` is only suitable for tests, since this will override `LocalDensity` to ensure that the size is met (as opposed to `Modifier.requiredSize` which will result in clipping). Unlike `ForcedSize`, this override will override `LocalWindowInfo` and `LocalConfiguration` on Android to reflect the requested size.
+`WindowSize`: Like ForcedSize, this is only suitable for tests, since this will override `LocalDensity` to ensure that the size is met (as opposed to `Modifier.requiredSize` which will result in clipping). Unlike `ForcedSize`, this override will override `LocalWindowInfo` and `LocalConfiguration` on Android to reflect the requested size.
 
 ```kotlin
 DeviceConfigurationOverride(DeviceConfigurationOverride.WindowSize(DpSize(1280.dp, 800.dp))) {

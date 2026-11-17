@@ -1,7 +1,7 @@
 {
   "units": [
     {
-      "text": " Use when writing, reviewing, or debugging Jetpack Compose UI tests that run locally on the JVM with Robolectric. Covers compose test rules (createComposeRule, createAndroidComposeRule, runComposeUiTest), semantics finders and matchers, merged vs unmerged trees, assertions and actions, synchronization and idling resources, waitUntil, the MainTestClock and animations, coroutines in the v2 test APIs, state restoration (StateRestorationTester), device configuration (DeviceConfigurationOverride, Robolectric qualifiers), accessibility checks and focus tests, View, Espresso and UiAutomator interoperability, shadows and mocks, Robolectric @Config, robolectric.properties, LooperMode, GraphicsMode, SQLiteMode, screenshots, flaky tests, debugging with printToLog, choosing Robolectric or device tests, and CI.",
+      "text": " Workflow for Jetpack Compose UI tests with Robolectric. Given a goal, constraints, and a success check, it selects a playbook, investigates, makes a small change grounded in current official Compose testing and Robolectric documentation, verifies the real result, and returns evidence for review. Use when writing a new Compose UI test, debugging a failing test, fixing a flaky test, reviewing tests, setting up Robolectric, or migrating to the v2 Compose test APIs.",
       "meta": true
     },
     {
@@ -22,69 +22,109 @@
       ]
     },
     {
-      "text": "This skill provides guidance for Jetpack Compose UI tests that run on the JVM with Robolectric. It uses only the official Compose UI testing and Robolectric documentation. Every statement in the reference files is backed by a quote from those pages, recorded in the repository's `verification/` ledgers.",
+      "text": "This skill is an opinionated, instruction-driven engineering workflow for Jetpack Compose UI tests that run on Robolectric. It tells you how to organize a task: establish the goal, select a suitable playbook, apply the engineering principles below, delegate according to that playbook, verify the outcome, and report the evidence.",
       "meta": true
     },
     {
-      "text": "Consult these references based on what you're doing:",
+      "text": "The user supplies the desired result and constraints. You take responsibility for organizing the engineering work needed to reach that result.",
       "meta": true
     },
     {
-      "text": "**When to use**: Creating new test files, writing test cases, implementing test scenarios",
+      "text": "Opinionated means the method is not left to your discretion. The skill encodes engineering judgments: the practices to prefer, the steps to require, and the approaches to reject. Follow them instead of weighing every alternative. When a user constraint conflicts with one of them, follow the user and say which judgment you set aside.",
       "meta": true
     },
     {
-      "text": "**When to use**: Testing font scale, locale, layout direction, dark mode, sizes, and Robolectric qualifiers",
+      "text": "Follow the workflow below, taking the branch each decision points to. Each playbook supplies the task-specific part of the stages it names.",
       "meta": true
     },
     {
-      "text": "**When to use**: Testing Compose alongside Views, Espresso, or UiAutomator",
+      "text": "The only sources of truth are current official Compose UI testing and Robolectric documentation: the Compose testing docs and the Compose test API reference on developer.android.com, and robolectric.org.",
       "meta": true
     },
     {
-      "text": "**When to use**: Test failures, node not found, timeouts, unexpected behavior",
+      "text": "- State facts about Compose testing or Robolectric only from the reference files this skill links to, or from those official pages. Each reference file lists its official sources.",
       "meta": true
     },
     {
-      "text": "**When to use**: Choosing between Robolectric and device tests, or deciding what to replace",
+      "text": "- If neither covers a question, say it is not documented. Do not fill the gap from memory.",
       "meta": true
     },
     {
-      "text": "**When to use**: Improving existing tests, code review",
+      "text": "- Facts about the user's project come from the project itself: its code, build files, and test output. Comments in the project are evidence of what the project says, not documentation.",
       "meta": true
     },
     {
-      "text": "**When to use**: Setting up the project, Robolectric config, CI",
+      "text": "Reference files, each verified against the official pages it lists:",
       "meta": true
     },
     {
-      "text": "After writing or modifying tests:",
+      "text": "Apply every principle at every stage. Each one is required.",
       "meta": true
     },
     {
-      "text": "1. **Run the tests**.",
+      "text": "1. **Official documentation only.** State facts about Compose testing or Robolectric only from the reference files or the official pages. Reject answers from memory. If the documentation does not cover something, say so.",
       "meta": true
     },
     {
-      "text": "2. **Look at the semantics tree**, the main way to solve problems in your tests: `composeTestRule.onRoot().printToLog()` → [debugging.md](debugging/debugging.md)",
+      "text": "2. **Smallest sufficient change.** Make the smallest change that meets the success check. Reject refactors, extra tests, and cleanup the goal does not need.",
+      "meta": true
+    },
+    {
+      "text": "3. **Evidence before conclusions.** Tie every finding to evidence from the project or a reference section. Reject conclusions supported only by reasoning.",
+      "meta": true
+    },
+    {
+      "text": "4. **Verify the real result.** Run the success check itself. Reject a passing build, a code read, or a similar test as a substitute.",
+      "meta": true
+    },
+    {
+      "text": "5. **Tests must be able to fail.** Show that every added or changed test fails when the behavior it checks is broken.",
+      "meta": true
+    },
+    {
+      "text": "6. **Unresolved is not a pass.** Report a check without direct evidence as Unresolved, with the proof it is missing.",
+      "meta": true
+    },
+    {
+      "text": "7. **Fix the cause.** Trace a failure to where it first goes wrong before changing code. Reject a change that makes a failure disappear without an evidence-backed explanation.",
+      "meta": true
+    },
+    {
+      "text": "8. **Test the premise after two failures.** When two fixes built on the same assumption fail, test the assumption instead of trying a third fix.",
+      "meta": true
+    },
+    {
+      "text": "9. **One owner for edits.** Only one agent edits files at a time. Delegated investigation is read-only.",
+      "meta": true
+    },
+    {
+      "text": "These defaults come from the official documentation. Each links to the reference section that quotes it.",
+      "meta": true
+    },
+    {
+      "text": "Choose each of these over its alternative whenever the choice arises.",
+      "meta": true
+    },
+    {
+      "text": "- The v2 test APIs. The v1 APIs are deprecated, and migrating to the new APIs is strongly recommended. See [test-suite-structure.md](references/core/test-suite-structure.md#v2-apis).",
       "quotes": [
         {
-          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
-          "quote": "The main way to solve problems in your tests is to look at the semantics tree. Print the tree by calling composeTestRule.onRoot().printToLog() at any point in your test."
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs."
         }
       ]
     },
     {
-      "text": "3. **Match unmerged nodes when needed**: set `useUnmergedTree` to `true` → [semantics-finders.md](core/semantics-finders.md)",
+      "text": "- `runComposeUiTest` when Compose test APIs are used alongside the Kotlin `runTest` API, which the documentation strongly recommends. See [coroutines.md](references/testing-patterns/coroutines.md).",
       "quotes": [
         {
-          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
-          "quote": "If you need to match a node of what would be the *unmerged* tree, you can set useUnmergedTree to true"
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "If you're using Compose test APIs alongside the Kotlin runTest API, it's strongly recommended to switch to runComposeUiTest"
         }
       ]
     },
     {
-      "text": "4. **Conditions that depend on external work**: use a more general concept such as `waitUntil()` → [synchronization.md](core/synchronization.md)",
+      "text": "- A general concept such as `waitUntil()` for any condition that depends on external work, such as data loading or Android's measure or draw. See [synchronization.md](references/core/synchronization.md#waiting-for-conditions).",
       "quotes": [
         {
           "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
@@ -93,7 +133,351 @@
       ]
     },
     {
-      "text": "5. **Repeat** until the tests pass.",
+      "text": "- The `PAUSED` looper mode, which is the default and which Robolectric strongly encourages. See [runtime-modes.md](references/core/runtime-modes.md#looper-mode).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/upgrade_to_version_4/",
+          "quote": "We strongly encourage you to use the PAUSED looper mode (which is the default)"
+        }
+      ]
+    },
+    {
+      "text": "Do each of these whenever its case arises.",
+      "meta": true
+    },
+    {
+      "text": "- A device test for the cases Robolectric does not cover, such as system UI like edge-to-edge or picture-in-picture. See [test-architecture.md](references/architecture/test-architecture.md#device-tests).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like WebView."
+        }
+      ]
+    },
+    {
+      "text": "Do not introduce any of these, and do not leave one in code you change.",
+      "meta": true
+    },
+    {
+      "text": "- An external `CountDownLatch` instead of the `waitUntil` APIs. In some cases it could behave unexpectedly, since the test clock won't be advanced. See [synchronization.md](references/core/synchronization.md#warnings).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "In some cases, using mechanisms in a test like an external CountDownLatch instead of the waitUntil APIs could behave unexpectedly, since the test clock won't be advanced"
+        }
+      ]
+    },
+    {
+      "text": "- Using `ComposeTestRule`, for example `createComposeRule`, inside `runAndroidComposeUiTest` or its variants. See [test-suite-structure.md](references/core/test-suite-structure.md#cautions).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/v2/package-summary",
+          "quote": "Avoid using androidx.compose.ui.test.junit4.ComposeTestRule (e.g., createComposeRule) inside runAndroidComposeUiTest or any of their respective variants"
+        }
+      ]
+    },
+    {
+      "text": "- Mocking or spying on Android classes that other Android code acts on, such as `Context` and `SharedPreferences`. See [test-doubles.md](references/architecture/test-doubles.md#mocking-and-spying-on-android-classes).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. Context, SharedPreferences, and many others)."
+        }
+      ]
+    },
+    {
+      "text": "- Custom semantics properties that expose visual properties such as colors, font size, or rounded corner radius, which is not recommended. See [semantics-finders.md](references/core/semantics-finders.md#anti-patterns-to-avoid).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Using custom Semantics properties to expose visual properties such as colors, font size or rounded corner radius is not recommended, as it can pollute production code and wrong implementations can lead to bugs that are hard to find"
+        }
+      ]
+    },
+    {
+      "text": "- The `LEGACY` looper mode. It is deprecated and not supported on Android SDKs above Baklava. See [runtime-modes.md](references/core/runtime-modes.md#deprecations).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "Deprecated. use LooperMode.PAUSED"
+        },
+        {
+          "url": "https://robolectric.org/javadoc/4.18/org/robolectric/annotation/LooperMode.Mode.html",
+          "quote": "LEGACY mode is not supported on Android SDKs > Baklava"
+        }
+      ]
+    },
+    {
+      "text": "- `enableAccessibilityChecks` on Robolectric: \"This requires API 34+ (Android U), and currently does not work on Robolectric.\" See [accessibility.md](references/testing-patterns/accessibility.md#accessibility-checks).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/ComposeTestRule",
+          "quote": "This requires API 34+ (Android U), and currently does not work on Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "Delegate as the selected playbook's Delegate section directs, and follow these rules:",
+      "meta": true
+    },
+    {
+      "text": "- Delegate only the work the playbook names. Keep the work it leaves with you.",
+      "meta": true
+    },
+    {
+      "text": "- Give each subagent the goal, the constraints, the success check, its playbook stage, and the files it may read.",
+      "meta": true
+    },
+    {
+      "text": "- Every subagent, the reviewer included, is read-only. You remain the single owner of edits.",
+      "meta": true
+    },
+    {
+      "text": "- The independent reviewer is a fresh agent that did not write the change.",
+      "meta": true
+    },
+    {
+      "text": "- You own every delegated result. Check its evidence before you use it.",
+      "meta": true
+    },
+    {
+      "text": "- If the harness has no subagents, do the delegated work yourself in the same order and say in the report that the review was not independent.",
+      "meta": true
+    },
+    {
+      "text": "Write down three things before anything else:",
+      "meta": true
+    },
+    {
+      "text": "- **Goal**: the result the user wants.",
+      "meta": true
+    },
+    {
+      "text": "- **Constraints**: what must not change, and any limits on time, scope, or tools.",
+      "meta": true
+    },
+    {
+      "text": "- **Acceptance checks**: observable results that show the goal is met, such as a named test passing, or, for a review, every finding citing its evidence and source.",
+      "meta": true
+    },
+    {
+      "text": "If the user gave all three, restate them and continue. If one is missing, propose it from the request, state that you assumed it, and continue. Do not stop to ask. A check you cannot make observable ends as Unresolved.",
+      "meta": true
+    },
+    {
+      "text": "Then go to Choose playbook; investigate and design.",
+      "meta": true
+    },
+    {
+      "text": "Pick the playbook that matches the goal. If none fits exactly, use the closest one and say which one you chose.",
+      "meta": true
+    },
+    {
+      "text": "- Follow the playbook's investigation steps, and delegate as its Delegate section directs.",
+      "meta": true
+    },
+    {
+      "text": "- Read the code under test and the existing tests before proposing anything.",
+      "meta": true
+    },
+    {
+      "text": "- Run the narrowest test command that covers the goal, confirm it targets the project's actual test task, and record the exact command and its result.",
+      "meta": true
+    },
+    {
+      "text": "- Record each piece of evidence with where it came from: a command and its output, a file and line, or an official page.",
+      "meta": true
+    },
+    {
+      "text": "- Design the smallest change that meets every acceptance check within the constraints.",
+      "meta": true
+    },
+    {
+      "text": "- Use only the APIs and patterns in the playbook's reference files.",
+      "meta": true
+    },
+    {
+      "text": "- Tie each part of the design to a piece of evidence from the investigation.",
+      "meta": true
+    },
+    {
+      "text": "- When you return here after a correctable failure, start from that failure's evidence. Choose a different playbook if the evidence shows the task is a different kind. If two fixes built on the same assumption have failed, test that assumption before designing again.",
+      "meta": true
+    },
+    {
+      "text": "When the design is complete, go to Implement and clean.",
+      "meta": true
+    },
+    {
+      "text": "- Implement the design and nothing more. When the goal's result is a report, the report is the artifact.",
+      "meta": true
+    },
+    {
+      "text": "- Clean before verifying: remove temporary code, debug output, and files added while investigating, and leave no change outside the design.",
+      "meta": true
+    },
+    {
+      "text": "Then go to Verify actual behavior.",
+      "meta": true
+    },
+    {
+      "text": "- Run each acceptance check itself, not a proxy, and record the command and output.",
+      "meta": true
+    },
+    {
+      "text": "- For each test the change adds or modifies, show that it can fail: break the behavior it checks, confirm the failure, then restore it and clean again.",
+      "meta": true
+    },
+    {
+      "text": "- Re-read every technical statement in your report against its reference file or official page. Drop any you cannot tie to one, or report it as not documented.",
+      "meta": true
+    },
+    {
+      "text": "- Check the change against Preferred and Rejected Practices. Record a rejected practice in code you changed, or a required practice the change omits, as a Fail.",
+      "meta": true
+    },
+    {
+      "text": "- Have a fresh reviewer challenge the artifact and the report. Re-grade any check whose result the reviewer shows its evidence does not support.",
+      "meta": true
+    },
+    {
+      "text": "- Give each acceptance check exactly one result:",
+      "meta": true
+    },
+    {
+      "text": "  - **Pass**: direct evidence shows the check is met, such as the command output.",
+      "meta": true
+    },
+    {
+      "text": "  - **Fail**: direct evidence shows the check is not met.",
+      "meta": true
+    },
+    {
+      "text": "  - **Unresolved**: you ran the check, or tried to, and there is still no direct evidence either way. Record the proof that is missing.",
+      "meta": true
+    },
+    {
+      "text": "- Never count an unresolved check as a pass, and never describe it as likely to pass.",
+      "meta": true
+    },
+    {
+      "text": "Then go to Evidence.",
+      "meta": true
+    },
+    {
+      "text": "Decide from the results. Test Blocked or inconclusive first, then Correctable failure, then Verified. Exactly one applies.",
+      "meta": true
+    },
+    {
+      "text": "- **Blocked or inconclusive**: any check is Unresolved; or a check is Fail and no step within the constraints that you have not yet tried could fix or explain it; or the same check is still Fail after two returns to Choose playbook; investigate and design. Go to Report limits and remaining work.",
+      "meta": true
+    },
+    {
+      "text": "- **Correctable failure**: a check is Fail, no check is Unresolved, and a step within the constraints that you have not yet tried could fix or explain it. Return to Choose playbook; investigate and design.",
+      "meta": true
+    },
+    {
+      "text": "- **Verified**: every acceptance check is Pass. Go to Authorized endpoint.",
+      "meta": true
+    },
+    {
+      "text": "The user decides the endpoint. Merge is authorized only when the user explicitly told you in this task to merge. A request to commit, push, or open a pull request, a passing verification, and a reviewer's approval do not authorize it. In every other case the endpoint is Handoff.",
+      "meta": true
+    },
+    {
+      "text": "- **Handoff**: go to Deliver artifact and evidence.",
+      "meta": true
+    },
+    {
+      "text": "- **Merge**: go to Meet independent shipping gates.",
+      "meta": true
+    },
+    {
+      "text": "Do not merge. Leave the change uncommitted, or on its own branch if one was already in use, unless the user asked for a commit or pull request, and report in this order:",
+      "meta": true
+    },
+    {
+      "text": "1. Goal, constraints, and acceptance checks.",
+      "meta": true
+    },
+    {
+      "text": "2. Playbook used.",
+      "meta": true
+    },
+    {
+      "text": "3. The artifact: what changed, by file, or the findings.",
+      "meta": true
+    },
+    {
+      "text": "4. Evidence: each acceptance check with its result and the commands and output behind it, before and after.",
+      "meta": true
+    },
+    {
+      "text": "5. The reference section behind each technical statement.",
+      "meta": true
+    },
+    {
+      "text": "6. Risks and open questions.",
+      "meta": true
+    },
+    {
+      "text": "Use the playbook's Deliver artifact and evidence section for what this task's report must contain.",
+      "meta": true
+    },
+    {
+      "text": "A shipping gate is a check that does not rest on your own judgment. Meet every one:",
+      "meta": true
+    },
+    {
+      "text": "- Commit only the verified change, and open a pull request whose description carries the evidence report.",
+      "meta": true
+    },
+    {
+      "text": "- The pull request's CI passes.",
+      "meta": true
+    },
+    {
+      "text": "- A fresh reviewer that did not write the change approves it. If none is available, this gate cannot be met.",
+      "meta": true
+    },
+    {
+      "text": "- Every review comment is answered.",
+      "meta": true
+    },
+    {
+      "text": "Do not change the verified change in this section. A gate that fails and needs such a change cannot be met.",
+      "meta": true
+    },
+    {
+      "text": "When every gate is met, go to Merge and confirm actual state. If a gate cannot be met, go to Report limits and remaining work.",
+      "meta": true
+    },
+    {
+      "text": "Merge, then confirm the target branch contains the change and its checks pass there. Report the state you found and the evidence for it. If the target branch lacks the change or a check fails there, say so and do not describe the merge as confirmed.",
+      "meta": true
+    },
+    {
+      "text": "Report in this order:",
+      "meta": true
+    },
+    {
+      "text": "1. Goal, constraints, and acceptance checks.",
+      "meta": true
+    },
+    {
+      "text": "2. What was done, with its evidence.",
+      "meta": true
+    },
+    {
+      "text": "3. Each Fail or Unresolved check with its evidence and the proof that is missing, or the gate that cannot be met and why.",
+      "meta": true
+    },
+    {
+      "text": "4. The remaining work needed to reach the goal.",
+      "meta": true
+    },
+    {
+      "text": "Do not describe the result as verified or done.",
       "meta": true
     }
   ]

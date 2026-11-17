@@ -27,7 +27,7 @@
 
 ### MainTestClock
 
-`MainTestClock` is ultimately responsible for driving all recompositions, all subscribers to `withFrameNanos` (all compose animations) and all coroutines launched with `LaunchedEffect` (for example gesture detection). It is important to realize that if this clock does not tick, recomposition will not happen and animations are frozen.
+`MainTestClock`: This clock is ultimately responsible for driving all recompositions, all subscribers to `withFrameNanos` (all compose animations) and all coroutines launched with `LaunchedEffect` (for example gesture detection). It is important to realize that if this clock does not tick, recomposition will not happen and animations are frozen.
 
 Measure, layout and draw passes may be driven by this clock, depending on the platform. On Desktop, these are all driven by this clock, but on Android only measure and layout are performed synchronously. The draw pass on Android is driven by the Choreographer and will not happen as a result of forwarding this clock.
 
@@ -41,7 +41,7 @@ When you call an assertion or action through the `ComposeTestRule` such as `asse
 composeTestRule.mainClock.autoAdvance = false
 ```
 
-By default `autoAdvance` is `true`.
+`autoAdvance`: By default this is true.
 
 ### autoAdvance
 
@@ -91,7 +91,7 @@ composeTestRule.mainClock.advanceTimeUntil(timeoutMs) { condition }
 Advances the clock in increments of a single frame until the given condition is satisfied. Note that the condition should only rely on things that are driven by this clock. Depending on the platform, measure, layout or draw passes might not happen in between advancements of the clock while waiting for the condition to become true. On Android and Desktop, measure and layout are happening, but draw only happens on Desktop. If your condition relies on the result of draw, use `androidx.compose.ui.test.junit4.ComposeTestRule.waitUntil` instead.
 
 - `timeoutMillis`: The time after which this method throws an exception if the given condition is not satisfied. This is test clock time, not the wall clock or cpu time.
-- Throws `ComposeTimeoutException`: the condition is not satisfied after `timeoutMillis`.
+- `ComposeTimeoutException`: the condition is not satisfied after `timeoutMillis`.
 
 ## Things to Realize When Controlling the Clock
 

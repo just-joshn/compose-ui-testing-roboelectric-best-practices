@@ -83,8 +83,6 @@ This table shows the minimum Java version required to run Robolectric tests agai
 
 ### Compose Test Environment
 
-The `ComposeUiTestConfig` class is included in the `junit4` and `ui-test` parts of the `androidx.compose.ui` AndroidX artifact.
-
 Compose test v2 APIs use `ComposeUiTestConfig` to customize the test environment. This configuration object consolidates environmental related APIs like `effectContext`, `runTestContext`, and `testTimeout` into a single object.
 
 ```kotlin

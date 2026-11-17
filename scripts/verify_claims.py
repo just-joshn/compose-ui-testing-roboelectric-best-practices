@@ -3,9 +3,12 @@
 
 Each prose unit (paragraph, list item, table row) and each code block of a reference file must have
 an entry in verification/<file>.json whose quotes appear word for word in an allowed official page.
-SKILL.md units that only describe the skill itself may be marked "meta": true instead.
+Units in SKILL.md and playbooks/ that are workflow instructions, not technical claims, may be marked
+"meta": true instead; a meta unit may not name an API in code formatting.
 Every API-shaped identifier in code must appear in those pages or be declared in the same code block.
 A prose unit that gives advice (should, avoid, prefer, ...) needs a quote that gives that advice too.
+Files under references/ must also be verbatim: every sentence and every code line must appear word for
+word on the pages its quotes come from.
 Run scripts/fetch_sources.py first.
 
 Usage: verify_claims.py [skill-relative file ...]
@@ -59,7 +62,7 @@ def units(rel, text):
             j = i + 1
             while j < len(lines) and not lines[j].lstrip().startswith(fence):
                 j += 1
-            if not exempt and not (is_skill and section == "Quick Decision Tree"):
+            if not exempt and not is_skill:
                 out.append(("code", "\n".join(lines[i + 1 : j])))
             i = j + 1
             continue
@@ -104,6 +107,30 @@ def api_tokens(code):
     return found
 
 
+def sentences(text):
+    """Split a prose unit into sentences and table cells; a bare code label such as `api`: is not a sentence."""
+    text = re.sub(r"^\s*([-*]|\d+\.)\s+", "", text.strip())
+    cells = [c.strip() for c in text.strip("|").split("|")] if text.startswith("|") else [text]
+    out = []
+    for cell in cells:
+        cell = re.sub(r"^(`[^`]+`\s*)+:\s*", "", cell)
+        for part in re.split(r"(?<=[.!?:])\s+(?=[A-Z`(])", cell):
+            if not re.fullmatch(r"\s*(`[^`]+`\s*)+:?\s*", part):
+                out.append(part)
+    return out
+
+
+def flat(text):
+    return normalize(text).replace("*", "").rstrip(".:;, ")
+
+
+def not_verbatim(kind, text, pages):
+    """Sentences or code lines of a unit that do not appear word for word on its quoted pages."""
+    page = " || ".join(flat(t) for t in pages)
+    pieces = text.splitlines() if kind == "code" else sentences(text)
+    return [p for p in pieces if len(flat(p)) > 12 and flat(p) not in page]
+
+
 def check_file(rel, corpus):
     problems = []
     md = (SKILL / rel).read_text()
@@ -120,7 +147,9 @@ def check_file(rel, corpus):
         for tok in sorted(api_tokens(code)):
             if not re.search(r"(?<![\w@])" + re.escape(tok) + r"(?!\w)", corpus):
                 problems.append(f"{rel}: identifier not in official pages: {tok} (in: {short[:50]})")
-        if entry and entry.get("meta") and rel == "SKILL.md":
+        if entry and entry.get("meta") and (rel == "SKILL.md" or rel.startswith("playbooks/")):
+            if re.search(r"`[^`]+`", text):
+                problems.append(f"{rel}: meta unit names code, so it needs quotes: {short}")
             continue
         if not entry or not entry.get("quotes"):
             problems.append(f"{rel}: unsupported {kind}: {short}")
@@ -128,6 +157,10 @@ def check_file(rel, corpus):
         if kind == "prose" and DIRECTIVE.search(normalize(text)) and not any(
                 DIRECTIVE.search(normalize(q["quote"])) for q in entry["quotes"]):
             problems.append(f"{rel}: directive with no directive in its quotes: {short}")
+        if rel.startswith("references/"):
+            pages = [t for q in entry["quotes"] for t in page_texts(canonical(q["url"]))]
+            for piece in not_verbatim(kind, text, pages):
+                problems.append(f"{rel}: not verbatim on its quoted pages: {flat(piece)[:90]}")
         for q in entry["quotes"]:
             url, quote = canonical(q["url"]), normalize(q["quote"])
             if not is_allowed(url):

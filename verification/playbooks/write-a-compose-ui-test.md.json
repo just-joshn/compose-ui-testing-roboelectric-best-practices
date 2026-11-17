@@ -1,0 +1,260 @@
+{
+  "units": [
+    {
+      "text": "Use this playbook when the goal is a new Compose UI test that runs on Robolectric.",
+      "meta": true
+    },
+    {
+      "text": "1. Read the composable under test, the code that calls it, and any existing tests that cover it.",
+      "meta": true
+    },
+    {
+      "text": "2. Check that the module declares the Compose UI test dependencies and the Robolectric dependencies. See [configuration.md](../core/configuration.md#quick-reference).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "First, add the following dependencies to the build.gradle file of the module containing your UI tests"
+        },
+        {
+          "url": "https://robolectric.org/getting-started",
+          "quote": "Start by adding the following to your module's build.gradle/build.gradle.kts file:"
+        }
+      ]
+    },
+    {
+      "text": "3. Check which SDK level Robolectric runs the code against and which Java version that level needs. See [configuration.md](../core/configuration.md#sdk-level) and [the Java version table](../core/configuration.md#android).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring/",
+          "quote": "By default, Robolectric will run your code against the targetSdk specified in your module's build.gradle/build.gradle.kts or AndroidManifest.xml file."
+        },
+        {
+          "url": "https://robolectric.org/compatibility_table",
+          "quote": "This table shows the minimum Java version required to run Robolectric tests against a specific version of Android"
+        }
+      ]
+    },
+    {
+      "text": "4. Check that the test will live in the `test` source set, where any UI test runs with Robolectric. See [test-suite-structure.md](../core/test-suite-structure.md#running-on-robolectric).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Any UI test present in the test source set runs with Robolectric."
+        }
+      ]
+    },
+    {
+      "text": "5. Decide whether Robolectric has enough fidelity for the behavior, or whether it needs a device test, such as system UI like edge-to-edge or picture-in-picture. See [test-architecture.md](../architecture/test-architecture.md#device-tests).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "Robolectric provides enough fidelity to run most UI tests but some cases will still require device tests, for example those related to system UI like edge-to-edge or picture-in-picture, or when relying on unsupported features, like WebView."
+        }
+      ]
+    },
+    {
+      "text": "6. Decide how much UI the test covers: `ComposeTestRule` lets you start an activity displaying any composable, whether your full application, a single screen, or a small element. See [test-suite-structure.md](../core/test-suite-structure.md#test-scope).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "lets you start an activity displaying any composable: your full application, a single screen, or a small element."
+        }
+      ]
+    },
+    {
+      "text": "7. Print the semantics tree, which is the main way to solve problems in tests. Developers decide what and how much to expose to it. See [debugging.md](../debugging/debugging.md#semantics-tree-printing) and [semantics-finders.md](../core/semantics-finders.md#semantics-tree).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/debug",
+          "quote": "Print the tree by calling composeTestRule.onRoot().printToLog() at any point in your test."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/semantics",
+          "quote": "The semantics framework is primarily used for accessibility, so tests take advantage of the information exposed by semantics about the UI hierarchy. Developers decide what and how much to expose."
+        }
+      ]
+    },
+    {
+      "text": "8. Run the existing tests of the module and record the exact command and its result.",
+      "meta": true
+    },
+    {
+      "text": "- State the behavior the test checks and the success check.",
+      "meta": true
+    },
+    {
+      "text": "- Name the rule or test function, the finders, and the assertions chosen, each with the reference or official page that supports it.",
+      "meta": true
+    },
+    {
+      "text": "- Name any behavior that needs a device test, with the evidence.",
+      "meta": true
+    },
+    {
+      "text": "- List open questions.",
+      "meta": true
+    },
+    {
+      "text": "- Build the test from the documented structure: a rule, content set on it, a finder, an action, and an assertion. See [test-suite-structure.md](../core/test-suite-structure.md#quick-reference).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "Compose provides a set of testing APIs to find elements, verify their attributes, and perform user actions."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing",
+          "quote": "Through this rule you can set Compose content or access the activity."
+        }
+      ]
+    },
+    {
+      "text": "- Use the v2 rule and test functions. The v1 APIs are deprecated, and migrating to the new APIs is strongly recommended. See [test-suite-structure.md](../core/test-suite-structure.md#v2-apis).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/migrate-v2",
+          "quote": "The v1 APIs are deprecated, and it's strongly recommended to migrate to the new APIs."
+        }
+      ]
+    },
+    {
+      "text": "- Pick the function that matches where the content is hosted: `createComposeRule` for tests where it is irrelevant where the compose content is hosted, `createAndroidComposeRule` for tests that require a custom Activity, `createEmptyComposeRule` for tests that need to create their own compose host during the test. See [test-suite-structure.md](../core/test-suite-structure.md#rule-and-test-functions-v2).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/v2/package-summary",
+          "quote": "This method is useful for tests in compose libraries where it is irrelevant where the compose content is hosted (e.g. an Activity on Android)"
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/v2/package-summary",
+          "quote": "This method is useful for tests that require a custom Activity."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/junit4/v2/package-summary",
+          "quote": "This method is useful for tests that need to create their own compose host during the test."
+        }
+      ]
+    },
+    {
+      "text": "- A common pattern for accessing activity resources while setting your own content is to create the rule with an empty activity such as `ComponentActivity`, which needs to be added to the app's manifest through the documented dependency. See [test-suite-structure.md](../core/test-suite-structure.md#setting-content).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "you also need to access activity resources, for example to assert that a displayed text matches a string resource."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "A common pattern to achieve this is to create an AndroidComposeTestRule using an empty activity such as ComponentActivity."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/common-patterns",
+          "quote": "Note that ComponentActivity needs to be added to your app's AndroidManifest.xml file. Enable that by adding this dependency to your module:"
+        }
+      ]
+    },
+    {
+      "text": "- Select nodes with finders. `useUnmergedTree` is for tests with a special need to inspect implementation detail within children. See [semantics-finders.md](../core/semantics-finders.md#finders) and [semantics-finders.md](../core/semantics-finders.md#merged-and-unmerged-trees).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/apis",
+          "quote": "Finders let you select one or multiple elements (or *nodes* in the semantics tree) to make assertions or perform actions on them."
+        },
+        {
+          "url": "https://developer.android.com/reference/kotlin/androidx/compose/ui/test/SemanticsNodeInteraction",
+          "quote": "useUnmergedTree is for tests with a special need to inspect implementation detail within children"
+        }
+      ]
+    },
+    {
+      "text": "- Rely on the documented synchronization: assertions and actions on the rule synchronize with the UI first, and a condition that depends on external work should use a more general concept such as `waitUntil`. See [synchronization.md](../core/synchronization.md#automatic-synchronization) and [synchronization.md](../core/synchronization.md#waiting-for-conditions).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Compose tests are synchronized by default with your UI. When you call an assertion or an action with the ComposeTestRule, the test is synchronized beforehand, waiting until the UI tree is idle."
+        },
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "Any condition that depends on external work, such as data loading or Android's measure or draw (that is, measure or draw external to Compose), should use a more general concept such as waitUntil()"
+        }
+      ]
+    },
+    {
+      "text": "- To run under a different SDK, specify the desired SDK(s) using the `sdk`, `minSdk` and `maxSdk` config properties. You can explicitly configure the set of resource qualifiers in effect for a test with `qualifiers`. To configure Robolectric for a single test class or method, use the `@Config` annotation on that class or method. See [configuration.md](../core/configuration.md#sdk-level), [configuration.md](../core/configuration.md#qualifiers), and [configuration.md](../core/configuration.md#config-annotation).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/configuring/",
+          "quote": "If you want to test your code under a different SDK, you can specify the desired SDK(s) using the sdk, minSdk and maxSdk config properties"
+        },
+        {
+          "url": "https://robolectric.org/configuring/",
+          "quote": "You can explicitly configure the set of resource qualifiers in effect for a test"
+        },
+        {
+          "url": "https://robolectric.org/configuring/",
+          "quote": "To configure Robolectric for a single test class or method, use the @Config annotation on the desired class or method."
+        }
+      ]
+    },
+    {
+      "text": "- Run the new test and record the exact command and its result.",
+      "meta": true
+    },
+    {
+      "text": "- Break the behavior the test checks, confirm the test fails, then restore the behavior.",
+      "meta": true
+    },
+    {
+      "text": "- Check whether the test is a behavior test. You can run behavior tests on Robolectric, for example when a Compose test verifies that the UI has changed after clicking a button. See [test-architecture.md](../architecture/test-architecture.md#behavior-tests).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/training/testing/local-tests/robolectric",
+          "quote": "You can run behavior tests on Robolectric as the fidelity needed for it is more than enough. For example, when a Compose test verifies that the UI has changed after clicking a button."
+        }
+      ]
+    },
+    {
+      "text": "- Check whether the test mocks or spies on Android classes that will be acted on by other Android code. The small exceptions are classes with very narrow responsibilities, such as event listeners. See [test-doubles.md](../architecture/test-doubles.md#mocking-and-spying-on-android-classes).",
+      "quotes": [
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "DON'T mock or spy on Android classes that will be acted on by other Android code (e.g. Context, SharedPreferences, and many others)."
+        },
+        {
+          "url": "https://robolectric.org/best-practices",
+          "quote": "The small exceptions to this rule are classes with very narrow responsibilities, such as event listeners."
+        }
+      ]
+    },
+    {
+      "text": "- Check whether the test waits with an external mechanism such as `CountDownLatch` instead of the `waitUntil` APIs. In some cases this could behave unexpectedly, since the test clock won't be advanced. See [synchronization.md](../core/synchronization.md#warnings).",
+      "quotes": [
+        {
+          "url": "https://developer.android.com/develop/ui/compose/testing/synchronization",
+          "quote": "In some cases, using mechanisms in a test like an external CountDownLatch instead of the waitUntil APIs could behave unexpectedly, since the test clock won't be advanced."
+        }
+      ]
+    },
+    {
+      "text": "- Ask an independent reviewer to challenge the test and to check each technical statement against its reference.",
+      "meta": true
+    },
+    {
+      "text": "- Delegate to one read-only subagent: read the composable under test, the code that calls it, and the existing tests that cover it, and report what the test should check.",
+      "meta": true
+    },
+    {
+      "text": "- Keep for yourself: the module setup checks, the decision between Robolectric and a device test, and writing the test.",
+      "meta": true
+    },
+    {
+      "text": "- After verification, delegate the challenge to a fresh reviewer: report any way the new test could pass while the behavior is broken, and check each technical statement against its reference.",
+      "meta": true
+    },
+    {
+      "text": "- Write only the test the design names.",
+      "meta": true
+    },
+    {
+      "text": "- Remove temporary code and output added while investigating.",
+      "meta": true
+    }
+  ]
+}

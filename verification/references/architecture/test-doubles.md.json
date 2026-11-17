@@ -86,7 +86,7 @@
       ]
     },
     {
-      "text": "Shadow classes are associated to the class that they Shadow with an `@Implements` annotation on the class declaration. Shadow methods must be marked with the `@Implementation` annotation.",
+      "text": "Shadow classes always need a public no-arg constructor so that the Robolectric framework can instantiate them. They are associated to the class that they Shadow with an `@Implements` annotation on the class declaration. Shadow methods must be marked with the `@Implementation` annotation.",
       "quotes": [
         {
           "url": "https://robolectric.org/extending",
@@ -95,6 +95,10 @@
         {
           "url": "https://robolectric.org/extending",
           "quote": "Shadow methods must be marked with the @Implementation annotation."
+        },
+        {
+          "url": "https://robolectric.org/extending",
+          "quote": "Shadow classes always need a public no-arg constructor so that the Robolectric framework can instantiate them"
         }
       ]
     },
