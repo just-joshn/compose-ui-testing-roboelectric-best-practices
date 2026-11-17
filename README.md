@@ -115,16 +115,7 @@ npx skills add https://github.com/just-joshn/compose-ui-testing-robolectric-best
 
 ## Not Covered
 
-These topics are in the Playwright skill, but the official Compose UI testing and Robolectric docs don't cover them, so this skill leaves them out:
-
-- Page objects, test tags, test data factories
-- Authentication and multi-user flows
-- Network mocking, GraphQL, WebSockets
-- File upload and download
-- Security testing and performance budgets
-- CI provider recipes (GitHub Actions, GitLab, Docker), sharding, coverage, and reporting
-
-Topics documented only outside that boundary are also left out: Hilt, Navigation, ViewModel and `kotlinx-coroutines-test` guidance, the Compose BOM, and Android Studio's screenshot testing tool.
+Topics documented only outside the official Compose UI testing and Robolectric documentation are left out: Hilt, Navigation, ViewModel and `kotlinx-coroutines-test` guidance, the Compose BOM, and Android Studio's screenshot testing tool.
 
 ## Validation
 
