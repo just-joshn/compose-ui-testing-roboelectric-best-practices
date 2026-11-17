@@ -1,6 +1,12 @@
 # Compose UI Testing with Robolectric Best Practices Skill
 
-A workflow skill that makes an AI agent work like a disciplined team for **Jetpack Compose UI tests** that run on the JVM with **Robolectric**. You give it a goal, constraints, and a way to recognize success. It selects a playbook, investigates your project, makes a small change grounded in current official documentation, checks the real result, and brings back evidence you can review.
+An opinionated, instruction-driven engineering workflow for **Jetpack Compose UI tests** that run on the JVM with **Robolectric**. You supply the desired result and constraints. The agent takes responsibility for organizing the engineering work: it establishes the goal, selects a playbook, applies the skill's engineering principles, delegates as that playbook directs, verifies the outcome, and reports the evidence.
+
+Opinionated means the skill does not leave the method to the agent. `SKILL.md` encodes engineering judgments:
+
+- **Engineering principles** every task follows, such as the smallest sufficient change, verifying the real result, and reporting an unproven check as Unresolved rather than a pass.
+- **Preferred, required, and rejected practices** for Compose testing and Robolectric, each taken from the official documentation.
+- **Delegation rules**: read-only delegated investigation, a single owner for edits, and a fresh reviewer.
 
 ## How It Works
 
@@ -8,20 +14,17 @@ A workflow skill that makes an AI agent work like a disciplined team for **Jetpa
 
 ```mermaid
 flowchart TD
-    A[Goal, constraints, and success check] --> B[Select a playbook]
-    B --> C[Investigate and establish evidence]
-    C --> D{Requested outcome}
-    D -- Explanation or plan --> E[Deliver supported findings]
-    D -- Working change --> F[Design and implement]
-    F --> G[Verify behavior and challenge findings]
-    G --> H{Acceptance checks satisfied?}
-    H -- No or inconclusive --> C
-    H -- Yes --> I[Deliver the change and evidence]
-    I --> J{Shipping authorized?}
-    J -- Yes --> K[Manage review and land verified work]
-    J -- No --> L[Hand back for review]
-    K --> M[Capture useful lessons]
-    L --> M
+    A["Goal, constraints, and acceptance checks"] --> B["Choose playbook; investigate and design"]
+    B --> C["Implement and clean"]
+    C --> D["Verify actual behavior"]
+    D --> E{"Evidence"}
+    E -- "Correctable failure" --> B
+    E -- "Verified" --> F{"Authorized endpoint"}
+    E -- "Blocked or inconclusive" --> K["Report limits and remaining work"]
+    F -- "Handoff" --> G["Deliver artifact and evidence"]
+    F -- "Merge" --> H["Meet independent shipping gates"]
+    H --> I["Merge and confirm actual state"]
+    H -- "Gate cannot be met" --> K
 ```
 
 The playbooks supply the task-specific steps:
