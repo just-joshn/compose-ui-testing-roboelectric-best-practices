@@ -1,6 +1,45 @@
 # Compose UI Testing with Robolectric Best Practices Skill
 
-A skill that gives the AI specialized guidance for writing, debugging, and maintaining **Jetpack Compose UI tests** that run locally on the JVM with **Robolectric**, in **Kotlin**. It follows the format of [currents-dev/playwright-best-practices-skill](https://github.com/currents-dev/playwright-best-practices-skill).
+A workflow skill that makes an AI agent work like a disciplined team for **Jetpack Compose UI tests** that run on the JVM with **Robolectric**. You give it a goal, constraints, and a way to recognize success. It selects a playbook, investigates your project, makes a small change grounded in current official documentation, checks the real result, and brings back evidence you can review.
+
+## How It Works
+
+`SKILL.md` coordinates this flow:
+
+```mermaid
+flowchart TD
+    A[Goal, constraints, and success check] --> B[Select a playbook]
+    B --> C[Investigate and establish evidence]
+    C --> D{Requested outcome}
+    D -- Explanation or plan --> E[Deliver supported findings]
+    D -- Working change --> F[Design and implement]
+    F --> G[Verify behavior and challenge findings]
+    G --> H{Acceptance checks satisfied?}
+    H -- No or inconclusive --> C
+    H -- Yes --> I[Deliver the change and evidence]
+    I --> J{Shipping authorized?}
+    J -- Yes --> K[Manage review and land verified work]
+    J -- No --> L[Hand back for review]
+    K --> M[Capture useful lessons]
+    L --> M
+```
+
+The playbooks supply the task-specific steps:
+
+| Playbook | Use for |
+| --- | --- |
+| `write-a-test.md` | Writing a new Compose UI test that runs on Robolectric |
+| `debug-a-failing-test.md` | A test that fails for an unknown reason |
+| `fix-a-flaky-test.md` | A test that passes and fails without code changes |
+| `review-tests.md` | Reviewing existing tests against the documentation |
+| `set-up-robolectric.md` | Setting up Robolectric, the JDK, or CI |
+| `migrate-to-v2-apis.md` | Moving tests to the v2 Compose test APIs |
+
+Each playbook step links to a reference file that holds the documented facts.
+
+Example request:
+
+> Goal: add a test that the checkout button is disabled until the form is valid. Constraints: no production code changes. Success: the new test passes, and fails when the validation is removed.
 
 ## Sources of Truth
 
@@ -9,7 +48,7 @@ The skill uses only current official Compose UI testing and Robolectric document
 - **Compose UI testing**: the Testing section of the Compose docs on developer.android.com, the `androidx.compose.ui.test` API reference, and the Compose UI release notes for the current stable and newer releases.
 - **Robolectric**: robolectric.org guides and javadoc, the latest Robolectric release notes, and Android's Robolectric page. Blog posts are excluded, because they are dated or describe themselves as unofficial.
 
-Every paragraph, list item, table row, and code block in the reference files has an entry in [`verification/`](verification) that quotes the official page supporting it. A script checks that each quote appears word for word in the current text of that page.
+Every technical statement in the playbooks and reference files has an entry in [`verification/`](verification) that quotes the official page supporting it. A script checks that each quote appears word for word in the current text of that page. Workflow instructions, such as "record the command and its result", are marked as workflow and may not name an API.
 
 ## Installation
 
@@ -17,26 +56,9 @@ Every paragraph, list item, table row, and code block in the reference files has
 npx skills add https://github.com/just-joshn/compose-ui-testing-robolectric-best-practices-skill
 ```
 
-The skill is activity-based. The AI is directed to the right reference for what you're doing, so it gets focused advice without loading everything at once.
+## Reference Files
 
-## When the Skill Is Used
-
-The skill triggers when the AI infers you need help with things like:
-
-- Writing Compose UI tests with `createComposeRule`, `createAndroidComposeRule`, or `runComposeUiTest`
-- Finding nodes by semantics, text, test tags, and the unmerged tree
-- Synchronization, idling resources, `waitUntil`, and the Compose test clock
-- Testing animations and coroutines with the v2 test APIs
-- State restoration with `StateRestorationTester`
-- Font scale, locale, layout direction, dark mode, and Robolectric qualifiers
-- Accessibility checks and focus navigation
-- Compose with Views, Espresso, and UiAutomator
-- Robolectric `@Config`, `robolectric.properties`, looper, graphics, and SQLite modes
-- Fixing flaky tests, debugging failures, and running tests in CI
-
-## What's Inside
-
-**20 reference documents** organized into 6 categories:
+**20 reference documents**, organized into 6 categories, hold the documented facts the playbooks link to:
 
 ### Core (`core/`)
 
@@ -104,7 +126,7 @@ Topics documented only outside that boundary are also left out: Hilt, Navigation
 ## Validation
 
 ```bash
-python3 scripts/check_skill.py      # frontmatter, links, anchors, sections, official-only URLs
+python3 scripts/check_skill.py      # flow chart sections, playbook stages, links, anchors, official-only URLs
 python3 scripts/fetch_sources.py    # download the current text of every cited page into .cache/
 python3 scripts/verify_claims.py    # every unit has quotes found word for word on those pages
 ```
