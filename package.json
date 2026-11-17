@@ -1,0 +1,19 @@
+{
+  "name": "compose-ui-testing-robolectric-best-practices-skill",
+  "version": "1.0.0",
+  "description": "Opinionated agent skill workflow for Jetpack Compose UI tests that run on Robolectric",
+  "keywords": [
+    "agent-skill",
+    "jetpack-compose",
+    "compose-ui-testing",
+    "robolectric"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/just-joshn/compose-ui-testing-robolectric-best-practices-skill.git"
+  },
+  "files": [
+    "compose-ui-testing-robolectric-best-practices/"
+  ]
+}
