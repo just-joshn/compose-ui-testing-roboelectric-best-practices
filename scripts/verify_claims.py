@@ -3,7 +3,8 @@
 
 Each prose unit (paragraph, list item, table row) and each code block of a reference file must have
 an entry in verification/<file>.json whose quotes appear word for word in an allowed official page.
-SKILL.md units that only describe the skill itself may be marked "meta": true instead.
+Units in SKILL.md and playbooks/ that are workflow instructions, not technical claims, may be marked
+"meta": true instead; a meta unit may not name an API in code formatting.
 Every API-shaped identifier in code must appear in those pages or be declared in the same code block.
 A prose unit that gives advice (should, avoid, prefer, ...) needs a quote that gives that advice too.
 Run scripts/fetch_sources.py first.
@@ -59,7 +60,7 @@ def units(rel, text):
             j = i + 1
             while j < len(lines) and not lines[j].lstrip().startswith(fence):
                 j += 1
-            if not exempt and not (is_skill and section == "Quick Decision Tree"):
+            if not exempt and not is_skill:
                 out.append(("code", "\n".join(lines[i + 1 : j])))
             i = j + 1
             continue
@@ -120,7 +121,9 @@ def check_file(rel, corpus):
         for tok in sorted(api_tokens(code)):
             if not re.search(r"(?<![\w@])" + re.escape(tok) + r"(?!\w)", corpus):
                 problems.append(f"{rel}: identifier not in official pages: {tok} (in: {short[:50]})")
-        if entry and entry.get("meta") and rel == "SKILL.md":
+        if entry and entry.get("meta") and (rel == "SKILL.md" or rel.startswith("playbooks/")):
+            if re.search(r"`[^`]+`", text):
+                problems.append(f"{rel}: meta unit names code, so it needs quotes: {short}")
             continue
         if not entry or not entry.get("quotes"):
             problems.append(f"{rel}: unsupported {kind}: {short}")
