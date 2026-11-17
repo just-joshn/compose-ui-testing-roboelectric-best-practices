@@ -28,14 +28,14 @@ The playbooks supply the task-specific steps:
 
 | Playbook | Use for |
 | --- | --- |
-| `write-a-test.md` | Writing a new Compose UI test that runs on Robolectric |
+| `write-a-compose-ui-test.md` | Writing a new Compose UI test that runs on Robolectric |
 | `debug-a-failing-test.md` | A test that fails for an unknown reason |
 | `fix-a-flaky-test.md` | A test that passes and fails without code changes |
-| `review-tests.md` | Reviewing existing tests against the documentation |
-| `set-up-robolectric.md` | Setting up Robolectric, the JDK, or CI |
-| `migrate-to-v2-apis.md` | Moving tests to the v2 Compose test APIs |
+| `review-compose-ui-tests.md` | Reviewing existing tests against the documentation |
+| `configure-robolectric.md` | Setting up Robolectric, the JDK, or CI |
+| `migrate-to-v2-testing-apis.md` | Migrating tests to the v2 testing APIs |
 
-Each playbook step links to a reference file that holds the documented facts.
+Each playbook step cites a file in `references/`, a library whose sentences and code are taken word for word from current official documentation.
 
 Example request:
 
@@ -48,7 +48,7 @@ The skill uses only current official Compose UI testing and Robolectric document
 - **Compose UI testing**: the Testing section of the Compose docs on developer.android.com, the `androidx.compose.ui.test` API reference, and the Compose UI release notes for the current stable and newer releases.
 - **Robolectric**: robolectric.org guides and javadoc, the latest Robolectric release notes, and Android's Robolectric page. Blog posts are excluded, because they are dated or describe themselves as unofficial.
 
-Every technical statement in the playbooks and reference files has an entry in [`verification/`](verification) that quotes the official page supporting it. A script checks that each quote appears word for word in the current text of that page. Workflow instructions, such as "record the command and its result", are marked as workflow and may not name an API.
+Every technical statement in the playbooks and reference files has an entry in [`verification/`](verification) that quotes the official page supporting it. A script checks that each quote appears word for word in the current text of that page, and that every sentence and code line in `references/` does too. Workflow instructions, such as "record the command and its result", are marked as workflow and may not name an API.
 
 ## Installation
 
@@ -58,9 +58,9 @@ npx skills add https://github.com/just-joshn/compose-ui-testing-robolectric-best
 
 ## Reference Files
 
-**20 reference documents**, organized into 6 categories, hold the documented facts the playbooks link to:
+**20 reference documents** in `references/`, organized into 6 categories, hold the documented facts the playbooks cite. Every sentence and code line in them appears word for word on the official page it is quoted from:
 
-### Core (`core/`)
+### Core (`references/core/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
@@ -71,14 +71,14 @@ npx skills add https://github.com/just-joshn/compose-ui-testing-robolectric-best
 | Synchronization | `synchronization.md` | Auto-sync, idling resources, `waitUntil`, main thread |
 | Runtime modes | `runtime-modes.md` | Robolectric looper, graphics, and SQLite modes |
 
-### Debugging (`debugging/`)
+### Debugging (`references/debugging/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
 | Debugging | `debugging.md` | Printing the semantics tree, failure artifacts, Robolectric logging |
 | Flaky tests | `flaky-tests.md` | Synchronization, coroutine, looper, and thread causes |
 
-### Testing Patterns (`testing-patterns/`)
+### Testing Patterns (`references/testing-patterns/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
@@ -89,7 +89,7 @@ npx skills add https://github.com/just-joshn/compose-ui-testing-robolectric-best
 | Visual regression | `visual-regression.md` | Native graphics and capturing a node |
 | Coroutines | `coroutines.md` | v1 and v2 dispatchers, `runComposeUiTest`, coroutine contexts |
 
-### Advanced (`advanced/`)
+### Advanced (`references/advanced/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
@@ -97,14 +97,14 @@ npx skills add https://github.com/just-joshn/compose-ui-testing-robolectric-best
 | Device configuration | `device-configuration.md` | `DeviceConfigurationOverride`, Robolectric qualifiers |
 | Interoperability | `interoperability.md` | Views, Espresso, UiAutomator with Compose |
 
-### Architecture (`architecture/`)
+### Architecture (`references/architecture/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
 | Test architecture | `test-architecture.md` | Robolectric or device tests, source sets |
 | Test doubles | `test-doubles.md` | Shadows, mocking and spying on Android classes |
 
-### Infrastructure (`infrastructure-ci-cd/`)
+### Infrastructure (`references/infrastructure-ci-cd/`)
 
 | Topic | Reference | Use for |
 | --- | --- | --- |
